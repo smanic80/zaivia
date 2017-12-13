@@ -3,7 +3,7 @@
     $(document).ready(function($) {
 
 
-        console.log(jQuery(".datepicker").datetimepicker());
+        //console.log(jQuery(".datepicker").datetimepicker());
 
 
       if ($("#map2").length) {
@@ -320,7 +320,7 @@
         }
       });
 
-      $(".acc-item input, .acc-item select").on("change keydown keydown", function() {
+      $(document).on("change keydown keydown",".acc-item input, .acc-item select", function() {
         if ($(this).val() == "") {
           $(this).addClass("placeholder");
         } else {
@@ -390,11 +390,11 @@
         return false;
       });
 
-      $(".trigger").click(function() {
-        $(this).parent().toggleClass("active");
-        $(this).next().toggleClass("active");
-        return false;
-      });
+      // $(".trigger").click(function() {
+      //   $(this).parent().toggleClass("active");
+      //   $(this).next().toggleClass("active");
+      //   return false;
+      // });
 
       $('.accordion > h4').click(function() {
         if ($(this).parent().hasClass("active")) {

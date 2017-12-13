@@ -54,6 +54,7 @@ class ZaiviaListings {
 		global $wpdb;
 
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
+		$openhouse_tablename = $wpdb->prefix . self::$openhouse_tablename;
 
 		$preparedData = [
 			'MLSNumber' => $data['MLSNumber'],
@@ -129,6 +130,19 @@ class ZaiviaListings {
 				self::updateFeatures($listing_id, $i, (isset($data["features_{$i}"])?$data["features_{$i}"]:[]), 0);
 				self::updateFeatures($listing_id, $i, (isset($data["features_{$i}_custom"])?$data["features_{$i}_custom"]:[]), 1);
 			}
+			if($data['openhouse']){
+                $wpdb->delete( $openhouse_tablename, ['listing_id'=>$listing_id], ["%d"]);
+                foreach($data['openhouse'] as $el) {
+                    $row = [
+                        'listing_id'=>$listing_id,
+                        'date' => date('Y-m-d',strtotime($el['openhouse_date[]'])),
+                        'start_time'=>date('H:i:s',mktime(0,$el['openhouse_time_start[]'],0)),
+                        'end_time'=>date('H:i:s',mktime(0,$el['openhouse_time_end[]'],0))
+                    ];
+                    $format = ["%d", "%s", "%s", "%s"];
+                    $wpdb->insert($openhouse_tablename, $row, $format);
+                }
+            }
 
 		} else {
 			$preparedData['user_id'] = get_current_user_id();
@@ -222,7 +236,7 @@ class ZaiviaListings {
 
 		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
-		$sql = "SELECT * from $files_tablename where listin_id = ".(int)$listingId;
+		$sql = "SELECT * from $files_tablename where listing_id = ".(int)$listingId;
 		if($type) {
 			$sql .= " and file_type = ".(int)$type;
 		}
@@ -237,7 +251,7 @@ class ZaiviaListings {
 
 		$openhouse_tablename = $wpdb->prefix . self::$openhouse_tablename;
 
-		$sql = "SELECT * from $openhouse_tablename where listin_id = ".(int)$listingId;
+		$sql = "SELECT listing_id,DATE_FORMAT(`date`,'%m/%d/%Y') as `date`,(HOUR(start_time)*60+MINUTE(start_time)) as start_time,(HOUR(end_time)*60+MINUTE(end_time)) as end_time from $openhouse_tablename where listing_id = ".(int)$listingId;
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 

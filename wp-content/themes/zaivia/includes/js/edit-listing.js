@@ -212,17 +212,21 @@
 
         initdatepicker($(".datepicker"));
 
-        $("#add-openhouse").click(function(){
+        $(document).on('click','#add-openhouse',function(){
             var $block = $("#openhouse-block").clone();
-
-            $block.removeAttr("id").show().prependTo( "#more-openhouse" );
+            $block.find('.datepicker-hidden').addClass('datepicker').removeClass('datepicker-hidden');
+            $block.removeAttr("id").addClass('array-row').show();
+            $("#more-openhouse").before($block);
             initdatepicker($block.find(".datepicker"));
 
             return false;
         });
-        $(".remove-openhouse").click(function(){
+        $(document).on('click','.trigger',function(){
+            $(this).prev('.datepicker').datepicker('show');
+        });
+        $(document).on('click','.remove-openhouse',function(){
             if($(".openhouse-block").length <= 2) {
-                $(this).parents(".openhouse-block").find("input").val("");
+                $(this).parents(".openhouse-block").find("input").val("").addClass('placeholder');
                 $(this).parents(".openhouse-block").find("select").val("");
             } else {
                 $(this).parents(".openhouse-block").remove();
@@ -232,7 +236,7 @@
         });
 
         function initdatepicker($obj) {
-            $obj.datepicker({ dateFormat: 'dd/mm/yy' });
+            $obj.datepicker({ dateFormat: 'mm/dd/yy' });
         }
 
         function updateListingObj() {
@@ -240,7 +244,16 @@
 
             $(".tosave").each(function(){
                 collect = [];
-                if( $(this).hasClass("group") ) {
+                if( $(this).hasClass("array") ) {
+                    $(this).find(".array-row").each(function(){
+                        var arr = {};
+                        $(this).find("input,select").each(function(){
+                            arr[$(this).attr('name')] = $(this).val();
+                        });
+                        collect.push(arr);
+                    });
+                    listingData[$(this).attr("id")] = collect;
+                } else if( $(this).hasClass("group") ) {
 
                     $(this).find(".save-item").each(function(){
                         if($(this).attr("type") === 'checkbox' && $(this).is(":checked") ) collect.push($(this).val());

@@ -387,7 +387,7 @@ function am_add_javascript( ) {
     if( !is_admin() ) {
 	    wp_enqueue_script('am_gmap', "https://maps.googleapis.com/maps/api/js?key=".get_field('google_api_key', 'option'), array( ), '',true );
 
-	    wp_enqueue_script('jquery-ui-datepicker');
+
 
 
         $am_files = array(
@@ -399,7 +399,7 @@ function am_add_javascript( ) {
         foreach($am_files as $key=>$am_file){
             wp_enqueue_script($key, get_theme_file_uri($am_file), array( 'jquery' ),filemtime( get_theme_file_path($am_file)),true );
         }
-
+        wp_enqueue_script('jquery-ui-datepicker');
 	    $wp_upload_dir = wp_upload_dir();
 	    wp_localize_script('general_js', 'amData', [
 		    'ajaxurl' => admin_url('admin-ajax.php'),

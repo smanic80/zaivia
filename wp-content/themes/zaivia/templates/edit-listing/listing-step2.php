@@ -3,7 +3,8 @@
 	<div class="row">
 		<div class="col-md-6 col-lg-3">
 			<fieldset>
-				<label><?php _e('Asking Price ($)', 'am') ?>*</label>
+				<label class="salerent_0"><?php _e('Monthly Rent ($)', 'am') ?>*</label>
+				<label class="salerent_1"><?php _e('Asking Price ($)', 'am') ?>*</label>
 				<input type="text" placeholder="349000" name="price" id="price" value="<?php echo $listing?$listing['price']:''; ?>" class="tosave required">
 			</fieldset>
 		</div>
@@ -347,6 +348,148 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
     </div>
 </div>
 
+<div class="acc-item salerent_0">
+    <h3 class="toggle">Rental Options</h3>
+    <div class="acc-cc">
+        <div class="row">
+            <div class="col-sm-6 col-lg-4">
+                <fieldset>
+                    <label>Date</label>
+                    <div class="datepick">
+                        <input type="text" placeholder="June 23">
+                        <div class="trigger">
+                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <label>Label</label>
+                    <input type="text" name="E">
+                </fieldset>
+                <fieldset>
+                    <label>Label</label>
+                    <select><option>Option</option></select>
+                </fieldset>
+                <fieldset>
+                    <label>Label</label>
+                    <select><option>Option</option></select>
+                </fieldset>
+                <fieldset>
+                    <label>Label</label>
+                    <select><option>Option</option></select>
+                </fieldset>
+                <fieldset>
+                    <label>Label</label>
+                    <select><option>Option</option></select>
+                </fieldset>
+                <fieldset class="mb-30">
+                    <label>File</label>
+                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em>DOC, DOCX</em></p>
+                    <label class="btn btn-secondary">Upload<input type="file" name="E"></label>
+                </fieldset>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <fieldset class="checkbox">
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Waterfront</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Dock</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                </fieldset>
+            </div>
+            <div class="col-sm-6 col-lg-4">
+                <p class="intro">Included</p>
+                <fieldset class="checkbox">
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Waterfront</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Dock</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                    <p>
+                        <span class="wpcf7-form-control-wrap">
+                          <span class="wpcf7-form-control wpcf7-checkbox">
+                            <span class="wpcf7-list-item">
+                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
+                            </span>
+                          </span>
+                        </span>
+                    </p>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
 
 <?php
     $items = get_field('room_features', 'option');
@@ -389,19 +532,19 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 	</div>
 </div>
 
-<div class="acc-item salerent_1">
+<div class="acc-item salerent_1 tosave array" id="openhouse">
 	<h3 class="toggle"><?php _e('Open Houses', 'am') ?></h3>
 	<div class="acc-cc">
 		<p class="intro3"><?php _e('Planning an Open House? Why not add this to your listing! If you are not sure of open dates now, you can always add them later through My Zaivia<br>Provide open house information', 'am') ?></p>
 
         <?php $open_houses = $listingId ? ZaiviaListings::getListingOpenhouse($listingId) : []; ?>
         <?php foreach($open_houses as $open_house):?>
-            <div class="row gutters-16 openhouse-block">
+            <div class="row gutters-16 openhouse-block array-row">
                 <div class="col-12 col-sm-5 col-lg-4">
                     <fieldset>
                         <label><?php _e('Date', 'am') ?></label>
                         <div class="datepick">
-                            <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker">
+                            <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker" value="<?php echo $open_house['date'] ?>">
                             <div class="trigger">
                                 <i class="fa fa-calendar" aria-hidden="true"></i>
                             </div>
@@ -413,7 +556,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
                         <label><?php _e('Start Time', 'am') ?></label>
                         <select name="openhouse_time_start[]">
                             <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
-                            <option value="<?php echo $key?>"><?php echo $val?></option>
+                            <option <?php echo $open_house['start_time'] == $key?' selected':'' ?> value="<?php echo $key; ?>"><?php echo $val; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </fieldset>
@@ -423,7 +566,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
                         <label><?php _e('End Time', 'am') ?></label>
                         <select name="openhouse_time_end[]">
 		                    <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
-                                <option value="<?php echo $key?>"><?php echo $val?></option>
+                                <option <?php echo $open_house['end_time'] == $key?' selected':'' ?> value="<?php echo $key; ?>"><?php echo $val; ?></option>
 		                    <?php endforeach; ?>
                         </select>
                     </fieldset>
@@ -435,7 +578,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
         <?php endforeach; ?>
 
 		<?php if(!count($open_houses)):?>
-            <div class="row gutters-16 openhouse-block" style="">
+            <div class="row gutters-16 openhouse-block array-row">
                 <div class="col-12 col-sm-5 col-lg-4">
                     <fieldset>
                         <label><?php _e('Date', 'am') ?></label>
@@ -478,7 +621,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
                 <fieldset>
                     <label><?php _e('Date', 'am') ?></label>
                     <div class="datepick">
-                        <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker">
+                        <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker-hidden">
                         <div class="trigger">
                             <i class="fa fa-calendar" aria-hidden="true"></i>
                         </div>
