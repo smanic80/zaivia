@@ -26,8 +26,8 @@
 					</div>
 					<div class="col-sm-12 col-lg-8">
 						<select name="sale_rent" id="sale_rent" class="tosave required">
-							<option value="0" <?php echo ($listing && (int)$listing['sale_rent'] === 0)?'selected':''; ?>><?php _e('For Rent', 'am') ?></option>
-							<option value="1" <?php echo ($listing && (int)$listing['sale_rent'] === 1)?'selected':''; ?>><?php _e('For Sale', 'am') ?></option>
+							<option value="0" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_rent)?'selected':''; ?>><?php _e('For Rent', 'am') ?></option>
+							<option value="1" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_sale)?'selected':''; ?>><?php _e('For Sale', 'am') ?></option>
 						</select>
 					</div>
 				</div>
@@ -35,8 +35,8 @@
 			<fieldset>
 				<div class="row">
 					<div class="col-12 col-lg-4">
-						<label class="salerent_1"><?php _e('For Sale By', 'am') ?>*</label>
-						<label class="salerent_0"><?php _e('For Rent By', 'am') ?>*</label>
+						<label class="salerent_<?php echo ZaiviaListings::$for_sale?>"><?php _e('For Sale By', 'am') ?>*</label>
+						<label class="salerent_<?php echo ZaiviaListings::$for_rent?>"><?php _e('For Rent By', 'am') ?>*</label>
 					</div>
 					<div class="col-sm-12 col-lg-8">
 						<select name="sale_by" id="sale_by" class="tosave required">
@@ -121,14 +121,14 @@
 					</div>
 					<div class="col-sm-12 col-lg-8">
 
-						<select name="status" id="status_0" class="status salerent_0">
+						<select name="status" id="status_0" class="status salerent_<?php echo ZaiviaListings::$for_rent?>">
 							<option value=""><?php _e('-select-', 'am') ?></option>
 							<option value="Active" <?php echo ($listing && $listing['status'] === "Active")?'selected':''; ?>><?php _e('Active', 'am') ?></option>
 							<option value="Rented" <?php echo ($listing && $listing['status'] === "Rented")?'selected':''; ?>><?php _e('Rented', 'am') ?></option>
 							<option value="Redused" <?php echo ($listing && $listing['status'] === "Redused")?'selected':''; ?>><?php _e('Redused', 'am') ?></option>
 						</select>
 
-                        <select name="status" id="status_1" class="status salerent_1">
+                        <select name="status" id="status_1" class="status salerent_<?php echo ZaiviaListings::$for_sale?>">
                             <option value=""><?php _e('-select-', 'am') ?></option>
                             <option value="Active" <?php echo ($listing && $listing['status'] === "Active")?'selected':''; ?>><?php _e('Active', 'am') ?></option>
                             <option value="Conditional Offer" <?php echo ($listing && $listing['status'] === "Conditional Offer")?'selected':''; ?> ><?php _e('Conditional Offer', 'am') ?></option>

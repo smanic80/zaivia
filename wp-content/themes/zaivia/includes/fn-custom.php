@@ -6,11 +6,13 @@
 	add_action( 'wp_ajax_uploadLisingFile', 'uploadLisingFile' );
 	add_action( 'wp_ajax_nopriv_uploadLisingFile', 'uploadLisingFile' );
 	function uploadLisingFile() {
-        $list = [];
-        foreach($_FILES as $file)
-        {
-            $list[] = wp_handle_upload($file,array('test_form' => FALSE));
-        }
+		$list = [];
+		$listingId = isset($_POST['listing_id']) ? (int)$_POST['listing_id'] : 0;
+		if($listingId && $_FILES) {
+			$file = (isset($_FILES[0])) ? $_FILES[0] : $_FILES;
+			$list = ZaiviaListings::addListingFile($listingId, $file, ZaiviaListings::$file_rent);
+		}
+
         echo json_encode($list);
         die;
     }

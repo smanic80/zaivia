@@ -68,12 +68,20 @@
         });
 
         $("#rent_file_input").change(function(event){
-            files = event.target.files;
             var form = new FormData();
-            $.each(files, function(key, value){
-                form.append(key, value);
+
+            $.each(event.target.files, function(key, value){
+                var ext = value.name.split('.').pop().toLowerCase();
+                if($.inArray(ext, ['doc','docx','pdf']) == -1) {
+                    $("#file-errors").text('Invalid file type!');
+                    return false;
+                } else {
+                    form.append(key, value);
+                }
             });
+
             form.append('action', 'uploadLisingFile');
+            form.append('listing_id', $("#listing_id").val());
 
             $.ajax({
                 url: amData.ajaxurl,
@@ -83,29 +91,24 @@
                 dataType: 'json',
                 processData: false,
                 contentType: false,
-                success: function(data, textStatus, jqXHR)
-                {
-                    if(typeof data.error === 'undefined')
-                    {
-                        $("#rent_file").val(data[0]['url']);
-                        var parts = data[0]['url'].split( '/' );
-                        $("#rent_file_name").text(parts[parts.length-1]);
-                    }
-                    else
-                    {
-                        console.log('ERRORS: ' + data.error);
+                success: function(data, textStatus, jqXHR) {
+console.log(data);
+                    if(typeof data['error'] === 'undefined') {
+                        $("#rent_file").val(data['id']);
+                        $("#rent_file_name").text(data['name']);
+                        $("#file-errors").text("");
+                    } else {
+                        $("#file-errors").text('ERRORS: ' + data['error']);
                     }
                 },
-                error: function(jqXHR, textStatus, errorThrown)
-                {
-                    console.log('ERRORS: ' + textStatus);
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $("#file-errors").text('ERRORS: ' + textStatus);
                 }
             });
         });
 
 
         if ($("#map").length) {
-
             var map;
 
             $("#zip").change(function(){
@@ -283,8 +286,10 @@
             return false;
         });
 
+
+
         function initdatepicker($obj) {
-            $obj.datepicker({ dateFormat: 'mm/dd/yy' });
+            $obj.datepicker({ dateFormat: 'mm/dd/yy', currentText: "" });
         }
 
         function updateListingObj() {
@@ -295,10 +300,15 @@
                 if( $(this).hasClass("array") ) {
                     $(this).find(".array-row").each(function(){
                         var arr = {};
+                        var found = true;
                         $(this).find("input,select").each(function(){
-                            arr[$(this).attr('name')] = $(this).val();
+                            if(!$(this).val()) {
+                                found = false;
+                            } else {
+                                arr[$(this).attr('name')] = $(this).val();
+                            }
                         });
-                        collect.push(arr);
+                        if(found) collect.push(arr);
                     });
                     listingData[$(this).attr("id")] = collect;
                 } else if( $(this).hasClass("group") ) {
@@ -343,10 +353,47 @@
     }
 
     function refreshRentSaleFields(){
-        var curClass = ".salerent_"+$("#sale_rent").val();
+        var key = $("#sale_rent").val();
 
         $(".salerent_0, .salerent_1").hide();
-        $(curClass).show();
+        $(".salerent_"+key).show();
+
+
+        if($(".wrapped.unwrap_"+key).length) {
+            $(".wrapped.unwrap_"+key).each(function(){
+                var $item = $(this);
+
+                $.each( $(this).data("wrap").split(";"), function( index, value ){
+                    $item.unwrap();
+                });
+
+                $item.removeClass("wrapped").addClass("unwrapped");
+            });
+        } else {
+
+
+            $(".unwrapped.wrap_"+key).each(function(){
+                var $item = $(this),
+                    $startItem = $item;
+
+                $.each( $(this).data("wrap").split(";"), function( index, value ){
+
+                    console.log($item.siblings(".wrap_"+key));
+
+                    if(index == 0) {
+                        $item.siblings(".wrap_"+key).addBack().wrapAll("<div class='"+value+"'></div>");
+                    } else {
+                        $item = $item.parent();
+                        $item.wrap("<div class='"+value+"'></div>");
+                    }
+
+                });
+
+                $startItem.removeClass("unwrapped").addClass("wrapped");
+            });
+        }
+
+
     }
 
 

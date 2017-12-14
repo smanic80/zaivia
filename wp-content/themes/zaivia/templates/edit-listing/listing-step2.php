@@ -3,8 +3,8 @@
 	<div class="row">
 		<div class="col-md-6 col-lg-3">
 			<fieldset>
-				<label class="salerent_0"><?php _e('Monthly Rent ($)', 'am') ?>*</label>
-				<label class="salerent_1"><?php _e('Asking Price ($)', 'am') ?>*</label>
+				<label class="salerent_<?php echo ZaiviaListings::$for_rent?>"><?php _e('Monthly Rent ($)', 'am') ?>*</label>
+				<label class="salerent_<?php echo ZaiviaListings::$for_sale?>"><?php _e('Asking Price ($)', 'am') ?>*</label>
 				<input type="text" placeholder="349000" name="price" id="price" value="<?php echo $listing?$listing['price']:''; ?>" class="tosave required">
 			</fieldset>
 		</div>
@@ -19,176 +19,175 @@
         <div class="col-sm-12 col-lg-8">
             <div class="row">
 
-		<div class="col-md-6 col-lg-4">
-			<fieldset>
-				<?php $items = get_field('home_type', 'option'); ?>
-				<label><?php _e('Property Type', 'am') ?>*</label>
-				<select name="property_type" id="property_type" class="tosave required">
-					<option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-					<option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['property_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-				</select>
-			</fieldset>
-		</div>
-		<div class="col-md-6 col-lg-4">
-			<fieldset>
-				<label><?php _e('Year Built', 'am') ?></label>
-				<input type="text" placeholder="1956" name="year_built" id="year_built" value="<?php echo $listing?$listing['year_built']:''; ?>" class="tosave">
-			</fieldset>
-		</div>
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-				<?php $items = get_field('roof_type', 'option'); ?>
-                <label><?php _e('Roof Type', 'am') ?></label>
-                <select name="roof_type" id="roof_type" class="tosave">
-                    <option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['roof_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-                </select>
-            </fieldset>
-        </div>
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-				<?php $items = get_field('type_of_house', 'option'); ?>
-                <label><?php _e('Type of House', 'am') ?></label>
-                <select name="house_type" id="house_type" class="tosave">
-                    <option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['house_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-                </select>
-            </fieldset>
-        </div>
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-                <label><?php _e('Annual Taxes ($)', 'am') ?></label>
-                <input type="text" placeholder="1825" name="annual_taxes" id="annual_taxes" value="<?php echo $listing?$listing['annual_taxes']:''; ?>" class="tosave">
-            </fieldset>
-        </div>
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-				<?php $items = get_field('exterior_type', 'option'); ?>
-                <label><?php _e('Exterior Type', 'am') ?></label>
-                <select name="exterior_type" id="exterior_type" class="tosave">
-                    <option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['exterior_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-                </select>
-            </fieldset>
-        </div>
-		<div class="col-md-6 col-lg-4">
-			<fieldset>
-				<label><?php _e('Square Footage', 'am') ?></label>
-				<input type="text" placeholder="1234" name="square_footage" id="square_footage" value="<?php echo $listing?$listing['square_footage']:''; ?>" class="tosave">
-			</fieldset>
-		</div>
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-                <label><?php _e('Condo Fees ($)', 'am') ?></label>
-                <input type="text" placeholder="300" name="condo_fees" id="condo_fees" value="<?php echo $listing?$listing['condo_fees']:''; ?>" class="tosave">
-            </fieldset>
-        </div>
-		<div class="col-md-6 col-lg-4">
-			<fieldset>
-				<?php $items = get_field('parking', 'option'); ?>
-				<label><?php _e('Parking', 'am') ?></label>
-				<select name="parking" id="parking" class="tosave">
-					<option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-						<option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['parking'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-				</select>
-			</fieldset>
-		</div>
-
-
-
-
-		<div class="col-md-6 col-lg-4">
-			<div class="row gutters-16">
-				<div class="col-6 col-lg-5">
-					<fieldset>
-						<?php $items = get_field('bedrooms', 'option'); ?>
-						<label><?php _e('Bedrooms', 'am') ?></label>
-                        <select name="bedrooms" id="bedrooms" class="tosave">
+                <div class="col-md-6 col-lg-4 wrapped unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>" data-wrap="row;col-sm-12 col-lg-8">
+                    <fieldset>
+                        <?php $items = get_field('home_type', 'option'); ?>
+                        <label><?php _e('Property Type', 'am') ?>*</label>
+                        <select name="property_type" id="property_type" class="tosave required">
                             <option value=""><?php _e('-select-', 'am') ?></option>
-							<?php foreach($items as $item):?>
-                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['bedrooms'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-							<?php endforeach; ?>
+                            <?php foreach($items as $item):?>
+                            <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['property_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
                         </select>
-					</fieldset>
-				</div>
-				<div class="col-6 col-lg-5">
-					<fieldset>
-						<?php $items = get_field('bathrooms', 'option'); ?>
-						<label><?php _e('Bathrooms', 'am') ?></label>
-                        <select name="bathrooms" id="bathrooms" class="tosave">
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">
+                    <fieldset>
+                        <label><?php _e('Year Built', 'am') ?></label>
+                        <input type="text" placeholder="1956" name="year_built" id="year_built" value="<?php echo $listing?$listing['year_built']:''; ?>" class="tosave">
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <?php $items = get_field('roof_type', 'option'); ?>
+                        <label><?php _e('Roof Type', 'am') ?></label>
+                        <select name="roof_type" id="roof_type" class="tosave">
                             <option value=""><?php _e('-select-', 'am') ?></option>
-							<?php foreach($items as $item):?>
-                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['bathrooms'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-							<?php endforeach; ?>
+                            <?php foreach($items as $item):?>
+                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['roof_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
                         </select>
-					</fieldset>
-				</div>
-			</div>
-		</div>
-
-        <div class="col-md-6 col-lg-4 salerent_1">
-            <fieldset>
-                <label><?php _e('MLS#', 'am') ?></label>
-                <input type="text" placeholder="" name="MLSNumber" id="MLSNumber" value="<?php echo $listing?$listing['MLSNumber']:''; ?>" class="tosave">
-            </fieldset>
-        </div>
-
-		<div class="col-md-6 col-lg-4 salerent_1">
-			<fieldset>
-				<?php $items = get_field('driveway', 'option'); ?>
-				<label><?php _e('Driveway', 'am') ?></label>
-                <select name="driveway" id="driveway" class="tosave">
-                    <option value=""><?php _e('-select-', 'am') ?></option>
-					<?php foreach($items as $item):?>
-                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['driveway'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-					<?php endforeach; ?>
-                </select>
-			</fieldset>
-		</div>
-
-
-		<div class="col-md-6 col-lg-4 salerent_1">
-			<div class="row gutters-16">
-				<div class="col-12">
-					<label><?php _e('Lot Size', 'am') ?></label>
-				</div>
-				<div class="col-3">
-					<fieldset>
-                        <input type="text" placeholder="50" name="size_x" id="size_x" value="<?php echo $listing?$listing['size_x']:''; ?>" class="tosave center">
-					</fieldset>
-				</div>
-				<div class="col-x"> x </div>
-				<div class="col-3">
-					<fieldset>
-                        <input type="text" placeholder="50" name="size_y" id="size_y" value="<?php echo $listing?$listing['size_y']:''; ?>" class="tosave center">
-					</fieldset>
-				</div>
-				<div class="col-6">
-					<fieldset>
-						<?php $items = get_field('size_units', 'option'); ?>
-                        <select name="size_units" id="size_units" class="tosave">
-							<?php foreach($items as $item):?>
-                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['size_units'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
-							<?php endforeach; ?>
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <?php $items = get_field('house_type', 'option'); ?>
+                        <label><?php _e('Type of House', 'am') ?></label>
+                        <select name="house_type" id="house_type" class="tosave">
+                            <option value=""><?php _e('-select-', 'am') ?></option>
+                            <?php foreach($items as $item):?>
+                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['house_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
                         </select>
-					</fieldset>
-				</div>
-			</div>
-		</div>
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <label><?php _e('Annual Taxes ($)', 'am') ?></label>
+                        <input type="text" placeholder="1825" name="annual_taxes" id="annual_taxes" value="<?php echo $listing?$listing['annual_taxes']:''; ?>" class="tosave">
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <?php $items = get_field('exterior_type', 'option'); ?>
+                        <label><?php _e('Exterior Type', 'am') ?></label>
+                        <select name="exterior_type" id="exterior_type" class="tosave">
+                            <option value=""><?php _e('-select-', 'am') ?></option>
+                            <?php foreach($items as $item):?>
+                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['exterior_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">
+                    <fieldset>
+                        <label><?php _e('Square Footage', 'am') ?></label>
+                        <input type="text" placeholder="1234" name="square_footage" id="square_footage" value="<?php echo $listing?$listing['square_footage']:''; ?>" class="tosave">
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <label><?php _e('Condo Fees ($)', 'am') ?></label>
+                        <input type="text" placeholder="300" name="condo_fees" id="condo_fees" value="<?php echo $listing?$listing['condo_fees']:''; ?>" class="tosave">
+                    </fieldset>
+                </div>
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">
+                    <fieldset>
+                        <?php $items = get_field('parking', 'option'); ?>
+                        <label><?php _e('Parking', 'am') ?></label>
+                        <select name="parking" id="parking" class="tosave">
+                            <option value=""><?php _e('-select-', 'am') ?></option>
+                            <?php foreach($items as $item):?>
+                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['parking'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </fieldset>
+                </div>
+
+
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">
+                    <div class="row gutters-16">
+                        <div class="col-6 col-lg-5">
+                            <fieldset>
+                                <?php $items = get_field('bedrooms', 'option'); ?>
+                                <label><?php _e('Bedrooms', 'am') ?></label>
+                                <select name="bedrooms" id="bedrooms" class="tosave">
+                                    <option value=""><?php _e('-select-', 'am') ?></option>
+                                    <?php foreach($items as $item):?>
+                                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['bedrooms'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </fieldset>
+                        </div>
+                        <div class="col-6 col-lg-5">
+                            <fieldset>
+                                <?php $items = get_field('bathrooms', 'option'); ?>
+                                <label><?php _e('Bathrooms', 'am') ?></label>
+                                <select name="bathrooms" id="bathrooms" class="tosave">
+                                    <option value=""><?php _e('-select-', 'am') ?></option>
+                                    <?php foreach($items as $item):?>
+                                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['bathrooms'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <label><?php _e('MLS#', 'am') ?></label>
+                        <input type="text" placeholder="" name="MLSNumber" id="MLSNumber" value="<?php echo $listing?$listing['MLSNumber']:''; ?>" class="tosave">
+                    </fieldset>
+                </div>
+
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <fieldset>
+                        <?php $items = get_field('driveway', 'option'); ?>
+                        <label><?php _e('Driveway', 'am') ?></label>
+                        <select name="driveway" id="driveway" class="tosave">
+                            <option value=""><?php _e('-select-', 'am') ?></option>
+                            <?php foreach($items as $item):?>
+                                <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['driveway'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </fieldset>
+                </div>
+
+
+                <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
+                    <div class="row gutters-16">
+                        <div class="col-12">
+                            <label><?php _e('Lot Size', 'am') ?></label>
+                        </div>
+                        <div class="col-3">
+                            <fieldset>
+                                <input type="text" placeholder="50" name="size_x" id="size_x" value="<?php echo $listing?$listing['size_x']:''; ?>" class="tosave center">
+                            </fieldset>
+                        </div>
+                        <div class="col-x"> x </div>
+                        <div class="col-3">
+                            <fieldset>
+                                <input type="text" placeholder="50" name="size_y" id="size_y" value="<?php echo $listing?$listing['size_y']:''; ?>" class="tosave center">
+                            </fieldset>
+                        </div>
+                        <div class="col-6">
+                            <fieldset>
+                                <?php $items = get_field('size_units', 'option'); ?>
+                                <select name="size_units" id="size_units" class="tosave">
+                                    <?php foreach($items as $item):?>
+                                        <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['size_units'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
-        <div class="col-sm-12 col-lg-4 salerent_0">
+        <div class="col-sm-12 col-lg-4 salerent_<?php echo ZaiviaListings::$for_rent?>">
             <p class="intro"><?php _e('Partial Space for Rent', 'am') ?></p>
 	        <?php
                 $items = get_field('partial_rent', 'option');
@@ -350,15 +349,16 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 <?php
 $items = get_field('rent_utilities', 'option');
 $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
-$rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
+$rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent) : [];
+$rent_file = isset($rent_file[0])?$rent_file[0]:[];
 ?>
-<div class="acc-item salerent_0">
-    <h3 class="toggle">Rental Options</h3>
+<div class="acc-item salerent_<?php echo ZaiviaListings::$for_rent?>">
+    <h3 class="toggle"><?php _e('Rental Options', 'am') ?></h3>
     <div class="acc-cc">
         <div class="row">
             <div class="col-sm-6 col-lg-4">
                 <fieldset>
-                    <label>Date Available</label>
+                    <label><?php _e('Date Available', 'am') ?></label>
                     <div class="datepick">
                         <input type="text" placeholder="June 23" class="datepicker tosave" id="rent_date" title="" value="<?php echo $rent['rent_date']; ?>">
                         <div class="trigger">
@@ -367,43 +367,44 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     </div>
                 </fieldset>
                 <fieldset>
-                    <label>Security Deposit</label>
+                    <label><?php _e('Security Deposit', 'am') ?></label>
                     <input type="text" id="rent_deposit" title="" class="tosave" value="<?php echo $rent['rent_deposit']; ?>">
                 </fieldset>
                 <fieldset>
-                    <label>Furnishings</label>
+                    <label><?php _e('Furnishings', 'am') ?></label>
                     <select id="rent_furnishings" title="" class="tosave">
                         <option<?php echo $rent['rent_furnishings']?' selected':''; ?> value="1">Yes</option>
                         <option<?php echo !$rent['rent_furnishings']?' selected':''; ?> value="0">No</option>
                     </select>
                 </fieldset>
                 <fieldset>
-                    <label>Pets</label>
+                    <label><?php _e('Pets', 'am') ?></label>
                     <select id="rent_pets" title="" class="tosave">
                         <option<?php echo $rent['rent_pets']?' selected':''; ?> value="1">Yes</option>
                         <option<?php echo !$rent['rent_pets']?' selected':''; ?> value="0">No</option>
                     </select>
                 </fieldset>
                 <fieldset>
-                    <label>Smoking</label>
+                    <label><?php _e('Smoking', 'am') ?></label>
                     <select id="rent_smoking" title="" class="tosave">
                         <option<?php echo $rent['rent_smoking']?' selected':''; ?> value="1">Yes</option>
                         <option<?php echo !$rent['rent_smoking']?' selected':''; ?> value="0">No</option>
                     </select>
                 </fieldset>
                 <fieldset>
-                    <label>Laundry</label>
+                    <label><?php _e('Laundry', 'am') ?></label>
                     <select id="rent_laundry" title="" class="tosave">
                         <option<?php echo $rent['rent_laundry']?' selected':''; ?> value="1">Yes</option>
                         <option<?php echo !$rent['rent_laundry']?' selected':''; ?> value="0">No</option>
                     </select>
                 </fieldset>
                 <fieldset class="mb-30">
-                    <input type="hidden" id="rent_file" class="tosave" value="">
-                    <label>Rental Application Upload</label>
-                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em>DOC, DOCX, PDF files accepted</em></p>
-                    <p id="rent_file_name"><?php echo basename($rent_file[0]['file_name']); ?></p>
-                    <label class="btn btn-secondary">Upload<input type="file" id="rent_file_input"></label>
+                    <input type="hidden" id="rent_file" class="tosave" value="<?php echo $rent_file?$rent_file['file_id']:''; ?>">
+                    <label><?php _e('Rental Application Upload', 'am') ?></label>
+                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('DOC, DOCX, PDF files accepted', 'am') ?></em></p>
+                    <p id="rent_file_name"><?php echo ($rent_file && isset($rent_file['file_name'])) ? basename($rent_file['file_name']) : ''; ?></p>
+                    <label class="btn btn-secondary"><?php _e('Upload', 'am') ?><input type="file" id="rent_file_input"></label>
+                    <p id="file-errors" class="error"></p>
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
@@ -522,7 +523,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
 	</div>
 </div>
 
-<div class="acc-item salerent_1 tosave array" id="openhouse">
+<div class="acc-item salerent_<?php echo ZaiviaListings::$for_sale?> tosave array" id="openhouse">
 	<h3 class="toggle"><?php _e('Open Houses', 'am') ?></h3>
 	<div class="acc-cc">
 		<p class="intro3"><?php _e('Planning an Open House? Why not add this to your listing! If you are not sure of open dates now, you can always add them later through My Zaivia<br>Provide open house information', 'am') ?></p>
@@ -545,8 +546,9 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     <fieldset>
                         <label><?php _e('Start Time', 'am') ?></label>
                         <select name="openhouse_time_start[]">
+                            <option value=""></option>
                             <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
-                            <option <?php echo $open_house['start_time'] == $key?' selected':'' ?> value="<?php echo $key; ?>"><?php echo $val; ?></option>
+                                <option <?php echo $open_house['start_time'] == $key?' selected':'' ?> value="<?php echo $key; ?>"><?php echo $val; ?></option>
                             <?php endforeach; ?>
                         </select>
                     </fieldset>
@@ -555,6 +557,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     <fieldset>
                         <label><?php _e('End Time', 'am') ?></label>
                         <select name="openhouse_time_end[]">
+                            <option value=""></option>
 		                    <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
                                 <option <?php echo $open_house['end_time'] == $key?' selected':'' ?> value="<?php echo $key; ?>"><?php echo $val; ?></option>
 		                    <?php endforeach; ?>
@@ -573,7 +576,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     <fieldset>
                         <label><?php _e('Date', 'am') ?></label>
                         <div class="datepick">
-                            <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker">
+                            <input type="text" placeholder="<?php _e('June 23', 'am') ?>" name="openhouse_date[]" class="datepicker" value="">
                             <div class="trigger">
                                 <i class="fa fa-calendar" aria-hidden="true"></i>
                             </div>
@@ -584,6 +587,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     <fieldset>
                         <label><?php _e('Start Time', 'am') ?></label>
                         <select name="openhouse_time_start[]">
+                            <option value=""></option>
                             <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
                                 <option value="<?php echo $key?>"><?php echo $val?></option>
                             <?php endforeach; ?>
@@ -594,6 +598,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                     <fieldset>
                         <label><?php _e('End Time', 'am') ?></label>
                         <select name="openhouse_time_end[]">
+                            <option value=""></option>
                             <?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
                                 <option value="<?php echo $key?>"><?php echo $val?></option>
                             <?php endforeach; ?>
@@ -622,6 +627,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                 <fieldset>
                     <label><?php _e('Start Time', 'am') ?></label>
                     <select name="openhouse_time_start[]">
+                        <option value=""></option>
 						<?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
                             <option value="<?php echo $key?>"><?php echo $val?></option>
 						<?php endforeach; ?>
@@ -632,6 +638,7 @@ $rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
                 <fieldset>
                     <label><?php _e('End Time', 'am') ?></label>
                     <select name="openhouse_time_end[]">
+                        <option value=""></option>
 						<?php  foreach(ZaiviaListings::$time as $key=>$val): ?>
                             <option value="<?php echo $key?>"><?php echo $val?></option>
 						<?php endforeach; ?>
