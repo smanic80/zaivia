@@ -3,6 +3,18 @@
 
 
 
+	add_action( 'wp_ajax_uploadLisingFile', 'uploadLisingFile' );
+	add_action( 'wp_ajax_nopriv_uploadLisingFile', 'uploadLisingFile' );
+	function uploadLisingFile() {
+        $list = [];
+        foreach($_FILES as $file)
+        {
+            $list[] = wp_handle_upload($file,array('test_form' => FALSE));
+        }
+        echo json_encode($list);
+        die;
+    }
+
 	add_action( 'wp_ajax_valideLisingStep', 'valideLisingStep' );
 	add_action( 'wp_ajax_nopriv_valideLisingStep', 'valideLisingStep' );
 	function valideLisingStep() {

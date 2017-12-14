@@ -43,7 +43,19 @@
         'featured':null,
         'premium':null,
         'url':null,
-        'bump_up':null
+        'bump_up':null,
+        'rent_date':null,
+        'rent_deposit':null,
+        'rent_furnishings':null,
+        'rent_pets':null,
+        'rent_smoking':null,
+        'rent_laundry':null,
+        'rent_file':null,
+        'rent_electrified_parking':null,
+        'rent_secured_entry':null,
+        'rent_private_entry':null,
+        'rent_onsite':null,
+        'rent_utilities':[],
     };
 
     $(document).ready(function($) {
@@ -53,6 +65,42 @@
         $("#sale_rent").change(refreshRentSaleFields);
         $(".status").change(function(){
             $("#status").val($(this).val());
+        });
+
+        $("#rent_file_input").change(function(event){
+            files = event.target.files;
+            var form = new FormData();
+            $.each(files, function(key, value){
+                form.append(key, value);
+            });
+            form.append('action', 'uploadLisingFile');
+
+            $.ajax({
+                url: amData.ajaxurl,
+                type: 'POST',
+                data: form,
+                cache: false,
+                dataType: 'json',
+                processData: false,
+                contentType: false,
+                success: function(data, textStatus, jqXHR)
+                {
+                    if(typeof data.error === 'undefined')
+                    {
+                        $("#rent_file").val(data[0]['url']);
+                        var parts = data[0]['url'].split( '/' );
+                        $("#rent_file_name").text(parts[parts.length-1]);
+                    }
+                    else
+                    {
+                        console.log('ERRORS: ' + data.error);
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown)
+                {
+                    console.log('ERRORS: ' + textStatus);
+                }
+            });
         });
 
 
@@ -272,7 +320,7 @@
 
                 } else {
                     if($(this).attr("id") in listingData) {
-                        listingData[$(this).attr("id")] = $(this).val();
+                        listingData[$(this).attr("id")] = ($(this).attr('type')==='checkbox')?($(this).prop('checked')?1:0):$(this).val();
                     } else {
                         alert("listing key not found " + $(this).attr("id"));
                     }

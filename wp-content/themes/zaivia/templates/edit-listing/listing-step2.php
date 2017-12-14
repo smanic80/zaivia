@@ -347,144 +347,134 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
         </div>
     </div>
 </div>
-
+<?php
+$items = get_field('rent_utilities', 'option');
+$rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
+$rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId,1) : [];
+?>
 <div class="acc-item salerent_0">
     <h3 class="toggle">Rental Options</h3>
     <div class="acc-cc">
         <div class="row">
             <div class="col-sm-6 col-lg-4">
                 <fieldset>
-                    <label>Date</label>
+                    <label>Date Available</label>
                     <div class="datepick">
-                        <input type="text" placeholder="June 23">
+                        <input type="text" placeholder="June 23" class="datepicker tosave" id="rent_date" title="" value="<?php echo $rent['rent_date']; ?>">
                         <div class="trigger">
                             <i class="fa fa-calendar" aria-hidden="true"></i>
                         </div>
                     </div>
                 </fieldset>
                 <fieldset>
-                    <label>Label</label>
-                    <input type="text" name="E">
+                    <label>Security Deposit</label>
+                    <input type="text" id="rent_deposit" title="" class="tosave" value="<?php echo $rent['rent_deposit']; ?>">
                 </fieldset>
                 <fieldset>
-                    <label>Label</label>
-                    <select><option>Option</option></select>
+                    <label>Furnishings</label>
+                    <select id="rent_furnishings" title="" class="tosave">
+                        <option<?php echo $rent['rent_furnishings']?' selected':''; ?> value="1">Yes</option>
+                        <option<?php echo !$rent['rent_furnishings']?' selected':''; ?> value="0">No</option>
+                    </select>
                 </fieldset>
                 <fieldset>
-                    <label>Label</label>
-                    <select><option>Option</option></select>
+                    <label>Pets</label>
+                    <select id="rent_pets" title="" class="tosave">
+                        <option<?php echo $rent['rent_pets']?' selected':''; ?> value="1">Yes</option>
+                        <option<?php echo !$rent['rent_pets']?' selected':''; ?> value="0">No</option>
+                    </select>
                 </fieldset>
                 <fieldset>
-                    <label>Label</label>
-                    <select><option>Option</option></select>
+                    <label>Smoking</label>
+                    <select id="rent_smoking" title="" class="tosave">
+                        <option<?php echo $rent['rent_smoking']?' selected':''; ?> value="1">Yes</option>
+                        <option<?php echo !$rent['rent_smoking']?' selected':''; ?> value="0">No</option>
+                    </select>
                 </fieldset>
                 <fieldset>
-                    <label>Label</label>
-                    <select><option>Option</option></select>
+                    <label>Laundry</label>
+                    <select id="rent_laundry" title="" class="tosave">
+                        <option<?php echo $rent['rent_laundry']?' selected':''; ?> value="1">Yes</option>
+                        <option<?php echo !$rent['rent_laundry']?' selected':''; ?> value="0">No</option>
+                    </select>
                 </fieldset>
                 <fieldset class="mb-30">
-                    <label>File</label>
-                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em>DOC, DOCX</em></p>
-                    <label class="btn btn-secondary">Upload<input type="file" name="E"></label>
+                    <input type="hidden" id="rent_file" class="tosave" value="">
+                    <label>Rental Application Upload</label>
+                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em>DOC, DOCX, PDF files accepted</em></p>
+                    <p id="rent_file_name"><?php echo basename($rent_file[0]['file_name']); ?></p>
+                    <label class="btn btn-secondary">Upload<input type="file" id="rent_file_input"></label>
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
                 <fieldset class="checkbox">
                     <p>
                         <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Waterfront</span></label>
+                            <span class="wpcf7-form-control wpcf7-checkbox">
+                                <span class="wpcf7-list-item">
+                                    <label>
+                                        <input type="checkbox"<?php echo $rent['rent_electrified_parking']?' checked':''; ?> id="rent_electrified_parking" class="tosave" value="1">&nbsp;
+                                        <span class="wpcf7-list-item-label">Electrified Parking</span>
+                                    </label>
+                                </span>
                             </span>
-                          </span>
                         </span>
                     </p>
                     <p>
                         <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Dock</span></label>
+                            <span class="wpcf7-form-control wpcf7-checkbox">
+                                <span class="wpcf7-list-item">
+                                    <label>
+                                        <input type="checkbox"<?php echo $rent['rent_secured_entry']?' checked':''; ?> id="rent_secured_entry" class="tosave" value="1">&nbsp;
+                                        <span class="wpcf7-list-item-label">Secured Entry</span>
+                                    </label>
+                                </span>
                             </span>
-                          </span>
                         </span>
                     </p>
                     <p>
                         <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
+                            <span class="wpcf7-form-control wpcf7-checkbox">
+                                <span class="wpcf7-list-item">
+                                    <label>
+                                        <input type="checkbox"<?php echo $rent['rent_private_entry']?' checked':''; ?> id="rent_private_entry" class="tosave" value="1">&nbsp;
+                                        <span class="wpcf7-list-item-label">Private Entry</span>
+                                    </label>
+                                </span>
                             </span>
-                          </span>
                         </span>
                     </p>
                     <p>
                         <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
+                            <span class="wpcf7-form-control wpcf7-checkbox">
+                                <span class="wpcf7-list-item">
+                                    <label>
+                                        <input type="checkbox"<?php echo $rent['rent_onsite']?' checked':''; ?> id="rent_onsite" class="tosave" value="1">&nbsp;
+                                        <span class="wpcf7-list-item-label">Onsite Management</span>
+                                    </label>
+                                </span>
                             </span>
-                          </span>
                         </span>
                     </p>
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
-                <p class="intro">Included</p>
-                <fieldset class="checkbox">
+                <p class="intro">Utilities Included</p>
+                <fieldset class="checkbox tosave group" data-key="rent_utilities">
+                    <?php foreach($items as $item):?>
                     <p>
                         <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Waterfront</span></label>
+                            <span class="wpcf7-form-control wpcf7-checkbox">
+                                <span class="wpcf7-list-item">
+                                    <label>
+                                        <input type="checkbox" value="<?php echo $item['key']?>"<?php echo (in_array($item['key'], $rent['rent_utilities']))?' checked':''; ?> class="save-item">&nbsp;
+                                        <span class="wpcf7-list-item-label"><?php echo $item['name']?></span>
+                                    </label>
+                                </span>
                             </span>
-                          </span>
                         </span>
                     </p>
-                    <p>
-                        <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Dock</span></label>
-                            </span>
-                          </span>
-                        </span>
-                    </p>
-                    <p>
-                        <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
-                            </span>
-                          </span>
-                        </span>
-                    </p>
-                    <p>
-                        <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
-                            </span>
-                          </span>
-                        </span>
-                    </p>
-                    <p>
-                        <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Landscaped Yard</span></label>
-                            </span>
-                          </span>
-                        </span>
-                    </p>
-                    <p>
-                        <span class="wpcf7-form-control-wrap">
-                          <span class="wpcf7-form-control wpcf7-checkbox">
-                            <span class="wpcf7-list-item">
-                              <label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">BBQ Area</span></label>
-                            </span>
-                          </span>
-                        </span>
-                    </p>
+                    <?php endforeach; ?>
                 </fieldset>
             </div>
         </div>

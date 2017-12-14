@@ -5,6 +5,7 @@ class ZaiviaListings {
 	public static $features_tablename   = "listing_features";
 	public static $files_tablename      = "listing_file";
 	public static $openhouse_tablename  = "listing_openhouse";
+	public static $rent_tablename  = "listing_rent";
 
 	public static $provinces = [
 		"BC" => "British Columbia",
@@ -55,6 +56,8 @@ class ZaiviaListings {
 
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
 		$openhouse_tablename = $wpdb->prefix . self::$openhouse_tablename;
+		$rent_tablename = $wpdb->prefix . self::$rent_tablename;
+		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
 		$preparedData = [
 			'MLSNumber' => $data['MLSNumber'],
@@ -112,6 +115,23 @@ class ZaiviaListings {
 			'%s', '%d', '%d'
 		];
 
+        $rent = [
+            'rent_date' => $data['rent_date']?date('Y-m-d',strtotime($data['rent_date'])):'',
+            'rent_deposit' => $data['rent_deposit'],
+            'rent_furnishings' => $data['rent_furnishings'],
+            'rent_pets' => $data['rent_pets'],
+            'rent_smoking' => $data['rent_smoking'],
+            'rent_laundry' => $data['rent_laundry'],
+            'rent_electrified_parking' => $data['rent_electrified_parking'],
+            'rent_secured_entry' => $data['rent_secured_entry'],
+            'rent_private_entry' => $data['rent_private_entry'],
+            'rent_onsite' => $data['rent_onsite'],
+            'rent_utilities' => implode(';',$data['rent_utilities'])
+        ];
+        $rentFormat = [
+            '%s','%s','%d','%d','%d','%d','%d','%d','%d','%d', '%s'
+        ];
+
 		if((int)$data['listing_id']) {
 			$listing_id = (int)$data['listing_id'];
 
@@ -144,6 +164,24 @@ class ZaiviaListings {
                 }
             }
 
+            $sql = "SELECT * from $rent_tablename where listing_id = ".(int)$listing_id;
+            $results = $wpdb->get_results( $sql,ARRAY_A);
+			if(count($results)) {
+                $wpdb->update($rent_tablename, $rent, ['listing_id' => $listing_id], $rentFormat);
+            }else{
+                $rent['listing_id'] = $listing_id;
+                $rentFormat[] = '%d';
+                $wpdb->insert($rent_tablename, $rent, $rentFormat);
+            }
+            if($data['rent_file']) {
+                $sql = "SELECT * from $files_tablename where listing_id = ".(int)$listing_id;
+                $results = $wpdb->get_results( $sql,ARRAY_A);
+                if(count($results)) {
+                    $wpdb->update($files_tablename, ['file_name' => $data['rent_file'], 'file_type' => 1], ['listing_id' => $listing_id]);
+                }else {
+                    $wpdb->insert($files_tablename, ['listing_id' => $listing_id, 'file_name' => $data['rent_file'], 'file_type' => 1]);
+                }
+            }
 		} else {
 			$preparedData['user_id'] = get_current_user_id();
 			$preparedData['date_created'] = time();
@@ -157,6 +195,13 @@ class ZaiviaListings {
 
 			$wpdb->insert($listing_tablename, $preparedData, $dataFormat);
 			$listing_id = $wpdb->insert_id;
+
+            $rent['listing_id'] = $listing_id;
+            $rentFormat[] = '%d';
+			$wpdb->insert($rent_tablename, $rent, $rentFormat);
+			if($data['rent_file']) {
+                $wpdb->insert($files_tablename, ['listing_id' => $listing_id, 'file_name' => $data['rent_file'], 'file_type' => 1]);
+            }
 		}
 
 		return $listing_id;
@@ -256,6 +301,22 @@ class ZaiviaListings {
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 
 		return $results;
+	}
+
+	public static function getListingRent($listingId) {
+		global $wpdb;
+
+		$rent_tablename = $wpdb->prefix . self::$rent_tablename;
+
+		$sql = "SELECT * from $rent_tablename where listing_id = ".(int)$listingId;
+
+		$results = $wpdb->get_results( $sql,ARRAY_A);
+        if(count($results)){
+            $results[0]['rent_utilities'] = explode(';',$results[0]['rent_utilities']);
+            $results[0]['rent_date'] = date('m/d/Y',strtotime($results[0]['rent_date']));
+            return $results[0];
+        }
+        return [];
 	}
 }
 
