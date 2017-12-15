@@ -71,9 +71,14 @@ get_header(); ?>
 	                <?php include(locate_template('templates/edit-listing/listing-step2.php')); ?>
                 </div>
 
+                <div class="styled-form listing-steps" id="step3" style="display:none;">
+	                <?php include(locate_template('templates/edit-listing/listing-step3.php')); ?>
+                </div>
+                
                 <div class="styled-form listing-steps" id="step4" style="display:none;">
 		            <?php include(locate_template('templates/edit-listing/listing-step4.php')); ?>
                 </div>
+                
             </div>
         </div>
     </form>
