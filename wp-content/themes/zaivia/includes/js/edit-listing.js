@@ -56,6 +56,11 @@
         'rent_private_entry':null,
         'rent_onsite':null,
         'rent_utilities':[],
+        'contact_title':null,
+        'contact_name':null,
+        'contact_name_show':null,
+        'contact_email':null,
+        'contact_title':null,
     };
 
     $(document).ready(function($) {
@@ -92,7 +97,7 @@
                 processData: false,
                 contentType: false,
                 success: function(data, textStatus, jqXHR) {
-console.log(data);
+
                     if(typeof data['error'] === 'undefined') {
                         $("#rent_file").val(data['id']);
                         $("#rent_file_name").text(data['name']);

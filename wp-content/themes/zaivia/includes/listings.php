@@ -14,6 +14,7 @@ class ZaiviaListings {
 	public static $file_blueprint = 2;
 	public static $file_rent = 3;
 	public static $file_profile = 4;
+	public static $file_logo = 5;
 
 	public static $provinces = [
 		"BC" => "British Columbia",
