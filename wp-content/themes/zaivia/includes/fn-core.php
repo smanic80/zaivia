@@ -386,7 +386,10 @@ function am_add_javascript( ) {
     wp_enqueue_script('jquery');
     if( !is_admin() ) {
 	    wp_enqueue_script('am_gmap', "https://maps.googleapis.com/maps/api/js?key=".get_field('google_api_key', 'option'), array( ), '',true );
-
+        wp_enqueue_script('orakuploader',
+            get_theme_file_uri('includes/js/orakuploader/orakuploader.js'),
+            array('jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-draggable','jquery-ui-droppable')
+        );
 
 
 
@@ -420,6 +423,7 @@ function am_add_css( ) {
     global $am_option;
 
 	wp_enqueue_style('jqueryui', 'https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css', false, null );
+	wp_enqueue_style('orakuploader', get_theme_file_uri('includes/js/orakuploader/orakuploader.css'), false, null );
 
     // internal CSS
     $am_files = array('style.css','style-wp.css'); // example: array('style1', 'style2');

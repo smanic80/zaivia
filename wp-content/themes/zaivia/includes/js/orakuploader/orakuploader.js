@@ -31,8 +31,10 @@
 			orakuploader_crop_thumb_to_width : 0,
 			orakuploader_crop_thumb_to_height: 0,
 			orakuploader_max_exceeded 	     : "",
-			orakuploader_watermark           : ""
-			
+			orakuploader_watermark           : "",
+			orakuploader_type           : 0,
+            orakuploader_url           : ""
+
 		}, options);
 			
 		var holdername = this;
@@ -99,7 +101,7 @@
 			jQuery.data(holdername, "already_uploaded", jQuery.data(holdername, "already_uploaded")-1);
 			
 			$.ajax({
-				url: settings.orakuploader_path+"orakuploader.php?delete="+encodeURIComponent($(this).parent().attr('filename'))+"&path="+settings.orakuploader_path+"&resize_to="+settings.orakuploader_resize_to+"&thumbnail_size="+settings.orakuploader_thumbnail_size+"&main_path="+settings.orakuploader_main_path+"&thumbnail_path="+settings.orakuploader_thumbnail_path
+				url: settings.orakuploader_url+"?delete="+encodeURIComponent($(this).parent().attr('filename'))+"&action=uploadImageFile&id="+$(this).parent().attr('id')
 			});			
 			
 			$(this).parent().fadeOut("slow", function() {
@@ -123,7 +125,7 @@
 			var context = this;
 			
 			$.ajax({
-				url: settings.orakuploader_path+"orakuploader.php?rotate="+encodeURIComponent($(this).parent().attr('filename'))+"&degree_lvl="+$(this).closest('.rotate_picture').attr('degree-lvl')+"&path="+settings.orakuploader_path+"&resize_to="+settings.orakuploader_resize_to+"&thumbnail_size="+settings.orakuploader_thumbnail_size+"&main_path="+settings.orakuploader_main_path+"&thumbnail_path="+settings.orakuploader_thumbnail_path
+				url: settings.orakuploader_url+"?rotate="+encodeURIComponent($(this).parent().attr('filename'))+"&action=uploadImageFile&degree_lvl="+$(this).closest('.rotate_picture').attr('degree-lvl')+"&path="+settings.orakuploader_path+"&resize_to="+settings.orakuploader_resize_to+"&thumbnail_size="+settings.orakuploader_thumbnail_size+"&main_path="+settings.orakuploader_main_path+"&thumbnail_path="+settings.orakuploader_thumbnail_path
 			}).done(function(file_name) {
 				$img = $('html,body').find("input[value^='"+file_name+"']").prev('img');
 				
@@ -195,35 +197,53 @@
 		if(settings.orakuploader_hide_on_exceed == true && parseInt(jQuery.data(holder, 'already_uploaded')) == parseInt(settings.orakuploader_maximum_uploads)) {
 			$(holder).parent().find('.uploadButton').hide();
 		}
-		var xhr = new XMLHttpRequest();
-		xhr.open("POST", settings.orakuploader_path+"orakuploader.php?filename="+encodeURIComponent(file.name)+"&path="+settings.orakuploader_path+"&resize_to="+settings.orakuploader_resize_to+"&thumbnail_size="+settings.orakuploader_thumbnail_size+"&main_path="+settings.orakuploader_main_path+"&thumbnail_path="+settings.orakuploader_thumbnail_path+"&watermark="+settings.orakuploader_watermark+"&orakuploader_crop_to_width="+settings.orakuploader_crop_to_width+"&orakuploader_crop_to_height="+settings.orakuploader_crop_to_height+"&orakuploader_crop_thumb_to_width="+settings.orakuploader_crop_thumb_to_width+"&orakuploader_crop_thumb_to_height="+settings.orakuploader_crop_thumb_to_height, true);
-		xhr.send(file);
-		xhr.onreadystatechange = function() 
-		{
-			var rotation_html = "";
-			if (xhr.readyState == 4) 
-			{
-				if(settings.orakuploader_use_rotation == true) {
-					rotation_html = "<div class='rotate_picture' degree-lvl='1'>"+settings.orakuploader_file_rotation_label+"</div>";
-				}
-				$(clone).html("<div class='picture_delete'>"+settings.orakuploader_file_delete_label+"</div>"+rotation_html+"<img src='"+settings.orakuploader_thumbnail_path+"/"+xhr.responseText+"' alt='' onerror=this.src='"+settings.orakuploader_path+"/images/no-image.jpg' class='picture_uploaded'/> <input type='hidden' value='"+xhr.responseText+"' name='"+settings.orakuploader_field_name+"[]' />");
-				$(clone).attr('id', xhr.responseText);
-				$(clone).attr('filename', xhr.responseText);
-				jQuery.data(holder, "counter", jQuery.data(holder, "counter")+1);
-				if(jQuery.data(holder, "count") == jQuery.data(holder, "counter")) 
-				{
-					if (typeof settings.orakuploader_finished == 'function') { 
-						settings.orakuploader_finished();
-					}
-					changeMain(holder, settings);
-					jQuery.data(holder, "counter", 0);
-					if(settings.orakuploader_hide_in_progress == true) {
-						jQuery.data(holder, 'currently_uploading', 0);
-						$(holder).parent().find('.uploadButton').show();
-					}
-				}
-			}
-		}
+        var form = new FormData();
+		form.append(0, file);
+        form.append('action', 'uploadImageFile');
+        form.append('listing_id', $("#listing_id").val());
+
+		form.append('filename', encodeURIComponent(file.name));
+		form.append('type', settings.orakuploader_type);
+		form.append('resize_to', settings.orakuploader_resize_to);
+		form.append('thumbnail_size', settings.orakuploader_thumbnail_size);
+		form.append('main_path', settings.orakuploader_main_path);
+		form.append('thumbnail_path', settings.orakuploader_thumbnail_path);
+		form.append('watermark', settings.orakuploader_watermark);
+		form.append('orakuploader_crop_to_width', settings.orakuploader_crop_to_width);
+		form.append('orakuploader_crop_to_height', settings.orakuploader_crop_to_height);
+		form.append('orakuploader_crop_thumb_to_width', settings.orakuploader_crop_thumb_to_width);
+		form.append('orakuploader_crop_thumb_to_height', settings.orakuploader_crop_thumb_to_height);
+        $.post({
+            url: settings.orakuploader_url,
+            data: form,
+            cache: false,
+            dataType: 'json',
+            processData: false,
+            contentType: false,
+        }).done(function( data ) {
+            var rotation_html = '';
+            if(settings.orakuploader_use_rotation == true) {
+                rotation_html = "<div class='rotate_picture' degree-lvl='1'>"+settings.orakuploader_file_rotation_label+"</div>";
+            }
+            $(clone).html("<div class='picture_delete'>"+settings.orakuploader_file_delete_label+"</div>"+rotation_html+"<img src='"+ data['thumb'] +"' alt='' onerror=this.src='"+settings.orakuploader_path+"images/no-image.jpg' class='picture_uploaded'/> <input type='hidden' class='save-item' value='"+data['id']+"' name='"+settings.orakuploader_field_name+"[]' />");
+            $(clone).attr('id', data['id']);
+            $(clone).attr('filename', data['url']);
+            jQuery.data(holder, "counter", jQuery.data(holder, "counter")+1);
+            if(jQuery.data(holder, "count") == jQuery.data(holder, "counter"))
+            {
+                if (typeof settings.orakuploader_finished == 'function') {
+                    settings.orakuploader_finished();
+                }
+                changeMain(holder, settings);
+                jQuery.data(holder, "counter", 0);
+                if(settings.orakuploader_hide_in_progress == true) {
+                    jQuery.data(holder, 'currently_uploading', 0);
+                    $(holder).parent().find('.uploadButton').show();
+                }
+            }
+        }).error(function (e) {
+			console.log('err',e);
+        });
 	}
  
 }( jQuery ));

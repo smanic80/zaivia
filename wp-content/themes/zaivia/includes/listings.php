@@ -145,6 +145,7 @@ class ZaiviaListings {
 
 			self::updateOpenhouse( $listing_id, (isset($data['openhouse'])?$data['openhouse']:null) );
 			self::updateRentData( $listing_id, $data );
+			self::updateImagesData( $listing_id, $data );
 		} else {
 			$preparedData['user_id'] = get_current_user_id();
 			$preparedData['date_created'] = time();
@@ -164,6 +165,17 @@ class ZaiviaListings {
 		return $listing_id;
 	}
 
+
+	public static function updateImagesData($listing_id, $data){
+        global $wpdb;
+        $files_tablename = $wpdb->prefix . self::$files_tablename;
+        foreach ($data['prop_img'] as $el){
+            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        }
+        foreach ($data['prop_blue'] as $el){
+            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        }
+    }
 
 	public static function updateRentData($listing_id, $data){
 		global $wpdb;
@@ -327,11 +339,24 @@ class ZaiviaListings {
 		}
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
-
+        foreach ($results as $key=>$item){
+            $results[$key]['url'] = wp_get_attachment_url($item['media_id']);
+        }
 		return $results;
 	}
+	public static function getListingFile($id) {
+		global $wpdb;
 
-	public static function addListingFile($listingId, $fileData, $type) {
+		$files_tablename = $wpdb->prefix . self::$files_tablename;
+
+		$sql = "SELECT * from $files_tablename where file_id = ".(int)$id;
+
+		$results = $wpdb->get_results( $sql,ARRAY_A);
+
+		return count($results)?$results[0]:[];
+	}
+
+	public static function addListingFile($listingId, $type) {
 		global $wpdb;
 
 		if ( ! function_exists( 'wp_handle_upload' ) )
@@ -339,18 +364,18 @@ class ZaiviaListings {
 
 		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
-		$results = wp_handle_upload($fileData, array('test_form' => FALSE));
+		$media_id = media_handle_upload(0,0);
 
-		if ( $results && empty($results['error']) ) {
-			$filename = basename($results['file']);
-			$fileurl = $results['url'];
-			$filepath = $results['file'];
+		if ( !is_wp_error($media_id) ) {
+            $filepath = get_attached_file($media_id);
+			$filename = basename($filepath);
+			$fileurl = wp_get_attachment_url($media_id);
+
 			$data = [
 				'listing_id' => $listingId,
-				'file_name' => $filename,
-				'file_path'=>$filepath,
-				'file_url'=>$fileurl,
-				'file_type' => $type
+				'media_id' => $media_id,
+				'file_type' => $type,
+				'confirmed' => 0
 			];
 
 			$results = $wpdb->insert($files_tablename, $data);
@@ -359,7 +384,9 @@ class ZaiviaListings {
 			} else {
 				$results['error'] = "DB error;";
 			}
-		}
+		} else {
+            $results['error'] = "WP Media error;";
+        }
 
 		return $results;
 	}

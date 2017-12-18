@@ -56,6 +56,8 @@
         'rent_private_entry':null,
         'rent_onsite':null,
         'rent_utilities':[],
+        'prop_img':[],
+        'prop_blue':[],
     };
 
     $(document).ready(function($) {
@@ -105,6 +107,24 @@ console.log(data);
                     $("#file-errors").text('ERRORS: ' + textStatus);
                 }
             });
+        });
+        $('#prop_img').orakuploader({
+            orakuploader : true,
+            orakuploader_type: 1,
+            orakuploader_path : amData.template_url+'/includes/js/orakuploader/',
+            orakuploader_url : amData.ajaxurl,
+            orakuploader_use_sortable : true,
+            orakuploader_use_dragndrop : true,
+            orakuploader_thumbnail_size : 150
+        });
+        $('#prop_blue').orakuploader({
+            orakuploader : true,
+            orakuploader_type: 0,
+            orakuploader_path : amData.template_url+'/includes/js/orakuploader/',
+            orakuploader_url : amData.ajaxurl,
+            orakuploader_use_sortable : true,
+            orakuploader_use_dragndrop : true,
+            orakuploader_thumbnail_size : 150
         });
 
 
@@ -316,6 +336,7 @@ console.log(data);
                     $(this).find(".save-item").each(function(){
                         if($(this).attr("type") === 'checkbox' && $(this).is(":checked") ) collect.push($(this).val());
                         if($(this).attr("type") === 'text' && $(this).val() ) collect.push($(this).val());
+                        if($(this).attr("type") === 'hidden' && $(this).val() ) collect.push($(this).val());
                     });
 
                     if(collect.length) {
