@@ -20,13 +20,11 @@ get_header(); ?>
 <?php else: ?>
 
     <?php
-
         $listing = $listingId = null;
         if(isset($_GET['edit-listing'])) {
             $listingId = (int)$_GET['edit-listing'];
 	        $listing = ZaiviaListings::getUserListings(get_current_user_id(), $listingId);
         }
-
     ?>
 
     <div class="sub-nav">

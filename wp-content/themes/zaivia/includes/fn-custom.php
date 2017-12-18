@@ -6,11 +6,13 @@
 	add_action( 'wp_ajax_uploadLisingFile', 'uploadLisingFile' );
 	add_action( 'wp_ajax_nopriv_uploadLisingFile', 'uploadLisingFile' );
 	function uploadLisingFile() {
+
 		$list = [];
 		$listingId = isset($_POST['listing_id']) ? (int)$_POST['listing_id'] : 0;
+		$fileType = isset($_POST['file_type']) ? (int)$_POST['file_type'] : 0;
+
 		if($listingId && $_FILES) {
-			$file = (isset($_FILES[0])) ? $_FILES[0] : $_FILES;
-			$list = ZaiviaListings::addListingFile($listingId, $file, ZaiviaListings::$file_rent);
+			$list = ZaiviaListings::addListingFile($listingId, '0', $fileType);
 		}
 
         echo json_encode($list);
@@ -29,7 +31,7 @@
 		if(isset($_POST['zip'])) {
 			$pattern = "/^([a-zA-Z]\d[a-zA-Z])\ {0,1}(\d[a-zA-Z]\d)$/";
 			foreach($_POST['zip'] as $fName=>$fVal){
-				if(!preg_match($pattern, strtoupper(trim($fVal)))) {
+				if($fVal && !preg_match($pattern, strtoupper(trim($fVal)))) {
 					$errors[] = $fName;
 				}
 			}

@@ -5,7 +5,8 @@ class ZaiviaListings {
 	public static $features_tablename   = "listing_features";
 	public static $files_tablename      = "listing_file";   /* type 1-image, 2-blueprint, 3-rent, 4-profile    */
 	public static $openhouse_tablename  = "listing_openhouse";
-	public static $rent_tablename  = "listing_rent";
+	public static $rent_tablename       = "listing_rent";
+	public static $contact_tablename    = "listing_contact";
 
 	public static $for_rent = 0;
 	public static $for_sale = 1;
@@ -146,6 +147,7 @@ class ZaiviaListings {
 
 			self::updateOpenhouse( $listing_id, (isset($data['openhouse'])?$data['openhouse']:null) );
 			self::updateRentData( $listing_id, $data );
+			self::updateContactData( $listing_id, $data );
 		} else {
 			$preparedData['user_id'] = get_current_user_id();
 			$preparedData['date_created'] = time();
@@ -208,6 +210,67 @@ class ZaiviaListings {
 
 
 		if((int)$data['rent_file']) {
+			$files = self::getListingFiles($listing_id, self::$file_rent, 1, false);
+			foreach($files as $file) {
+				self::deleteListingFile($file);
+			}
+
+			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['rent_file']]);
+
+			$files = self::getListingFiles($listing_id, self::$file_rent, 0, false);
+			foreach($files as $file) {
+				self::deleteListingFile($file);
+			}
+		} else {
+			$files = self::getListingFiles($listing_id, self::$file_rent, null, false);
+			foreach($files as $file) {
+				self::deleteListingFile($file);
+			}
+		}
+
+		return true;
+	}
+
+	public static function updateContactData($listing_id, $data){
+		global $wpdb;
+
+		$contact_tablename = $wpdb->prefix . self::$contact_tablename;
+		$files_tablename = $wpdb->prefix . self::$files_tablename;
+
+		$rent = [
+			'contact_name' => $data['contact_name'],
+			'contact_name_show' => $data['contact_name_show'],
+			'contact_email' => $data['contact_email'],
+			'contact_phone1' => $data['contact_phone1'],
+			'contact_phone1_type' => $data['contact_phone1_type'],
+			'contact_phone1_show' => $data['contact_phone1_show'],
+			'contact_phone2' => $data['contact_phone2'],
+			'contact_phone2_type' => $data['contact_phone2_type'],
+			'contact_phone2_show' => $data['contact_phone2_show'],
+			'contact_title' => $data['contact_title'],
+			'contact_company' => $data['contact_company'],
+			'contact_address' => $data['contact_address'],
+			'contact_city' => $data['contact_city'],
+			'contact_zip' => $data['contact_zip'],
+		];
+		$rentFormat = [
+			'%s','%d','%s','%s','%d','%s','%s','%d','%s','%s','%s','%s','%s'
+		];
+
+		update_user_meta(get_current_user_id(), "listing_contact", $rent);
+
+		$sql = "SELECT * from $contact_tablename where listing_id = ".(int)$listing_id;
+		$results = $wpdb->get_results( $sql,ARRAY_A);
+		if(count($results)) {
+			$wpdb->update($contact_tablename, $rent, ['listing_id' => $listing_id], $rentFormat);
+		} else {
+			$rent['listing_id'] = $listing_id;
+			$rentFormat[] = '%d';
+			$wpdb->insert($contact_tablename, $rent, $rentFormat);
+		}
+
+/*
+		if((int)$data['rent_file']) {
 			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['rent_file']]);
 			$files = self::getListingFiles($listing_id, self::$file_rent, 0);
 
@@ -219,10 +282,11 @@ class ZaiviaListings {
 			foreach($files as $file) {
 				self::deleteListingFile($file);
 			}
-		}
+		}*/
 
 		return true;
 	}
+
 
 	public static function updateOpenhouse($listing_id, $openhouse){
 		global $wpdb;
@@ -313,7 +377,7 @@ class ZaiviaListings {
 		return $results;
 	}
 
-	public static function getListingFiles($listingId, $type = null, $confirmed = 1) {
+	public static function getListingFiles($listingId, $type = null, $confirmed = 1, $single = true) {
 		global $wpdb;
 
 		$files_tablename = $wpdb->prefix . self::$files_tablename;
@@ -329,36 +393,49 @@ class ZaiviaListings {
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 
+		foreach($results as $key=>$val) {
+			$results[$key]['file_url'] = get_attached_file( $val['media_id']) ;
+			$results[$key]['file_name'] = basename($results['key']['file_url']);
+		}
+
+		if($single && $results && isset($results[0])) {
+			$results = array_shift($results);
+		}
 		return $results;
 	}
 
-	public static function addListingFile($listingId, $fileData, $type) {
+	public static function addListingFile($listingId, $fileKey, $type) {
 		global $wpdb;
 
-		if ( ! function_exists( 'wp_handle_upload' ) )
+
+
+		if ( ! function_exists( 'media_handle_upload' ) ) {
+			require_once( ABSPATH . 'wp-admin/includes/image.php' );
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
+			require_once( ABSPATH . 'wp-admin/includes/media.php' );
+		}
 
 		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
-		$results = wp_handle_upload($fileData, array('test_form' => FALSE));
+		$mediaId = media_handle_upload($fileKey, 0);
 
-		if ( $results && empty($results['error']) ) {
-			$filename = basename($results['file']);
-			$fileurl = $results['url'];
-			$filepath = $results['file'];
+		if(is_wp_error($mediaId)) {
+			$results['error'] = "Media creation error";
+		} else {
+			$filename = basename(get_attached_file( $mediaId));
+
 			$data = [
 				'listing_id' => $listingId,
-				'file_name' => $filename,
-				'file_path'=>$filepath,
-				'file_url'=>$fileurl,
+				'media_id' => $mediaId,
 				'file_type' => $type
 			];
 
 			$results = $wpdb->insert($files_tablename, $data);
+
 			if($results) {
-				$results = ['id' => $wpdb->insert_id, 'name' => $filename, 'url' => $fileurl, 'path' => $filepath];
+				$results = ['id' => $wpdb->insert_id, 'name' => $filename];
 			} else {
-				$results['error'] = "DB error;";
+				$results['error'] = "DB error";
 			}
 		}
 
@@ -366,12 +443,7 @@ class ZaiviaListings {
 	}
 
 	public static function deleteListingFile($fileData) {
-		global $wpdb;
-
-		$files_tablename = $wpdb->prefix . self::$files_tablename;
-
-		unlink($fileData['file_path']);
-		$wpdb->delete( $files_tablename, ['file_id'=>(int)$fileData['file_id']]);
+		wp_delete_post($fileData['media_id']);
 	}
 
 
@@ -402,9 +474,26 @@ class ZaiviaListings {
         if(count($results)){
             $results[0]['rent_utilities'] = explode(';',$results[0]['rent_utilities']);
             $results[0]['rent_date'] = date('m/d/Y',strtotime($results[0]['rent_date']));
+	        $results[0]['rent_file'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent);
             return $results[0];
         }
         return [];
+	}
+
+	public static function getListingContact($listingId) {
+		global $wpdb;
+
+		$contact_tablename = $wpdb->prefix . self::$contact_tablename;
+
+		$sql = "SELECT * from $contact_tablename where listing_id = ".(int)$listingId;
+
+		$results = $wpdb->get_results( $sql,ARRAY_A);
+		if(count($results)){
+			$results[0]['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
+			$results[0]['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
+			return $results[0];
+		}
+		return [];
 	}
 }
 

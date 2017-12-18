@@ -60,7 +60,18 @@
         'contact_name':null,
         'contact_name_show':null,
         'contact_email':null,
-        'contact_title':null,
+        'contact_phone1':null,
+        'contact_phone1_type':null,
+        'contact_phone1_show':null,
+        'contact_phone2':null,
+        'contact_phone2_type':null,
+        'contact_phone2_show':null,
+        'contact_company':null,
+        'contact_address':null,
+        'contact_city':null,
+        'contact_zip':null,
+        'contact_profile':null,
+        'contact_logo':null
     };
 
     $(document).ready(function($) {
@@ -68,25 +79,42 @@
 
         refreshRentSaleFields();
         $("#sale_rent").change(refreshRentSaleFields);
+
+        refreshSaleByFields();
+        $("#sale_by").change(refreshSaleByFields);
+
         $(".status").change(function(){
             $("#status").val($(this).val());
         });
 
-        $("#rent_file_input").change(function(event){
-            var form = new FormData();
+        $(".listing_upload").change(function(event){
+            var form = new FormData(),
+                $this = $(this),
+                error = false;
+
+
+            if(!event.target.files.length) return false;
 
             $.each(event.target.files, function(key, value){
-                var ext = value.name.split('.').pop().toLowerCase();
-                if($.inArray(ext, ['doc','docx','pdf']) == -1) {
-                    $("#file-errors").text('Invalid file type!');
-                    return false;
+                var ext = value.name.split('.').pop().toLowerCase(),
+                    allowed = ['jpg','png'];
+
+                if($this.attr("id") === "rent_file_input") {
+                    allowed = ['doc','docx','pdf'];
+                }
+                if($.inArray(ext, allowed) === -1) {
+                    $("#"+$this.attr("id")+"_file-errors").text('Invalid file type!');
+                    error = true;
                 } else {
                     form.append(key, value);
                 }
             });
 
+            if(error) return false;
+
             form.append('action', 'uploadLisingFile');
             form.append('listing_id', $("#listing_id").val());
+            form.append('file_type', $(this).data("type"));
 
             $.ajax({
                 url: amData.ajaxurl,
@@ -99,18 +127,19 @@
                 success: function(data, textStatus, jqXHR) {
 
                     if(typeof data['error'] === 'undefined') {
-                        $("#rent_file").val(data['id']);
-                        $("#rent_file_name").text(data['name']);
-                        $("#file-errors").text("");
+                        $("#"+$this.data("file")).val(data['id']);
+                        $("#"+$this.data("filename")).text(data['name']);
+                        $("#"+$this.attr("id")+"_file-errors").text("").hide();
                     } else {
-                        $("#file-errors").text('ERRORS: ' + data['error']);
+                        $("#"+$this.attr("id")+"_file-errors").text('ERRORS: ' + data['error']);
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    $("#file-errors").text('ERRORS: ' + textStatus);
+                    $("#"+$this.attr("id")+"_file-errors").text('ERRORS: ' + textStatus);
                 }
             });
         });
+
 
 
         if ($("#map").length) {
@@ -294,7 +323,7 @@
 
 
         function initdatepicker($obj) {
-            $obj.datepicker({ dateFormat: 'mm/dd/yy', currentText: "" });
+            $obj.datepicker({ dateFormat: 'mm/dd/yy', currentText: "", minDate: new Date() });
         }
 
         function updateListingObj() {
@@ -335,7 +364,7 @@
 
                 } else {
                     if($(this).attr("id") in listingData) {
-                        listingData[$(this).attr("id")] = ($(this).attr('type')==='checkbox')?($(this).prop('checked')?1:0):$(this).val();
+                        listingData[$(this).attr("id")] = ( ($(this).attr('type')==='checkbox') ? ($(this).prop('checked')?1:0) : $(this).val() );
                     } else {
                         alert("listing key not found " + $(this).attr("id"));
                     }
@@ -375,8 +404,6 @@
                 $item.removeClass("wrapped").addClass("unwrapped");
             });
         } else {
-
-
             $(".unwrapped.wrap_"+key).each(function(){
                 var $item = $(this),
                     $startItem = $item;
@@ -397,11 +424,16 @@
                 $startItem.removeClass("unwrapped").addClass("wrapped");
             });
         }
-
-
     }
 
+    function refreshSaleByFields(){
+        var key = parseInt($("#sale_by").val(), 10);
 
+        if(key !== 1) key = 0;
+
+        $(".saleby_0, .saleby_1").hide();
+        $(".saleby_"+key).show();
+    }
 
     function validateStep($form, callback) {
         var $fieldsReq = $form.find(".required"),

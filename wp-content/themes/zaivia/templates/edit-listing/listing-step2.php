@@ -223,7 +223,7 @@
 <div class="acc-item">
 	<h3 class="toggle"><?php _e('Other Features', 'am') ?></h3>
 	<div class="acc-cc">
-		<p class="intro"><?php _e('Click on all of the items that apply', 'am') ?></p>
+		<p class="intro"><?php echo get_field("click_to_select")?></p>
 		<div class="row">
 			<div class="col-sm-6 col-lg-8">
 				<div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -269,7 +269,7 @@
 <div class="acc-item">
     <h3 class="toggle"><?php _e('Appliances Included', 'am') ?></h3>
     <div class="acc-cc">
-        <p class="intro"><?php _e('Click on all of the items that apply', 'am') ?></p>
+        <p class="intro"><?php echo get_field("click_to_select")?></p>
         <div class="row">
             <div class="col-sm-6 col-lg-8">
                 <div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -309,7 +309,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 <div class="acc-item">
     <h3 class="toggle"><?php _e('Outdoor Amenities', 'am') ?></h3>
     <div class="acc-cc">
-        <p class="intro"><?php _e('Click on all of the items that apply', 'am') ?></p>
+        <p class="intro"><?php echo get_field("click_to_select")?></p>
         <div class="row">
             <div class="col-sm-6 col-lg-8">
                 <div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -346,11 +346,52 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
         </div>
     </div>
 </div>
+
+
+<?php
+    $items = get_field('room_features', 'option');
+    $features = $listingId ? unserialize($listing['room_features']): [];
+?>
+<div class="acc-item">
+	<h3 class="toggle"><?php _e('Room Features', 'am') ?></h3>
+	<div class="acc-cc">
+		<p class="intro2"><?php echo get_field("list_up_to_three")?></p>
+        <?php foreach($items as $item): ?>
+		<fieldset>
+			<div class="row tosave group" data-key="room_features" data-subkey="<?php echo $item['key']?>" >
+				<div class="col-12">
+					<label><?php echo $item['name']?></label>
+				</div>
+                <?php for ($i=0;$i<3;$i++):?>
+                    <div class="col-sm-6 col-md-4">
+                        <input type="text" name="<?php echo $item['key']?>[]" value="<?php echo isset($features[$item['key']][$i])?$features[$item['key']][$i]:''?>" class="save-item">
+                    </div>
+                <?php endfor;?>
+			</div>
+		</fieldset>
+        <?php endforeach; ?>
+	</div>
+</div>
+
+<div class="acc-item">
+	<h3 class="toggle"><?php _e('Description', 'am') ?></h3>
+	<div class="acc-cc">
+		<fieldset>
+			<div class="row ">
+				<div class="col-12">
+					<label><?php echo get_field("description")?></label>
+				</div>
+				<div class="col-sm-12 col-lg-8">
+					<textarea class="big" name="description" id="description" class="tosave"><?php echo $listing?$listing['description']:''; ?></textarea>
+				</div>
+			</div>
+		</fieldset>
+	</div>
+</div>
+
 <?php
 $items = get_field('rent_utilities', 'option');
 $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
-$rent_file = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent) : [];
-$rent_file = isset($rent_file[0])?$rent_file[0]:[];
 ?>
 <div class="acc-item salerent_<?php echo ZaiviaListings::$for_rent?>">
     <h3 class="toggle"><?php _e('Rental Options', 'am') ?></h3>
@@ -399,12 +440,14 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                     </select>
                 </fieldset>
                 <fieldset class="mb-30">
-                    <input type="hidden" id="rent_file" class="tosave" value="<?php echo $rent_file?$rent_file['file_id']:''; ?>">
+                    <input type="hidden" name="rent_file" id="rent_file" class="tosave" value="<?php echo $rent['rent_file']?$rent['rent_file']['file_id']:''; ?>">
                     <label><?php _e('Rental Application Upload', 'am') ?></label>
                     <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('DOC, DOCX, PDF files accepted', 'am') ?></em></p>
-                    <p id="rent_file_name"><?php echo ($rent_file && isset($rent_file['file_name'])) ? basename($rent_file['file_name']) : ''; ?></p>
-                    <label class="btn btn-secondary"><?php _e('Upload', 'am') ?><input type="file" id="rent_file_input"></label>
-                    <p id="file-errors" class="error"></p>
+                    <p id="rent_file_name"><?php echo ($rent['rent_file'] && isset($rent['rent_file']['file_name'])) ? basename($rent['rent_file']['file_name']) : ''; ?></p>
+                    <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
+                        <input type="file" id="rent_file_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_rent?>"  data-file="rent_file" data-filename="rent_file_name">
+                    </label>
+                    <p id="rent_file_input_file-errors" class="error"></p>
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
@@ -415,7 +458,7 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                                 <span class="wpcf7-list-item">
                                     <label>
                                         <input type="checkbox"<?php echo $rent['rent_electrified_parking']?' checked':''; ?> id="rent_electrified_parking" class="tosave" value="1">&nbsp;
-                                        <span class="wpcf7-list-item-label">Electrified Parking</span>
+                                        <span class="wpcf7-list-item-label"><?php _e('Electrified Parking', 'am') ?></span>
                                     </label>
                                 </span>
                             </span>
@@ -427,7 +470,7 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                                 <span class="wpcf7-list-item">
                                     <label>
                                         <input type="checkbox"<?php echo $rent['rent_secured_entry']?' checked':''; ?> id="rent_secured_entry" class="tosave" value="1">&nbsp;
-                                        <span class="wpcf7-list-item-label">Secured Entry</span>
+                                        <span class="wpcf7-list-item-label"><?php _e('Secured Entry', 'am') ?></span>
                                     </label>
                                 </span>
                             </span>
@@ -439,7 +482,7 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                                 <span class="wpcf7-list-item">
                                     <label>
                                         <input type="checkbox"<?php echo $rent['rent_private_entry']?' checked':''; ?> id="rent_private_entry" class="tosave" value="1">&nbsp;
-                                        <span class="wpcf7-list-item-label">Private Entry</span>
+                                        <span class="wpcf7-list-item-label"><?php _e('Private Entry', 'am') ?></span>
                                     </label>
                                 </span>
                             </span>
@@ -451,7 +494,7 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                                 <span class="wpcf7-list-item">
                                     <label>
                                         <input type="checkbox"<?php echo $rent['rent_onsite']?' checked':''; ?> id="rent_onsite" class="tosave" value="1">&nbsp;
-                                        <span class="wpcf7-list-item-label">Onsite Management</span>
+                                        <span class="wpcf7-list-item-label"><?php _e('Onsite Management', 'am') ?></span>
                                     </label>
                                 </span>
                             </span>
@@ -460,10 +503,10 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
-                <p class="intro">Utilities Included</p>
+                <p class="intro"><?php _e('Utilities Included', 'am') ?></p>
                 <fieldset class="checkbox tosave group" data-key="rent_utilities">
-                    <?php foreach($items as $item):?>
-                    <p>
+					<?php foreach($items as $item):?>
+                        <p>
                         <span class="wpcf7-form-control-wrap">
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
@@ -474,59 +517,18 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
                                 </span>
                             </span>
                         </span>
-                    </p>
-                    <?php endforeach; ?>
+                        </p>
+					<?php endforeach; ?>
                 </fieldset>
             </div>
         </div>
     </div>
 </div>
 
-<?php
-    $items = get_field('room_features', 'option');
-    $features = $listingId ? unserialize($listing['room_features']): [];
-?>
-<div class="acc-item">
-	<h3 class="toggle"><?php _e('Room Features', 'am') ?></h3>
-	<div class="acc-cc">
-		<p class="intro2"><?php _e('List up to three items for each of the following areas', 'am') ?></p>
-        <?php foreach($items as $item): ?>
-		<fieldset>
-			<div class="row tosave group" data-key="room_features" data-subkey="<?php echo $item['key']?>" >
-				<div class="col-12">
-					<label><?php echo $item['name']?></label>
-				</div>
-                <?php for ($i=0;$i<3;$i++):?>
-                    <div class="col-sm-6 col-md-4">
-                        <input type="text" name="<?php echo $item['key']?>[]" value="<?php echo isset($features[$item['key']][$i])?$features[$item['key']][$i]:''?>" class="save-item">
-                    </div>
-                <?php endfor;?>
-			</div>
-		</fieldset>
-        <?php endforeach; ?>
-	</div>
-</div>
-
-<div class="acc-item">
-	<h3 class="toggle"><?php _e('Description', 'am') ?></h3>
-	<div class="acc-cc">
-		<fieldset>
-			<div class="row ">
-				<div class="col-12">
-					<label><?php _e('Provide a written description of the property', 'am') ?></label>
-				</div>
-				<div class="col-sm-12 col-lg-8">
-					<textarea class="big" name="description" id="description" class="tosave"><?php echo $listing?$listing['description']:''; ?></textarea>
-				</div>
-			</div>
-		</fieldset>
-	</div>
-</div>
-
 <div class="acc-item salerent_<?php echo ZaiviaListings::$for_sale?> tosave array" id="openhouse">
 	<h3 class="toggle"><?php _e('Open Houses', 'am') ?></h3>
 	<div class="acc-cc">
-		<p class="intro3"><?php _e('Planning an Open House? Why not add this to your listing! If you are not sure of open dates now, you can always add them later through My Zaivia<br>Provide open house information', 'am') ?></p>
+		<p class="intro3"><?php echo get_field("openhouse")?></p>
 
         <?php $open_houses = $listingId ? ZaiviaListings::getListingOpenhouse($listingId) : []; ?>
         <?php foreach($open_houses as $open_house):?>
@@ -651,7 +653,7 @@ $rent_file = isset($rent_file[0])?$rent_file[0]:[];
         </div>
 
         <div class="add-row">
-			<a href="#" id="add-openhouse"><i class="fa fa-plus-circle" aria-hidden="true"></i>Add Another Date</a>
+			<a href="#" id="add-openhouse"><i class="fa fa-plus-circle" aria-hidden="true"></i><?php _e('Add Another Date', 'am') ?></a>
 		</div>
 	</div>
 </div>

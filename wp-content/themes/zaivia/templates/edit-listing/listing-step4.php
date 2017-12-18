@@ -1,25 +1,22 @@
 <?php
 
-$contact = $listingId ? ZaiviaListings::getListingContact($listingId) : [];
-$contact_profile = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo) : [];
-$contact_profile = isset($contact_profile[0])?$contact_profile[0]:[];
-$contact_logo = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile) : [];
-$contact_logo = isset($contact_logo[0])?$contact_logo[0]:[];
+$contact = $listingId ? ZaiviaListings::getListingContact($listingId) : get_user_meta(get_current_user_id(), "listing_contact");
+
 ?>
 
 <div class="styled-form">
 	<div class="acc-item bb">
 		<h3>Price</h3>
-		<p class="intro"><?php _e('Who can be contacted about this property? Please ensure the following information is correct and complete', 'am') ?></p>
+		<p class="intro"><?php echo get_field("who_can_be_contacted")?></p>
 		<div class="row">
 			<div class="col-lg-8">
-				<fieldset>
+				<fieldset class="saleby_0">
 					<div class="row">
 						<div class="col-12 col-lg-3">
 							<label><?php _e('Title', 'am') ?></label>
 						</div>
 						<div class="col-sm-12 col-lg-6">
-							<input type="text" name="contact_title" id="contact_title" value="" class="tosave">
+							<input type="text" name="contact_title" id="contact_title" value="<?php echo $contact?$contact['contact_title']:''; ?>" class="tosave">
 						</div>
 					</div>
 				</fieldset>
@@ -29,7 +26,7 @@ $contact_logo = isset($contact_logo[0])?$contact_logo[0]:[];
 							<label><?php _e('Name', 'am') ?>*</label>
 						</div>
 						<div class="col-sm-12 col-lg-6">
-							<input type="text" name="contact_name" id="contact_name" class="required tosave">
+							<input type="text" name="contact_name" id="contact_name" value="<?php echo $contact?$contact['contact_name']:''; ?>" class="required tosave">
 						</div>
 						<div class="col-sm-12 col-lg-3 pt-15">
 							<p>
@@ -37,7 +34,7 @@ $contact_logo = isset($contact_logo[0])?$contact_logo[0]:[];
 									<span class="wpcf7-form-control wpcf7-checkbox">
 										<span class="wpcf7-list-item first">
 											<label>
-												<input type="checkbox" name="contact_name_show" id="contact_name_show" value="1" class="tosave">&nbsp;
+												<input type="checkbox" name="contact_name_show" id="contact_name_show" value="1" class="tosave" <?php echo ($contact && $contact['contact_name_show']) ? "checked" : ""; ?>>&nbsp;
 												<span class="wpcf7-list-item-label"><?php _e('Include in listing', 'am') ?></span>
 											</label>
 										</span>
@@ -47,45 +44,148 @@ $contact_logo = isset($contact_logo[0])?$contact_logo[0]:[];
 						</div>
 					</div>
 				</fieldset>
+
+                <fieldset class="saleby_0">
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('Company Name', 'am') ?></label>
+                        </div>
+                        <div class="col-sm-12 col-lg-6">
+                            <input type="text" name="contact_company" id="contact_company" value="<?php echo $contact?$contact['contact_company']:''; ?>" class="tosave">
+                        </div>
+                    </div>
+                </fieldset>
+
 				<fieldset>
 					<div class="row">
 						<div class="col-12 col-lg-3">
 							<label><?php _e('Email', 'am') ?>*</label>
 						</div>
 						<div class="col-sm-12 col-lg-6">
-							<input type="text" name="contact_email" id="contact_email" class="required email tosave">
-						</div>
-					</div>
-				</fieldset>
-				<fieldset>
-					<div class="row">
-						<div class="col-12 col-lg-3">
-							<label><?php _e('Phone Number', 'am') ?>*</label>
-						</div>
-						<div class="col-sm-6 col-lg-3">
-							<input type="text" name="contact_phone1" is="contact_phone1" class="required tosave">
-						</div>
-						<div class="col-sm-6 col-lg-3">
-							<select name="contact_phone1" is="contact_phone1" class="required tosave">
-								<option>Select</option>
-							</select>
-						</div>
-						<div class="col-sm-12 col-lg-3 pt-15">
-							<p>
-								<span class="wpcf7-form-control-wrap checkbox-399">
-									<span class="wpcf7-form-control wpcf7-checkbox">
-										<span class="wpcf7-list-item first">
-											<label><input type="checkbox" name="checkbox-399[]" value="1">&nbsp;<span class="wpcf7-list-item-label">Send me a copy</span></label>
-										</span>
-									</span>
-								</span>
-							</p>
+							<input type="text" name="contact_email" id="contact_email" value="<?php echo $contact?$contact['contact_email']:''; ?>" class="required email tosave">
 						</div>
 					</div>
 				</fieldset>
 
+                <fieldset>
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('Phone Number', 'am') ?>*</label>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <input type="text" name="contact_phone1" id="contact_phone1" value="<?php echo $contact?$contact['contact_phone1']:''; ?>" class="required tosave">
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <select name="contact_phone1_show" id="contact_phone1_type" class="required tosave">
+                                <option value="Cell" <?php echo ($contact && $contact['contact_phone1_show'] == "Cell") ? "selected" : ""; ?>>Cell</option>
+                                <option value="Office" <?php echo ($contact && $contact['contact_phone1_show'] == "Office") ? "selected" : ""; ?>>Office</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-12 col-lg-3 pt-15">
+                            <p>
+								<span class="wpcf7-form-control-wrap checkbox-399">
+									<span class="wpcf7-form-control wpcf7-checkbox">
+										<span class="wpcf7-list-item first">
+                                            <label>
+                                                <input type="checkbox" name="contact_phone1_show" id="contact_phone1_show" value="1" class="tosave" <?php echo ($contact && $contact['contact_phone1_show']) ? "checked" : ""; ?>>&nbsp;
+                                                <span class="wpcf7-list-item-label"><?php _e('Include in listing', 'am') ?></span>
+                                            </label>
+										</span>
+									</span>
+								</span>
+                            </p>
+                        </div>
+                    </div>
+                </fieldset>
+                <fieldset>
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('Phone Number 2', 'am') ?></label>
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <input type="text" name="contact_phone2" id="contact_phone2" class="tosave" value="<?php echo $contact?$contact['contact_phone2']:''; ?>">
+                        </div>
+                        <div class="col-sm-6 col-lg-3">
+                            <select name="contact_phone2" id="contact_phone2_type" class="tosave">
+                                <option value="Cell" <?php echo ($contact && $contact['contact_phone2_type'] == "Cell") ? "selected" : ""; ?>>Cell</option>
+                                <option value="Office" <?php echo ($contact && $contact['contact_phone2_type'] == "Office") ? "selected" : ""; ?>>Office</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-12 col-lg-3 pt-15">
+                            <p>
+								<span class="wpcf7-form-control-wrap checkbox-399">
+									<span class="wpcf7-form-control wpcf7-checkbox">
+										<span class="wpcf7-list-item first">
+                                            <label>
+                                                <input type="checkbox" name="contact_phone2_show" id="contact_phone2_show" value="1" class="tosave" <?php echo ($contact && $contact['contact_phone2_show']) ? "checked" : ""; ?>>&nbsp;
+                                                <span class="wpcf7-list-item-label"><?php _e('Include in listing', 'am') ?></span>
+                                            </label>
+										</span>
+									</span>
+								</span>
+                            </p>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="saleby_0">
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('Address', 'am') ?></label>
+                        </div>
+                        <div class="col-sm-12 col-lg-6">
+                            <input type="text" name="contact_address" id="contact_address" value="<?php echo $contact?$contact['contact_address']:''; ?>" class="tosave">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="saleby_0">
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('City', 'am') ?></label>
+                        </div>
+                        <div class="col-sm-12 col-lg-6">
+                            <input type="text" name="contact_city" id="contact_city" value="<?php echo $contact?$contact['contact_city']:''; ?>" class="tosave">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset class="saleby_0">
+                    <div class="row">
+                        <div class="col-12 col-lg-3">
+                            <label><?php _e('Postal Code', 'am') ?></label>
+                        </div>
+                        <div class="col-sm-12 col-lg-6">
+                            <input type="text" name="contact_zip" id="contact_zip" value="<?php echo $contact?$contact['contact_zip']:''; ?>" class="tosave zip">
+                        </div>
+                    </div>
+                </fieldset>
+
+
+                <fieldset class="mb-30">
+                    <input type="hidden" name="contact_profile" id="contact_profile" class="tosave" value="<?php echo $contact['contact_profile']?$contact['contact_profile']['file_id']:''; ?>">
+                    <label><?php _e('Profile Image', 'am') ?></label>
+                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('JPG, PNG files accepted', 'am') ?></em></p>
+                    <p id="contact_profile_file_name"><?php echo ($contact['contact_profile'] && isset($contact['contact_profile']['file_name'])) ? basename($contact['contact_profile']['file_name']) : ''; ?></p>
+                    <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
+                        <input type="file" id="contact_profile_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_profile?>" data-file="contact_profile" data-filename="contact_profile_file_name" />
+                    </label>
+                    <p id="contact_profile_input_file-errors" class="error"></p>
+                </fieldset>
+
+                <fieldset class="mb-30">
+                    <input type="hidden" name="contact_logo" id="contact_logo" class="tosave" value="<?php echo $contact['contact_logo']?$contact['contact_logo']['file_id']:''; ?>">
+                    <label><?php _e('Company Logo', 'am') ?></label>
+                    <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('JPG, PNG files accepted', 'am') ?></em></p>
+                    <p id="rent_file_name"><?php echo ($contact['contact_logo'] && isset($contact['contact_logo']['file_name'])) ? basename($contact['contact_logo']['file_name']) : ''; ?></p>
+                    <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
+                        <input type="file" id="contact_logo_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_logo?>"  data-file="contact_profile" data-filename="contact_profile_file_name">
+                    </label>
+                    <p id="contact_logo_input_file-errors" class="error"></p>
+                </fieldset>
+
 				<div class="mb-30">
-					<p class="intro"><?php _e('Note this contact information does not change any other contact information on other listings / contact cards.', 'am') ?></p>
+					<p class="intro"><?php echo get_field("contact_note")?></p>
 				</div>
 			</div>
 		</div>
