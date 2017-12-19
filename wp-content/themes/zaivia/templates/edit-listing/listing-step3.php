@@ -1,6 +1,6 @@
 <?php
-$img_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_image) : [];
-$blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_blueprint) : [];
+$img_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_image,1,false) : [];
+$blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_blueprint,1,false) : [];
 ?>
 <div class="acc-item bb">
     <h3><?php _e('Property Images', 'am') ?></h3>
@@ -11,9 +11,9 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
         <div class="upload-area" id="prop_imgDDArea">
             <div id="prop_img" class="tosave group" data-key="prop_img">
                 <?php foreach($img_files as $item):?>
-                <div class="multibox file" style="cursor: move;" id="<?php echo $item['file_id'] ?>" filename="<?php echo $item['url'] ?>">
+                <div class="multibox file" style="cursor: move;" id="<?php echo $item['file_id'] ?>" filename="<?php echo $item['file_url'] ?>">
                     <div class="picture_delete"></div>
-                    <img src="<?php echo $item['url'] ?>" alt="" class="picture_uploaded">
+                    <img src="<?php echo $item['thumb'] ?>" alt="" class="picture_uploaded">
                     <input type="hidden" class="save-item" value="<?php echo $item['file_id'] ?>" name="prop_img[]">
                 </div>
                 <?php endforeach; ?>
@@ -30,9 +30,9 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
         <div class="upload-area" id="prop_blueDDArea">
             <div id="prop_blue" class="tosave group" data-key="prop_blue">
                 <?php foreach($blueprint_files as $item):?>
-                    <div class="multibox file" style="cursor: move;" id="<?php echo $item['file_id'] ?>" filename="<?php echo $item['url'] ?>">
+                    <div class="multibox file" style="cursor: move;" id="<?php echo $item['file_id'] ?>" filename="<?php echo $item['file_url'] ?>">
                         <div class="picture_delete"></div>
-                        <img src="<?php echo $item['url'] ?>" alt="" class="picture_uploaded">
+                        <img src="<?php echo $item['thumb'] ?>" alt="" class="picture_uploaded">
                         <input type="hidden" class="save-item" value="<?php echo $item['file_id'] ?>" name="prop_img[]">
                     </div>
                 <?php endforeach; ?>

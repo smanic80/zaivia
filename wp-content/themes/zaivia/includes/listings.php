@@ -191,35 +191,41 @@ class ZaiviaListings {
 			$wpdb->delete( $files_tablename, ['listing_id'=>$listing_id, "file_type"=>self::$file_rent], ["%d"]);
 			return true;
 		}
+        if($data['rent_date'] or $data['rent_deposit'] or
+            intval($data['rent_furnishings'].$data['rent_pets'].$data['rent_smoking'].
+                $data['rent_laundry'].$data['rent_electrified_parking'].$data['rent_secured_entry'].
+                $data['rent_private_entry'].$data['rent_onsite']
+            ) or $data['rent_utilities']
+        ) {
+            $rent = [
+                'rent_date' => $data['rent_date'] ? date('Y-m-d', strtotime($data['rent_date'])) : '',
+                'rent_deposit' => $data['rent_deposit'],
+                'rent_furnishings' => $data['rent_furnishings'],
+                'rent_pets' => $data['rent_pets'],
+                'rent_smoking' => $data['rent_smoking'],
+                'rent_laundry' => $data['rent_laundry'],
+                'rent_electrified_parking' => $data['rent_electrified_parking'],
+                'rent_secured_entry' => $data['rent_secured_entry'],
+                'rent_private_entry' => $data['rent_private_entry'],
+                'rent_onsite' => $data['rent_onsite'],
+                'rent_utilities' => implode(';', $data['rent_utilities'])
+            ];
+            $rentFormat = [
+                '%s', '%s', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%s'
+            ];
 
-		$rent = [
-			'rent_date' => $data['rent_date']?date('Y-m-d',strtotime($data['rent_date'])):'',
-			'rent_deposit' => $data['rent_deposit'],
-			'rent_furnishings' => $data['rent_furnishings'],
-			'rent_pets' => $data['rent_pets'],
-			'rent_smoking' => $data['rent_smoking'],
-			'rent_laundry' => $data['rent_laundry'],
-			'rent_electrified_parking' => $data['rent_electrified_parking'],
-			'rent_secured_entry' => $data['rent_secured_entry'],
-			'rent_private_entry' => $data['rent_private_entry'],
-			'rent_onsite' => $data['rent_onsite'],
-			'rent_utilities' => implode(';',$data['rent_utilities'])
-		];
-		$rentFormat = [
-			'%s','%s','%d','%d','%d','%d','%d','%d','%d','%d', '%s'
-		];
 
+            $sql = "SELECT * from $rent_tablename where listing_id = " . (int)$listing_id;
+            $results = $wpdb->get_results($sql, ARRAY_A);
 
-		$sql = "SELECT * from $rent_tablename where listing_id = ".(int)$listing_id;
-		$results = $wpdb->get_results( $sql,ARRAY_A);
-		if(count($results)) {
-			$wpdb->update($rent_tablename, $rent, ['listing_id' => $listing_id], $rentFormat);
-		} else {
-			$rent['listing_id'] = $listing_id;
-			$rentFormat[] = '%d';
-			$wpdb->insert($rent_tablename, $rent, $rentFormat);
-		}
-
+            if (count($results)) {
+                $wpdb->update($rent_tablename, $rent, ['listing_id' => $listing_id], $rentFormat);
+            } else {
+                $rent['listing_id'] = $listing_id;
+                $rentFormat[] = '%d';
+                $wpdb->insert($rent_tablename, $rent, $rentFormat);
+            }
+        }
 
 		if((int)$data['rent_file']) {
 			$files = self::getListingFiles($listing_id, self::$file_rent, 1, false);
@@ -284,20 +290,32 @@ class ZaiviaListings {
 			$wpdb->insert($contact_tablename, $rent, $rentFormat);
 		}
 
-/*
-		if((int)$data['rent_file']) {
-			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['rent_file']]);
-			$files = self::getListingFiles($listing_id, self::$file_rent, 0);
+		if((int)$data['contact_profile']) {
+			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_profile']]);
+			$files = self::getListingFiles($listing_id, self::$file_profile, 0);
 
 			foreach($files as $file) {
 				self::deleteListingFile($file);
 			}
 		} else {
-			$files = self::getListingFiles($listing_id, self::$file_rent);
+			$files = self::getListingFiles($listing_id, self::$file_profile);
 			foreach($files as $file) {
 				self::deleteListingFile($file);
 			}
-		}*/
+		}
+		if((int)$data['contact_logo']) {
+			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_logo']]);
+			$files = self::getListingFiles($listing_id, self::$file_logo, 0);
+
+			foreach($files as $file) {
+				self::deleteListingFile($file);
+			}
+		} else {
+			$files = self::getListingFiles($listing_id, self::$file_logo);
+			foreach($files as $file) {
+				self::deleteListingFile($file);
+			}
+		}
 
 		return true;
 	}
@@ -413,10 +431,11 @@ class ZaiviaListings {
 
 		$results = $wpdb->get_results($sql, ARRAY_A);
 		foreach($results as $key=>$val) {
-			$fileUrl = get_attached_file( $val['media_id']);
+			$fileUrl = wp_get_attachment_url( $val['media_id']);
 			$results[$key]['file_url'] = $fileUrl ;
 			$results[$key]['file_name'] = basename($fileUrl);
-		}        
+			$results[$key]['thumb'] = wp_get_attachment_image_url($val['media_id'],'listing-th');
+		}
         
 		if($single && $results && isset($results[0])) {
 			$results = array_shift($results);
@@ -508,7 +527,7 @@ class ZaiviaListings {
 		$results = $wpdb->get_results( $sql,ARRAY_A);
         if(count($results)){
             $results[0]['rent_utilities'] = explode(';',$results[0]['rent_utilities']);
-            $results[0]['rent_date'] = date('m/d/Y',strtotime($results[0]['rent_date']));
+            $results[0]['rent_date'] = ($results[0]['rent_date']!='0000-00-00')?date('m/d/Y',strtotime($results[0]['rent_date'])):'';
 	        $results[0]['rent_file'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent);
             return $results[0];
         }

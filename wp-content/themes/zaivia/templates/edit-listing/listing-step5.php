@@ -87,8 +87,8 @@
 			<?php endif; ?>
         </div>
         <div class="col-sm-6 text-right">
-            <a href="#" class="btn btn-outline blue btn-sm listing-step" rel="6"><?php _e('Previous', 'am') ?></a>
-            <a href="#" class="btn btn-primary btn-sm listing-step" rel="4"><?php _e('Next Step', 'am') ?></a>
+            <a href="#" class="btn btn-outline blue btn-sm listing-step" rel="4"><?php _e('Previous', 'am') ?></a>
+            <a href="#" class="btn btn-primary btn-sm listing-step" rel="6"><?php _e('Next Step', 'am') ?></a>
         </div>
     </div>
 </div>
