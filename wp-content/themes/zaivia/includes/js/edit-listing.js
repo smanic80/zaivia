@@ -56,6 +56,7 @@
         'rent_private_entry':null,
         'rent_onsite':null,
         'rent_utilities':[],
+
         'contact_title':null,
         'contact_name':null,
         'contact_name_show':null,
@@ -71,7 +72,10 @@
         'contact_city':null,
         'contact_zip':null,
         'contact_profile':null,
-        'contact_logo':null
+        'contact_logo':null,
+
+        'prop_img':[],
+        'prop_blue':[]
     };
 
     $(document).ready(function($) {
@@ -138,6 +142,24 @@
                     $("#"+$this.attr("id")+"_file-errors").text('ERRORS: ' + textStatus);
                 }
             });
+        });
+        $('#prop_img').orakuploader({
+            orakuploader : true,
+            orakuploader_type: 1,
+            orakuploader_path : amData.template_url+'/includes/js/orakuploader/',
+            orakuploader_url : amData.ajaxurl,
+            orakuploader_use_sortable : true,
+            orakuploader_use_dragndrop : true,
+            orakuploader_thumbnail_size : 150
+        });
+        $('#prop_blue').orakuploader({
+            orakuploader : true,
+            orakuploader_type: 0,
+            orakuploader_path : amData.template_url+'/includes/js/orakuploader/',
+            orakuploader_url : amData.ajaxurl,
+            orakuploader_use_sortable : true,
+            orakuploader_use_dragndrop : true,
+            orakuploader_thumbnail_size : 150
         });
 
 
@@ -348,8 +370,12 @@
                 } else if( $(this).hasClass("group") ) {
 
                     $(this).find(".save-item").each(function(){
-                        if($(this).attr("type") === 'checkbox' && $(this).is(":checked") ) collect.push($(this).val());
-                        if($(this).attr("type") === 'text' && $(this).val() ) collect.push($(this).val());
+                        if($(this).attr("type") === 'checkbox' && $(this).is(":checked") ) {
+                            collect.push($(this).val());
+                        } 
+                        if(['text', 'hidden'].indexOf($(this).attr("type")) != -1 && $(this).val() ) {
+                            collect.push($(this).val());
+                        }
                     });
 
                     if(collect.length) {
@@ -409,16 +435,12 @@
                     $startItem = $item;
 
                 $.each( $(this).data("wrap").split(";"), function( index, value ){
-
-                    console.log($item.siblings(".wrap_"+key));
-
                     if(index == 0) {
                         $item.siblings(".wrap_"+key).addBack().wrapAll("<div class='"+value+"'></div>");
                     } else {
                         $item = $item.parent();
                         $item.wrap("<div class='"+value+"'></div>");
                     }
-
                 });
 
                 $startItem.removeClass("unwrapped").addClass("wrapped");
@@ -458,12 +480,12 @@
             var error = false;
             for(i in ret.errors){
                 if($("#"+ret.errors[i]).length){
+
                     $("#"+ret.errors[i]).addClass("error");
                     error = true
                 }
             }
             listingData.listing_id = ret.listing_id;
-
             if(!error && !$(".error:visible").length) {
                 callback()
             }

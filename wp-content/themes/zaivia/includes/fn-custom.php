@@ -1,7 +1,44 @@
 <?php
 	add_filter('show_admin_bar', '__return_false');
 
+	add_action( 'after_setup_theme', function() {
+		add_image_size( 'listing-card', 321, 214 );
+		add_image_size( 'listing-th', 118, 92 );
+	});
 
+	add_action( 'wp_ajax_uploadImageFile', 'uploadImageFile' );
+	add_action( 'wp_ajax_nopriv_uploadImageFile', 'uploadImageFile' );
+	function uploadImageFile() {
+        if(isset($_REQUEST['delete'])) {
+            $id = $_REQUEST['id'];
+            $file = ZaiviaListings::getListingFile($id);
+            $media_id = $file['media_id'];
+            $media_url = $_REQUEST['delete'];
+            $url = wp_get_attachment_url($media_id);
+            if($media_url == $url){
+                wp_delete_attachment($media_id);
+            }
+            exit;
+        }
+
+        if(isset($_FILES[0])) {
+            $imgsize = @getimagesize($_FILES[0]['tmp_name']);
+            if (!isset($imgsize) || !isset($imgsize['mime']) || !in_array($imgsize['mime'], array('image/jpeg', 'image/png'))) {
+                exit;
+            }
+        }
+        $list = [];
+        $listingId = isset($_POST['listing_id']) ? (int)$_POST['listing_id'] : 0;
+
+        if($listingId && $_FILES) {
+            $list = ZaiviaListings::addListingFile($listingId, "0", ($_REQUEST["type"] ? ZaiviaListings::$file_image : ZaiviaListings::$file_blueprint));
+
+	        $thumb = wp_get_attachment_image_src($list['media_id'], 'listing-th');
+            $list['thumb'] = $thumb[0];
+        }
+        echo json_encode($list);
+        die;
+    }
 
 	add_action( 'wp_ajax_uploadLisingFile', 'uploadLisingFile' );
 	add_action( 'wp_ajax_nopriv_uploadLisingFile', 'uploadLisingFile' );

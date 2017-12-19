@@ -146,8 +146,9 @@ class ZaiviaListings {
 			}
 
 			self::updateOpenhouse( $listing_id, (isset($data['openhouse'])?$data['openhouse']:null) );
-			self::updateRentData( $listing_id, $data );
-			self::updateContactData( $listing_id, $data );
+			self::updateRentData( $listing_id, $data );		
+			self::updateImagesData( $listing_id, $data );
+            self::updateContactData( $listing_id, $data );
 		} else {
 			$preparedData['user_id'] = get_current_user_id();
 			$preparedData['date_created'] = time();
@@ -167,6 +168,17 @@ class ZaiviaListings {
 		return $listing_id;
 	}
 
+
+	public static function updateImagesData($listing_id, $data){
+        global $wpdb;
+        $files_tablename = $wpdb->prefix . self::$files_tablename;
+        foreach ($data['prop_img'] as $el){
+            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        }
+        foreach ($data['prop_blue'] as $el){
+            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        }
+    }
 
 	public static function updateRentData($listing_id, $data){
 		global $wpdb;
@@ -211,10 +223,13 @@ class ZaiviaListings {
 
 		if((int)$data['rent_file']) {
 			$files = self::getListingFiles($listing_id, self::$file_rent, 1, false);
-			foreach($files as $file) {
-				self::deleteListingFile($file);
-			}
+			$fileId = (int)$data['rent_file'];
 
+			foreach($files as $file) {
+				if((int)$file['file_id'] !== $fileId) {
+					self::deleteListingFile($file);
+				}
+			}
 			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['rent_file']]);
 
 			$files = self::getListingFiles($listing_id, self::$file_rent, 0, false);
@@ -377,6 +392,11 @@ class ZaiviaListings {
 		return $results;
 	}
 
+    
+    
+    
+    
+    
 	public static function getListingFiles($listingId, $type = null, $confirmed = 1, $single = true) {
 		global $wpdb;
 
@@ -391,23 +411,37 @@ class ZaiviaListings {
 			$sql .= " and file_type = ".(int)$type;
 		}
 
-		$results = $wpdb->get_results( $sql,ARRAY_A);
-
+		$results = $wpdb->get_results($sql, ARRAY_A);
 		foreach($results as $key=>$val) {
-			$results[$key]['file_url'] = get_attached_file( $val['media_id']) ;
-			$results[$key]['file_name'] = basename($results['key']['file_url']);
-		}
-
+			$fileUrl = get_attached_file( $val['media_id']);
+			$results[$key]['file_url'] = $fileUrl ;
+			$results[$key]['file_name'] = basename($fileUrl);
+		}        
+        
 		if($single && $results && isset($results[0])) {
 			$results = array_shift($results);
 		}
+        
 		return $results;
 	}
-
-	public static function addListingFile($listingId, $fileKey, $type) {
+    
+    public static function getListingFile($id) {
 		global $wpdb;
 
+		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
+		$sql = "SELECT * from $files_tablename where file_id = ".(int)$id;
+
+		$results = $wpdb->get_results( $sql,ARRAY_A);
+
+		return count($results)?$results[0]:[];
+	}
+    
+    
+
+
+	public static function addListingFile($listingId, $fileKey/* todo: make it not required param */, $type) {
+		global $wpdb;
 
 		if ( ! function_exists( 'media_handle_upload' ) ) {
 			require_once( ABSPATH . 'wp-admin/includes/image.php' );
@@ -423,7 +457,8 @@ class ZaiviaListings {
 			$results['error'] = "Media creation error";
 		} else {
 			$filename = basename(get_attached_file( $mediaId));
-
+            $fileurl = wp_get_attachment_url($mediaId);
+            
 			$data = [
 				'listing_id' => $listingId,
 				'media_id' => $mediaId,
@@ -433,7 +468,7 @@ class ZaiviaListings {
 			$results = $wpdb->insert($files_tablename, $data);
 
 			if($results) {
-				$results = ['id' => $wpdb->insert_id, 'name' => $filename];
+				$results = ['id' => $wpdb->insert_id, 'media_id'=>$mediaId, 'name' => $filename, 'url' => $fileurl];
 			} else {
 				$results['error'] = "DB error";
 			}

@@ -447,7 +447,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                     <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
                         <input type="file" id="rent_file_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_rent?>"  data-file="rent_file" data-filename="rent_file_name">
                     </label>
-                    <p id="rent_file_input_file-errors" class="error"></p>
+                    <p id="rent_file_input_file-errors" class="error" style="display:none;"></p>
                 </fieldset>
             </div>
             <div class="col-sm-6 col-lg-4">
