@@ -530,5 +530,12 @@ class ZaiviaListings {
 		}
 		return [];
 	}
+
+
+
+
+	public static function format_price($num) {
+		return $num;
+	}
 }
 

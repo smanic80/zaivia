@@ -91,6 +91,14 @@
             $("#status").val($(this).val());
         });
 
+        $("#set_url").change(function(){
+            if($(this).prop("checked")) {
+                $("#url").removeAttr("disabled");
+            } else {
+                $("#url").attr("disabled", "disabled");
+            }
+        });
+
         $(".listing_upload").change(function(event){
             var form = new FormData(),
                 $this = $(this),

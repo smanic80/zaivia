@@ -3,9 +3,9 @@ $img_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaList
 $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_blueprint) : [];
 ?>
 <div class="acc-item bb">
-    <h3>Property Images</h3>
-    <p class="intro">Having high quality images as critical for generating interest in your property. Follow our photography tips to enhance your pictures, or check out our Community Partners page to hire a professional photographer. You can upload up to a maximum 30 images.</p>
-    <p class="intro">We encourage you to see an external picture of your property as the first picture.</p>
+    <h3><?php _e('Property Images', 'am') ?></h3>
+    <p class="intro"><?php echo get_field("upload_title")?></p>
+    <p class="intro"><?php echo get_field("image_title")?></p>
     <fieldset>
         <div id="prop_img_to_clone" class="clone_item"><div class="multibox file"><div class="loading"><img src="<?php echo get_theme_file_uri(); ?>/includes/js/orakuploader/images/loader.gif" alt="loader"/></div></div></div>
         <div class="upload-area" id="prop_imgDDArea">
@@ -18,13 +18,13 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
                 </div>
                 <?php endforeach; ?>
             </div>
-            <label class="btn btn-secondary uploadButton">Upload images<input type="file" class="prop_imgInput orakuploaderFileInput" accept="image/*" multiple></label>
+            <label class="btn btn-secondary uploadButton"><?php _e('Upload images', 'am') ?><input type="file" class="prop_imgInput orakuploaderFileInput" accept="image/*" multiple></label>
         </div>
     </fieldset>
 </div>
 <div class="acc-item bb">
-    <h3>Property Blueprints</h3>
-    <p class="intro">Upload property blueprints</p>
+    <h3><?php _e('Property Blueprints', 'am') ?></h3>
+    <p class="intro"><?php echo get_field("blueprint_title")?></p>
     <fieldset>
         <div id="prop_blue_to_clone" class="clone_item"><div class="multibox file"><div class="loading"><img src="<?php echo get_theme_file_uri(); ?>/includes/js/orakuploader/images/loader.gif" alt="loader"/></div></div></div>
         <div class="upload-area" id="prop_blueDDArea">
@@ -37,7 +37,7 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
                     </div>
                 <?php endforeach; ?>
             </div>
-            <label class="btn btn-secondary uploadButton">Upload images<input type="file" class="prop_blueInput orakuploaderFileInput" accept="image/*" multiple></label>
+            <label class="btn btn-secondary uploadButton"><?php _e('Upload images', 'am') ?><input type="file" class="prop_blueInput orakuploaderFileInput" accept="image/*" multiple></label>
         </div>
     </fieldset>
 </div>

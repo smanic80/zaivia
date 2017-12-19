@@ -13,7 +13,7 @@
 
 
 <div class="acc-item bb">
-	<h3>Key Features</h3>
+	<h3><?php _e('Key Features', 'am') ?></h3>
 	<div class="row">
 
         <div class="col-sm-12 col-lg-8">
