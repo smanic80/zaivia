@@ -172,11 +172,11 @@ class ZaiviaListings {
 	public static function updateImagesData($listing_id, $data){
         global $wpdb;
         $files_tablename = $wpdb->prefix . self::$files_tablename;
-        foreach ($data['prop_img'] as $el){
-            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        foreach ($data['prop_img'] as $key=>$el){
+            $wpdb->update($files_tablename, ['confirmed'=>1,'pos'=>$key], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
         }
-        foreach ($data['prop_blue'] as $el){
-            $wpdb->update($files_tablename, ['confirmed'=>1], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
+        foreach ($data['prop_blue'] as $key=>$el){
+            $wpdb->update($files_tablename, ['confirmed'=>1,'pos'=>$key], ['listing_id' => $listing_id,'file_id' => $el], ['%d'], ['%d','%d']);
         }
     }
 
@@ -428,6 +428,7 @@ class ZaiviaListings {
 		if($type) {
 			$sql .= " and file_type = ".(int)$type;
 		}
+        $sql .= " order by pos";
 
 		$results = $wpdb->get_results($sql, ARRAY_A);
 		foreach($results as $key=>$val) {
