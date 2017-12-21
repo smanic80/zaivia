@@ -6,6 +6,7 @@
 		<div class="row">
 			<div class="col-md-12 col-lg-5">
 				<select id="set-draft">
+                    <option value=""></option>
 					<?php foreach($storedListings as $storedListing):?>
 						<option value="<?php echo $storedListing['listing_id']?>"><?php echo $storedListing['address-text']?></option>
 					<?php endforeach;?>

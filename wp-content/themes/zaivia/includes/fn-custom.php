@@ -56,6 +56,22 @@
         die;
     }
 
+    add_action( 'wp_ajax_preloadLising', 'preloadLising' );
+	add_action( 'wp_ajax_nopriv_preloadLising', 'preloadLising' );
+	function preloadLising() {
+		$listing_to = isset($_POST['listing_to']) ? (int)$_POST['listing_to'] : 0;
+		$listing_from = isset($_POST['listing_from']) ? (int)$_POST['listing_from'] : 0;
+
+        $listing = ZaiviaListings::getUserListings(get_current_user_id(), $listing_from);
+        $listing = array_merge($listing,ZaiviaListings::getListingRent($listing_from));
+        $listing = array_merge($listing,ZaiviaListings::getListingContact($listing_from));
+        $listing['listing_id'] = $listing_to;
+        $listing_id = ZaiviaListings::save($listing);
+        $listing['listing_id'] = $listing_id;
+        echo json_encode($listing);
+        die;
+    }
+
 	add_action( 'wp_ajax_valideLisingStep', 'valideLisingStep' );
 	add_action( 'wp_ajax_nopriv_valideLisingStep', 'valideLisingStep' );
 	function valideLisingStep() {

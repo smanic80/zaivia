@@ -407,6 +407,36 @@
 
             console.log(listingData);
         }
+        $(document).on('change','#set-draft',function(){
+            var data = {
+                'action':'preloadLising',
+                'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
+                'listing_from': $(this).val()
+            };
+            $.post(amData.ajaxurl, data, function(ret){
+                listingData = ret;
+                for(var i in listingData) if(listingData.hasOwnProperty(i)){
+                    var item = $('#'+i);
+                    if(item.length){
+                        if(item[0].tagName === "INPUT"){
+                            if(item[0].type === "hidden" || item[0].type === "text"){
+                                item.val(listingData[i]).removeClass('placeholder');
+                            }else if(item[0].type === "checkbox"){
+                                item.prop('checked',listingData[i]>0).removeClass('placeholder');
+                            } else {
+                                console.log(item[0].type,item);
+                            }
+                        } else if(item[0].tagName === "SELECT"){
+                            item.val(listingData[i]).removeClass('placeholder');
+                        } else if(item[0].tagName === "TEXTAREA"){
+                            item.text(listingData[i]).removeClass('placeholder');
+                        } else {
+                            console.log(item[0].tagName,item);
+                        }
+                    }
+                }
+            }, 'json');
+        });
     });
 
 
