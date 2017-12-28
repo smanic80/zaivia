@@ -392,6 +392,7 @@ function am_add_javascript( ) {
         );
 
 
+        wp_enqueue_script('jquery-ui-autocomplete');
 
         $am_files = array(
 	        "vendor_js"=>'includes/js/vendor.js',

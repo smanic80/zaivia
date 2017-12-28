@@ -13,7 +13,7 @@ get_header(); ?>
                 <form action="#">
                     <label><?php the_field("search_text")?></label>
                     <div class="set">
-                        <input type="text" placeholder="Enter a city">
+                        <input type="text" placeholder="Enter a city" id="search_city">
                         <button type="submit" class="btn btn-secondary btn-lg"><?php _e('Buy', 'am') ?></button>
                         <button type="submit" class="btn btn-secondary btn-lg"><?php _e('Rent', 'am') ?></button>
                     </div>
