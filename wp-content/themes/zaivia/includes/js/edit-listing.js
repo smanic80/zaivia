@@ -3,33 +3,33 @@
     var marker = null;
     var listingData = {
         'listing_id': $("#listing_id").val(),
-        'MLSNumber':null,
-        'sale_rent':null,
-        'sale_by':null,
-        'address':null,
-        'unit_number':null,
-        'city':null,
-        'province':null,
-        'zip':null,
-        'neighbourhood':null,
-        'lat':null,
-        'lng':null,
-        'price':null,
-        'property_type':null,
-        'house_type':null,
-        'square_footage':null,
-        'bedrooms':null,
-        'bathrooms':null,
-        'roof_type':null,
-        'exterior_type':null,
-        'parking':null,
-        'driveway':null,
-        'size_x':null,
-        'size_y':null,
-        'size_units':null,
-        'year_built':null,
-        'annual_taxes':null,
-        'condo_fees':null,
+        'MLSNumber':'',
+        'sale_rent':'',
+        'sale_by':'',
+        'address':'',
+        'unit_number':'',
+        'city':'',
+        'province':'',
+        'zip':'',
+        'neighbourhood':'',
+        'lat':'',
+        'lng':'',
+        'price':'',
+        'property_type':'',
+        'house_type':'',
+        'square_footage':'',
+        'bedrooms':'',
+        'bathrooms':'',
+        'roof_type':'',
+        'exterior_type':'',
+        'parking':'',
+        'driveway':'',
+        'size_x':'',
+        'size_y':'',
+        'size_units':'',
+        'year_built':'',
+        'annual_taxes':'',
+        'condo_fees':'',
         'partial_rent':[],
         'features_1':[],
         'features_1_custom':[],
@@ -38,41 +38,41 @@
         'features_3':[],
         'features_3_custom':[],
         'room_features':[],
-        'description':null,
-        'status':null,
-        'featured':null,
-        'premium':null,
-        'url':null,
-        'bump_up':null,
-        'rent_date':null,
-        'rent_deposit':null,
-        'rent_furnishings':null,
-        'rent_pets':null,
-        'rent_smoking':null,
-        'rent_laundry':null,
-        'rent_file':null,
-        'rent_electrified_parking':null,
-        'rent_secured_entry':null,
-        'rent_private_entry':null,
-        'rent_onsite':null,
+        'description':'',
+        'status':'',
+        'featured':'',
+        'premium':'',
+        'url':'',
+        'bump_up':'',
+        'rent_date':'',
+        'rent_deposit':'',
+        'rent_furnishings':'',
+        'rent_pets':'',
+        'rent_smoking':'',
+        'rent_laundry':'',
+        'rent_file':'',
+        'rent_electrified_parking':'',
+        'rent_secured_entry':'',
+        'rent_private_entry':'',
+        'rent_onsite':'',
         'rent_utilities':[],
 
-        'contact_title':null,
-        'contact_name':null,
-        'contact_name_show':null,
-        'contact_email':null,
-        'contact_phone1':null,
-        'contact_phone1_type':null,
-        'contact_phone1_show':null,
-        'contact_phone2':null,
-        'contact_phone2_type':null,
-        'contact_phone2_show':null,
-        'contact_company':null,
-        'contact_address':null,
-        'contact_city':null,
-        'contact_zip':null,
-        'contact_profile':null,
-        'contact_logo':null,
+        'contact_title':'',
+        'contact_name':'',
+        'contact_name_show':'',
+        'contact_email':'',
+        'contact_phone1':'',
+        'contact_phone1_type':'',
+        'contact_phone1_show':'',
+        'contact_phone2':'',
+        'contact_phone2_type':'',
+        'contact_phone2_show':'',
+        'contact_company':'',
+        'contact_address':'',
+        'contact_city':'',
+        'contact_zip':'',
+        'contact_profile':'',
+        'contact_logo':'',
 
         'prop_img':[],
         'prop_blue':[]
@@ -80,30 +80,68 @@
 
     $(document).ready(function($) {
 
-
         refreshRentSaleFields();
-        $("#sale_rent").change(refreshRentSaleFields);
+        $("#post-listing-form #sale_rent").change(refreshRentSaleFields);
 
         refreshSaleByFields();
-        $("#sale_by").change(refreshSaleByFields);
+        $("#post-listing-form #sale_by").change(refreshSaleByFields);
 
-        $(".status").change(function(){
+        $("#post-listing-form .status").change(function(){
             $("#status").val($(this).val());
         });
 
-        $("#set_url").change(function(){
+        $("#post-listing-form #price").keyup(function(){
+            var num = parseInt($(this).val(), 10);
+            if(isNaN(num)) $(this).val('');
+        });
+
+        $("#post-listing-form #set_url").change(function(){
             if($(this).prop("checked")) {
-                $("#url").removeAttr("disabled");
+                $("#post-listing-form #url").removeAttr("disabled");
             } else {
-                $("#url").attr("disabled", "disabled");
+                $("#post-listing-form #url").attr("disabled", "disabled");
             }
         });
 
-        $(".listing_upload").change(function(event){
+        $("#post-listing-form #set-draft").change(function(){
+            var data = {
+                'action':'preloadLising',
+                'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
+                'listing_from': $(this).val()
+            };
+            $.post(amData.ajaxurl, data, function(ret){
+
+                for(var i in listingData) if(listingData.hasOwnProperty(i)){
+                    if(i in ret) {
+                        listingData[i] = ret[i]
+                    }
+                    var item = $('#'+i);
+                    if(item.length){
+                        if(item[0].tagName === "INPUT"){
+                            if(item[0].type === "hidden" || item[0].type === "text"){
+                                item.val(listingData[i]).removeClass('placeholder');
+                            }else if(item[0].type === "checkbox"){
+                                item.prop('checked',listingData[i]>0).removeClass('placeholder');
+                            } else {
+                                console.log(item[0].type,item);
+                            }
+                        } else if(item[0].tagName === "SELECT"){
+                            item.val(listingData[i]).removeClass('placeholder');
+                        } else if(item[0].tagName === "TEXTAREA"){
+                            item.text(listingData[i]).removeClass('placeholder');
+                        } else {
+                            console.log(item[0].tagName,item);
+                        }
+                    }
+                }
+                initMarker();
+            }, 'json');
+        });
+
+        $("#post-listing-form .listing_upload").change(function(event){
             var form = new FormData(),
                 $this = $(this),
                 error = false;
-
 
             if(!event.target.files.length) return false;
 
@@ -125,7 +163,7 @@
             if(error) return false;
 
             form.append('action', 'uploadLisingFile');
-            form.append('listing_id', $("#listing_id").val());
+            form.append('listing_id', $("#post-listing-form #listing_id").val());
             form.append('file_type', $(this).data("type"));
 
             $.ajax({
@@ -139,18 +177,19 @@
                 success: function(data, textStatus, jqXHR) {
 
                     if(typeof data['error'] === 'undefined') {
-                        $("#"+$this.data("file")).val(data['id']);
-                        $("#"+$this.data("filename")).text(data['name']);
-                        $("#"+$this.attr("id")+"_file-errors").text("").hide();
+                        $("#post-listing-form #"+$this.data("file")).val(data['id']);
+                        $("#post-listing-form #"+$this.data("filename")).text(data['name']);
+                        $("#post-listing-form #"+$this.attr("id")+"_file-errors").text("").hide();
                     } else {
-                        $("#"+$this.attr("id")+"_file-errors").text('ERRORS: ' + data['error']);
+                        $("#post-listing-form #"+$this.attr("id")+"_file-errors").text('ERRORS: ' + data['error']);
                     }
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    $("#"+$this.attr("id")+"_file-errors").text('ERRORS: ' + textStatus);
+                    $("#post-listing-form #"+$this.attr("id")+"_file-errors").text('ERRORS: ' + textStatus);
                 }
             });
         });
+
         $('#prop_img').orakuploader({
             orakuploader : true,
             orakuploader_type: 1,
@@ -172,10 +211,10 @@
 
 
 
-        if ($("#map").length) {
+        if ($("#post-listing-form #map").length) {
             var map;
 
-            $("#zip").change(function(){
+            $("#post-listing-form #zip").change(function(){
                 var zip = $(this).val();
 
                 if(!postalFilter(zip)) {
@@ -192,7 +231,7 @@
 
                     if (status == google.maps.GeocoderStatus.OK) {
 
-                        $("#map-wrap").show();
+                        $("#post-listing-form #map-wrap").show();
 
                         map = new google.maps.Map(document.getElementById('map'), {
                             scrollwheel: true,
@@ -215,18 +254,22 @@
                             placeMarker(event.latLng);
                         });
 
-                        $("#error-zip").hide();
+                        $("#post-listing-form #error-zip").hide();
                     } else {
-                        $("#error-zip").show();
+                        $("#post-listing-form #error-zip").show();
                     }
                 });
             });
 
-            if($("#zip").val()) {
-                $("#zip").trigger("change");
+            if($("#post-listing-form #zip").val()) {
+                initMarker();
+            }
 
-                if($("#lat").val() && $("#lng").val()) {
-                    var loc = {lat : parseFloat($("#lat").val()), lng : parseFloat($("#lng").val())};
+            function initMarker(){
+                $("#post-listing-form  #zip").trigger("change");
+
+                if($("#post-listing-form #lat").val() && $("#post-listing-form #lng").val()) {
+                    var loc = {lat : parseFloat($("#post-listing-form #lat").val()), lng : parseFloat($("#post-listing-form #lng").val())};
 
                     var interval = setInterval(function(){
                         if(map) {
@@ -250,8 +293,8 @@
 
                 var geocoder = new google.maps.Geocoder;
 
-                $("#lat").val(marker.getPosition().lat());
-                $("#lng").val(marker.getPosition().lng());
+                $("#post-listing-form #lat").val(marker.getPosition().lat());
+                $("#post-listing-form #lng").val(marker.getPosition().lng());
 
                 geocoder.geocode({'location': latlng}, function(results, status) {
 
@@ -262,10 +305,10 @@
                             console.log(results[0]);
                             for(i in results[0].address_components) {
                                 if(results[0].address_components[i].types[0] === 'postal_code') {
-                                    if(results[0].address_components[i].long_name !== $("#zip").val().trim()){
-                                        $("#error-place").show();
+                                    if(results[0].address_components[i].long_name !== $("#post-listing-form #zip").val().trim()){
+                                        $("#post-listing-form #error-place").show();
                                     } else {
-                                        $("#error-place").hide();
+                                        $("#post-listing-form #error-place").hide();
                                     }
                                 }
 
@@ -277,12 +320,12 @@
                                     case 'administrative_area_level_2': addr.neighbourhood = results[0].address_components[i].long_name; break;
                                 }
                             }
-                            if(!$("#error-place").is(":visible")){
-                                $("#unit_number").val(addr.unit_number).removeClass("placeholder");
-                                $("#address").val(addr.address).removeClass("placeholder");
-                                $("#city").val(addr.city).removeClass("placeholder");
-                                $("#province").val(addr.province).removeClass("placeholder");
-                                $("#neighbourhood").val(addr.neighbourhood).removeClass("placeholder");
+                            if(!$("#post-listing-form #error-place").is(":visible")){
+                                $("#post-listing-form #unit_number").val(addr.unit_number).removeClass("placeholder");
+                                $("#post-listing-form #address").val(addr.address).removeClass("placeholder");
+                                $("#post-listing-form #city").val(addr.city).removeClass("placeholder");
+                                $("#post-listing-form #province").val(addr.province).removeClass("placeholder");
+                                $("#post-listing-form #neighbourhood").val(addr.neighbourhood).removeClass("placeholder");
                             }
                         } else {
                             window.alert('No results found');
@@ -294,32 +337,36 @@
             }
         }
 
-        $(".listing-step").click(function(){
-            var curStep =  $(".steps-all li.cur").attr("id").split("-")[1],
+        $("#post-listing-form .listing-step").click(function(){
+            var curStep =  $("#post-listing-form .steps-all li.cur").attr("id").split("-")[1],
                 nextStep = $(this).attr("rel");
 
             updateListingObj();
 
-            if(nextStep > curStep){
-                validateStep($("#step"+curStep), function() {
-                    gotoStep(nextStep, true);
-                });
+            if(parseInt(nextStep, 10) === 6) {
+                confirmListing();
             } else {
-                gotoStep(nextStep, false);
+                if (nextStep > curStep) {
+                    validateStep($("#post-listing-form #step" + curStep), function () {
+                        gotoStep(nextStep, true);
+                    });
+                } else {
+                    gotoStep(nextStep, false);
+                }
             }
 
             return false;
         });
 
-        $(".save-draft").click(function(e){
+        $("#post-listing-form .save-draft").click(function(e){
             e.preventDefault();
 
-            var curStep =  $(".steps-all li.cur").attr("id").split("-")[1];
+            var curStep =  $("#post-listing-form .steps-all li.cur").attr("id").split("-")[1];
 
             updateListingObj();
 
             listingData.to_delete = 0;
-            validateStep($("#step"+curStep), function() {
+            validateStep($("#post-listing-form #step"+curStep), function() {
                 alert("Listing saved");
             });
         });
@@ -327,30 +374,28 @@
 
         initdatepicker($(".datepicker"));
 
-        $(document).on('click','#add-openhouse',function(){
-            var $block = $("#openhouse-block").clone();
+        $(document).on('click','#post-listing-form #add-openhouse',function(){
+            var $block = $("#post-listing-form #openhouse-block").clone();
             $block.find('.datepicker-hidden').addClass('datepicker').removeClass('datepicker-hidden');
             $block.removeAttr("id").addClass('array-row').show();
-            $("#more-openhouse").before($block);
+            $("#post-listing-form #more-openhouse").before($block);
             initdatepicker($block.find(".datepicker"));
 
             return false;
         });
         $(document).on('click','.trigger',function(){
-            $(this).prev('.datepicker').datepicker('show');
+            $(this).prev('#post-listing-form .datepicker').datepicker('show');
         });
-        $(document).on('click','.remove-openhouse',function(){
-            if($(".openhouse-block").length <= 2) {
-                $(this).parents(".openhouse-block").find("input").val("").addClass('placeholder');
-                $(this).parents(".openhouse-block").find("select").val("");
+        $(document).on('click','#post-listing-form .remove-openhouse',function(){
+            if($("#post-listing-form .openhouse-block").length <= 2) {
+                $(this).parents("#post-listing-form .openhouse-block").find("input").val("").addClass('placeholder');
+                $(this).parents("#post-listing-form .openhouse-block").find("select").val("");
             } else {
-                $(this).parents(".openhouse-block").remove();
+                $(this).parents("#post-listing-form .openhouse-block").remove();
             }
 
             return false;
         });
-
-
 
         function initdatepicker($obj) {
             $obj.datepicker({ dateFormat: 'mm/dd/yy', currentText: "", minDate: new Date() });
@@ -359,10 +404,10 @@
         function updateListingObj() {
             var collect, sub={}, subkey;
 
-            $(".tosave").each(function(){
+            $("#post-listing-form .tosave").each(function(){
                 collect = [];
                 if( $(this).hasClass("array") ) {
-                    $(this).find(".array-row").each(function(){
+                    $(this).find("#post-listing-form .array-row").each(function(){
                         var arr = {};
                         var found = true;
                         $(this).find("input,select").each(function(){
@@ -407,45 +452,19 @@
 
             console.log(listingData);
         }
-        $(document).on('change','#set-draft',function(){
-            var data = {
-                'action':'preloadLising',
-                'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
-                'listing_from': $(this).val()
-            };
-            $.post(amData.ajaxurl, data, function(ret){
-                listingData = ret;
-                for(var i in listingData) if(listingData.hasOwnProperty(i)){
-                    var item = $('#'+i);
-                    if(item.length){
-                        if(item[0].tagName === "INPUT"){
-                            if(item[0].type === "hidden" || item[0].type === "text"){
-                                item.val(listingData[i]).removeClass('placeholder');
-                            }else if(item[0].type === "checkbox"){
-                                item.prop('checked',listingData[i]>0).removeClass('placeholder');
-                            } else {
-                                console.log(item[0].type,item);
-                            }
-                        } else if(item[0].tagName === "SELECT"){
-                            item.val(listingData[i]).removeClass('placeholder');
-                        } else if(item[0].tagName === "TEXTAREA"){
-                            item.text(listingData[i]).removeClass('placeholder');
-                        } else {
-                            console.log(item[0].tagName,item);
-                        }
-                    }
-                }
-            }, 'json');
-        });
+
     });
 
 
 
     function gotoStep(stepN, isDone){
-        $(".listing-steps").hide();
+        $("#post-listing-form  .listing-steps").hide();
         $("#step"+stepN).show();
 
-        if(isDone) $(".steps-all li.current").addClass("done");
+        if(isDone) {
+            $(".steps-all li.current").addClass("done");
+        }
+
         $(".steps-all .cur").removeClass("cur");
         $(".steps-all li#stepbc-"+stepN).addClass("current").addClass("cur");
     }
@@ -457,7 +476,7 @@
         $(".salerent_"+key).show();
 
 
-        if($(".wrapped.unwrap_"+key).length) {
+        if($("#post-listing-form .wrapped.unwrap_"+key).length) {
             $(".wrapped.unwrap_"+key).each(function(){
                 var $item = $(this);
 
@@ -468,7 +487,7 @@
                 $item.removeClass("wrapped").addClass("unwrapped");
             });
         } else {
-            $(".unwrapped.wrap_"+key).each(function(){
+            $("#post-listing-form .unwrapped.wrap_"+key).each(function(){
                 var $item = $(this),
                     $startItem = $item;
 
@@ -493,6 +512,19 @@
 
         $(".saleby_0, .saleby_1").hide();
         $(".saleby_"+key).show();
+    }
+
+    function confirmListing(){
+        var data = {
+                'action':'processLising',
+                'listing-data': JSON.stringify(listingData)
+            };
+        $.post(amData.ajaxurl, data, function(ret){
+            if(data) {
+                gotoStep(6, true);
+                $(".steps-all, .btns-start").hide();
+            }
+        }, 'json');
     }
 
     function validateStep($form, callback) {

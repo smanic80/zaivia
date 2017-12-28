@@ -61,6 +61,13 @@ class ZaiviaListings {
 		1200=>"20:00",
 	];
 
+	public static function activateListing($listing_id){
+		global $wpdb;
+		$files_tablename = $wpdb->prefix . self::$listing_tablename;
+
+		return (bool) $wpdb->update($files_tablename, ['activated'=>1,'user_id'=>get_current_user_id()], ['listing_id' => $listing_id]);
+	}
+
 	public static function save($data) {
 		global $wpdb;
 
@@ -111,18 +118,6 @@ class ZaiviaListings {
 			'status' => $data['status'],
 		];
 
-		$dataFormat = [
-			'%s', '%d', '%d',
-			'%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s',
-			'%f', '%s', '%s', '%f', '%d', '%d',
-			'%s', '%s', '%s', '%s', '%s', '%s', '%d',
-			'%d', '%f', '%f', '%s',
-			'%s', '%s',
-			'%d', '%d', '%s', '%d',
-			'%s', '%d', '%d'
-		];
-
-
 
 		if((int)$data['listing_id']) {
 			$listing_id = (int)$data['listing_id'];
@@ -131,14 +126,13 @@ class ZaiviaListings {
 				return 'This is not yours!';
 			}
 
-			if(isset($data['to_delete'])) {
+			$listing = self::getUserListings(get_current_user_id(), $listing_id);
+			if($listing['to_delete'] === '1' && isset($data['to_delete'])) {
 				$preparedData['to_delete'] = 0;
-				$preparedData['date_created'] = time();
-				$dataFormat[] = '%d';
-				$dataFormat[] = '%d';
+				$preparedData['date_created'] = date('Y-m-d H:i:s', time());
 			}
-			$wpdb->update($listing_tablename, $preparedData, ['listing_id'=>$listing_id], $dataFormat);
 
+			$wpdb->update($listing_tablename, $preparedData, ['listing_id'=>$listing_id]);
 
 			for($i=1; $i<=3; $i++) {
 				self::updateFeatures($listing_id, $i, (isset($data["features_{$i}"])?$data["features_{$i}"]:[]), 0);
@@ -146,28 +140,24 @@ class ZaiviaListings {
 			}
 
 			self::updateOpenhouse( $listing_id, (isset($data['openhouse'])?$data['openhouse']:null) );
-			self::updateRentData( $listing_id, $data );		
+			self::updateRentData( $listing_id, $data );
 			self::updateImagesData( $listing_id, $data );
             self::updateContactData( $listing_id, $data );
 		} else {
+			if(isset($data['to_delete'])) {
+				$preparedData['to_delete'] = 0;
+				$preparedData['date_created'] = date('Y-m-d H:i:s', time());
+			}
+
 			$preparedData['user_id'] = get_current_user_id();
-			$preparedData['date_created'] = time();
 			$preparedData['activated'] = 0;
-			$preparedData['to_delete'] = isset($data['to_delete'])?0:1;
 
-			$dataFormat[] = '%d';
-			$dataFormat[] = '%d';
-			$dataFormat[] = '%d';
-			$dataFormat[] = '%d';
-
-			$wpdb->insert($listing_tablename, $preparedData, $dataFormat);
+			$wpdb->insert($listing_tablename, $preparedData);
 			$listing_id = $wpdb->insert_id;
-
 		}
 
 		return $listing_id;
 	}
-
 
 	public static function updateImagesData($listing_id, $data){
         global $wpdb;
@@ -364,6 +354,22 @@ class ZaiviaListings {
 
 	}
 
+	public static function duplicateListing($listing_from, $listing_to) {
+		$listing = self::getUserListings(get_current_user_id(), $listing_from);
+
+		$listing = array_merge($listing, self::getListingRent($listing_from));
+		$listing = array_merge($listing, self::getListingContact($listing_from));
+
+
+		$listing['listing_id'] = $listing_to;
+		unset($listing['to_delete']);
+
+		$listing['listing_id'] = ZaiviaListings::save($listing);
+
+
+		return $listing;
+	}
+
 
 	public static function isOwner($userId, $listingId) {
 		return (bool)count(self::getUserListings($userId, $listingId));
@@ -382,6 +388,8 @@ class ZaiviaListings {
 				where user_id = ".(int)$userId;
 		if($listingId) {
 			$sql .= " and listing_id = ".(int)$listingId;
+		} else {
+			$sql .= " and to_delete != 1";
 		}
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);

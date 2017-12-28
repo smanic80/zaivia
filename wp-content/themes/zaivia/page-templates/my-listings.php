@@ -62,21 +62,21 @@ get_header(); ?>
                             <th><?php _e('Activated', 'am') ?></th>
                             <th><?php _e('Action', 'am') ?></th>
                         </tr>
+                        <?php foreach($listings as $listing):?>
                         <tr>
-                            <?php foreach($listings as $listing):?>
-                                <td><?php echo $listing['address-text']?></td>
-                                <td><?php echo $listing['sale_rent-text']; ?></td>
-                                <td><?php echo date('m/d/Y', $listing['date_created']); ?></td>
-                                <td><?php echo $listing['date_published']?date('m/d/Y', $listing['date_published']):''; ?></td>
-                                <td><?php echo $listing['status']; ?></td>
-                                <td><?php echo $listing['active-text']; ?></td>
-                                <td><a href="<?php echo home_url( '/post-listing' )?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                    <a href="#delete" class="btn btn-secondary btn-sm open-modal"><?php _e('Delete', 'am') ?></a>
-                                    <a href="#" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
-                                    <a href="#" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
-                                </td>
-                            <?php endforeach;?>
+                            <td><?php echo $listing['address-text']?></td>
+                            <td><?php echo $listing['sale_rent-text']; ?></td>
+                            <td><?php echo date('m/d/Y', $listing['date_created']); ?></td>
+                            <td><?php echo $listing['date_published']?date('m/d/Y', $listing['date_published']):''; ?></td>
+                            <td><?php echo $listing['status']; ?></td>
+                            <td><?php echo $listing['active-text']; ?></td>
+                            <td><a href="<?php echo home_url( '/post-listing' )?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
+                                <a href="#delete" class="btn btn-secondary btn-sm open-modal"><?php _e('Delete', 'am') ?></a>
+                                <a href="#" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
+                                <a href="#" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
+                            </td>
                         </tr>
+                        <?php endforeach;?>
                         </tbody>
                     </table>
                 </div>

@@ -62,12 +62,9 @@
 		$listing_to = isset($_POST['listing_to']) ? (int)$_POST['listing_to'] : 0;
 		$listing_from = isset($_POST['listing_from']) ? (int)$_POST['listing_from'] : 0;
 
-        $listing = ZaiviaListings::getUserListings(get_current_user_id(), $listing_from);
-        $listing = array_merge($listing,ZaiviaListings::getListingRent($listing_from));
-        $listing = array_merge($listing,ZaiviaListings::getListingContact($listing_from));
-        $listing['listing_id'] = $listing_to;
-        $listing_id = ZaiviaListings::save($listing);
-        $listing['listing_id'] = $listing_id;
+		$listing = ZaiviaListings::duplicateListing($listing_from, $listing_to);
+
+
         echo json_encode($listing);
         die;
     }
@@ -98,6 +95,7 @@
 			if(isset($data['listing_id'])) {
 				$listingId = $data['listing_id'];
 			}
+
 			if(!$errors) {
 				$listingId = ZaiviaListings::save($data);
 			}
@@ -105,6 +103,23 @@
 
 		echo json_encode(["errors"=>$errors, "listing_id"=>$listingId]);
 
+		die;
+	}
+
+	add_action( 'wp_ajax_processLising', 'processLising' );
+	add_action( 'wp_ajax_nopriv_processLising', 'processLising' );
+	function processLising() {
+		$res = false;
+		if($_POST['listing-data']){
+			$str = stripslashes_deep($_POST['listing-data']);
+
+			$data = json_decode($str, true);
+
+			if(isset($data['listing_id'])) {
+				$res = ZaiviaListings::activateListing((int)$data['listing_id']);
+			}
+		}
+		echo json_encode($res);
 		die;
 	}
 

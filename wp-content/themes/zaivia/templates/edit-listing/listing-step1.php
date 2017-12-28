@@ -1,19 +1,21 @@
-<?php $storedListings = ZaiviaListings::getUserListings(get_current_user_id());?>
-<?php if($storedListings) :?>
-	<div class="acc-item bb">
-		<h3><?php _e('Draft', 'am') ?></h3>
-		<p class="intro3"><?php echo get_field("select_draft")?></p>
-		<div class="row">
-			<div class="col-md-12 col-lg-5">
-				<select id="set-draft">
-                    <option value=""></option>
-					<?php foreach($storedListings as $storedListing):?>
-						<option value="<?php echo $storedListing['listing_id']?>"><?php echo $storedListing['address-text']?></option>
-					<?php endforeach;?>
-				</select>
-			</div>
-		</div>
-	</div>
+<?php if(!$listing) :?>
+    <?php $storedListings = ZaiviaListings::getUserListings(get_current_user_id());?>
+    <?php if($storedListings) :?>
+        <div class="acc-item bb">
+            <h3><?php _e('Draft', 'am') ?></h3>
+            <p class="intro3"><?php echo get_field("select_draft")?></p>
+            <div class="row">
+                <div class="col-md-12 col-lg-5">
+                    <select id="set-draft">
+                        <option value=""></option>
+                        <?php foreach($storedListings as $storedListing):?>
+                            <option value="<?php echo $storedListing['listing_id']?>"><?php echo $storedListing['address-text']?></option>
+                        <?php endforeach;?>
+                    </select>
+                </div>
+            </div>
+        </div>
+    <?php endif?>
 <?php endif?>
 
 <div class="acc-item mb-30">
