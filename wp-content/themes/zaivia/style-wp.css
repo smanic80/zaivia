@@ -1,0 +1,7 @@
+.logged-in .login-visible {
+    display: initial;
+}
+
+.logged-in .logout-visible {
+    display: none;
+}

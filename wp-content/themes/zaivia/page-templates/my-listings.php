@@ -43,7 +43,7 @@ get_header(); ?>
         <div class="styled-form">
             <div class="entry text-center mb-30">
                 <h2><?php echo get_field("button_title")?></h2>
-                <a href="<?php echo home_url( '/post-listing' )?>" class="btn btn-primary"><?php echo get_field("button_text")?></a>
+                <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary"><?php echo get_field("button_text")?></a>
             </div>
             <div class="acc-item bb">
                 <h3><?php echo get_field("table_title")?></h3>
@@ -70,7 +70,7 @@ get_header(); ?>
                             <td><?php echo $listing['date_published']?date('m/d/Y', $listing['date_published']):''; ?></td>
                             <td><?php echo $listing['status']; ?></td>
                             <td><?php echo $listing['active-text']; ?></td>
-                            <td><a href="<?php echo home_url( '/post-listing' )?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
+                            <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
                                 <a href="#delete" class="btn btn-secondary btn-sm open-modal"><?php _e('Delete', 'am') ?></a>
                                 <a href="#" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
                                 <a href="#" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>

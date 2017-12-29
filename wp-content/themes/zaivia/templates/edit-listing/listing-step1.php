@@ -159,7 +159,7 @@
 <div class="btn-s">
 	<div class="row">
 		<div class="col-sm-12 text-right">
-			<a href="<?php echo home_url( '/my-listings' )?>" class="btn btn-outline blue btn-sm"><?php _e('Previous', 'am') ?></a>
+			<a href="<?php the_field("page_mylistings", "option")?>" class="btn btn-outline blue btn-sm"><?php _e('Previous', 'am') ?></a>
 			<a href="#" class="btn btn-primary btn-sm listing-step" rel="2"><?php _e('Next Step', 'am') ?></a>
 		</div>
 	</div>

@@ -3,8 +3,6 @@
     $(document).ready(function($) {
 
 
-        //console.log(jQuery(".datepicker").datetimepicker());
-
 
       if ($("#map2").length) {
 

@@ -50,7 +50,7 @@ get_header(); ?>
                         <p><?php echo $option['text']?></p>
                     </div>
                     <div class="btn-h">
-                        <a href="<?php echo $option['button_url']?>" class="btn btn-outline">Learn More</a>
+                        <a href="<?php echo $option['button_url']?>" class="btn btn-outline"><?php _e('Learn More', 'am') ?></a>
                     </div>
                 </article>
                 <?php endforeach; ?>
@@ -73,10 +73,10 @@ get_header(); ?>
                     <li><?php echo $option['text']?></li>
 	                <?php endforeach; ?>
                 </ul>
-                <p><a href="#">Contest Rules</a></p>
+                <p><?php the_field("banner_text")?></p>
                 <div class="btns">
                     <a href="#" class="btn btn-facebook"><?php _e('Share On Facebook', 'am') ?></a>
-                    <a href="#" class="btn btn-secondary"><?php _e('List Your Property', 'am') ?></a>
+                    <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-secondary"><?php _e('List Your Property', 'am') ?></a>
                 </div>
             </div>
         </div>

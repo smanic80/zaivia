@@ -16,8 +16,8 @@
         <a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="logo"><img src="<?php echo get_template_directory_uri();?>/images/logo.png" alt=""></a>
         <div class="right">
             <div class="free"><?php _e('It’s Free', 'am') ?></div>
-            <a href="#" class="btn btn-secondary br"><?php _e('List Your Property', 'am') ?></a>
-            <a href="#" class="btn btn-primary bl"><?php _e('List Your Business', 'am') ?></a>
+            <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-secondary br"><?php _e('List Your Property', 'am') ?></a>
+            <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary bl"><?php _e('List Your Business', 'am') ?></a>
         </div>
         <div class="menu-trigger"><span></span><span></span><span></span></div>
 	    <?php if ( has_nav_menu( 'mainmenu' ) ) : ?>
