@@ -101,13 +101,12 @@
 			}
 		}
 
-		echo json_encode(["errors"=>$errors,
-		                  "listing_id"=>$listingData['listing_id'],
-
-		                  "contact_profile"=>$listingData['contact_files']['contact_profile'],
-		                  "contact_profile_file_name"=>$listingData['contact_files']['contact_profile_file_name'],
-		                  "contact_logo"=>$listingData['contact_files']['contact_logo'],
-			              "contact_logo_file_name"=>$listingData['contact_files']['contact_logo_file_name']]);
+		echo json_encode([
+		    "errors"=>$errors,
+		    "listing_id"=>$listingData['listing_id'],
+            "contact_profile"=>$listingData['contact_profile'],
+            "contact_logo"=>$listingData['contact_logo']
+        ]);
 
 		die;
 	}

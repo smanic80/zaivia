@@ -454,44 +454,36 @@ class ZaiviaListings {
 
 		if((int)$data['contact_profile']) {
 			$file = self::getListingFile($data['contact_profile']);
-
 			if((int)$file['listing_id'] !== $listingId) {
-				$data['file_id'] = self::duplicateListingFile($data['contact_profile'], $listingId);
+				$data['contact_profile']['file_id'] = self::duplicateListingFile($data['contact_profile'], $listingId);
 			}
 		}
 		if((int)$data['contact_logo']) {
 			$file = self::getListingFile($data['contact_logo']);
 			if((int)$file['listing_id'] !== $listingId) {
-				$data['file_id'] = self::duplicateListingFile($data['contact_logo'], $listingId);
+				$data['contact_logo']['file_id'] = self::duplicateListingFile($data['contact_logo'], $listingId);
 			}
 		}
 
-		if((int)$data['contact_profile']) {
-			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_profile']]);
+        $files = self::getListingFiles($listingId, self::$file_profile,null,false);
+        foreach($files as $file) {
+            if(intval($data['contact_profile']) == 0 or intval($file['file_id']) !== intval($data['contact_profile'])) {
+                self::deleteListingFile($file);
+            }
+        }
 
-			$files = self::getListingFiles($listingId, self::$file_profile, 0);
-			foreach($files as $file) {
-				self::deleteListingFile($file);
-			}
-		} else {
-			$files = self::getListingFiles($listingId, self::$file_profile);
-			foreach($files as $file) {
-				self::deleteListingFile($file);
-			}
-		}
+        if((int)$data['contact_profile']) {
+            $wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_profile']]);
+        }
 
+        $files = self::getListingFiles($listingId, self::$file_logo,null,false);
+        foreach($files as $file) {
+            if(intval($data['contact_logo']) == 0 or intval($file['file_id']) !== intval($data['contact_logo'])) {
+                self::deleteListingFile($file);
+            }
+        }
 		if((int)$data['contact_logo']) {
 			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_logo']]);
-
-			$files = self::getListingFiles($listingId, self::$file_logo, 0);
-			foreach($files as $file) {
-				self::deleteListingFile($file);
-			}
-		} else {
-			$files = self::getListingFiles($listingId, self::$file_logo);
-			foreach($files as $file) {
-				self::deleteListingFile($file);
-			}
 		}
 
 		$rent['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
@@ -596,6 +588,7 @@ class ZaiviaListings {
 
 		$file = self::getListingFile($fileId);
 		$file['listing_id'] = $listingId;
+		$file['confirmed'] = 0;
 		unset($file['file_id']);
 
 		$results = $wpdb->insert($files_tablename, $file);
