@@ -376,43 +376,33 @@ function am_unregister_default_wp_widgets() {
  * Add JS scripts
  */
 function am_add_javascript( ) {
-    
-    global $am_option;
-
-    if (is_singular() && get_option('thread_comments')) {
-//	    wp_enqueue_script( 'comment-reply' );
-    }
-        
     wp_enqueue_script('jquery');
     if( !is_admin() ) {
 	    wp_enqueue_script('am_gmap', "https://maps.googleapis.com/maps/api/js?key=".get_field('google_api_key', 'option'), array( ), '',true );
-        wp_enqueue_script('orakuploader',
-            get_theme_file_uri('includes/js/orakuploader/orakuploader.js'),
-            array('jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-draggable','jquery-ui-droppable')
-        );
 
-
-        wp_enqueue_script('jquery-ui-autocomplete');
+	    wp_enqueue_script('jquery-ui-datepicker');
+	    wp_enqueue_script('jquery-ui-autocomplete');
 
         $am_files = array(
-	        "vendor_js"=>'includes/js/vendor.js',
-	        "general_js"=>'includes/js/general.js',
-	        "edit-listing_js"=>'includes/js/edit-listing.js',
-	        "map_js"=>'includes/js/map.js',
+	        "vendor_js"=>['path' => 'includes/js/vendor.js', 'req' => ['jquery']],
+	        "general_js"=>['path' => 'includes/js/general.js', 'req' => ['jquery']],
+	        "edit-listing_js"=>['path' => 'includes/js/edit-listing.js', 'req' => ['jquery']],
+	        "map_js"=>['path' => 'includes/js/map.js', 'req' => ['jquery']],
+	        "orakuploader"=>['path' => 'includes/js/orakuploader/orakuploader.js', 'req' => ['jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-draggable','jquery-ui-droppable']],
         );
         foreach($am_files as $key=>$am_file){
-            wp_enqueue_script($key, get_theme_file_uri($am_file), array( 'jquery' ),filemtime( get_theme_file_path($am_file)),true );
+            wp_enqueue_script($key, get_theme_file_uri($am_file['path']), $am_file['req'], filemtime( get_theme_file_path($am_file['path'])),true );
         }
-        wp_enqueue_script('jquery-ui-datepicker');
+
 	    $wp_upload_dir = wp_upload_dir();
 	    wp_localize_script('general_js', 'amData', [
 		    'ajaxurl' => admin_url('admin-ajax.php'),
 		    'template_url' => get_template_directory_uri(),
 		    'site_url'=>esc_url(home_url('/')),
-		    'upload_dir'=>$wp_upload_dir["basedir"].'/files/',
-		    'upload_url'=>$wp_upload_dir["baseurl"].'/files/',
+		    'upload_dir'=>$wp_upload_dir["basedir"] . '/files/',
+		    'upload_url'=>$wp_upload_dir["baseurl"] . '/files/',
+		    'uploader_path' => get_template_directory_uri() . '/includes/js/orakuploader/',
 	    ]);
-
     }
 }
 

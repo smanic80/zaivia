@@ -273,6 +273,7 @@ win.send_to_editor( <?php echo wp_json_encode( $html ); ?> );
 function media_handle_upload($file_id, $post_id, $post_data = array(), $overrides = array( 'test_form' => false )) {
 
 	$time = current_time('mysql');
+
 	if ( $post = get_post($post_id) ) {
 		// The post date doesn't usually matter for pages, so don't backdate this upload.
 		if ( 'page' !== $post->post_type && substr( $post->post_date, 0, 4 ) > 0 )

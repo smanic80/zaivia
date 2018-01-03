@@ -71,6 +71,7 @@
         'contact_address':'',
         'contact_city':'',
         'contact_zip':'',
+
         'contact_profile':'',
         'contact_logo':'',
 
@@ -108,34 +109,46 @@
                 'action':'preloadLising',
                 'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
                 'listing_from': $(this).val()
-            };
+            },
+            item = null;
             $.post(amData.ajaxurl, data, function(ret){
 
                 for(var i in listingData) if(listingData.hasOwnProperty(i)){
                     if(i in ret) {
                         listingData[i] = ret[i]
                     }
-                    var item = $('#'+i);
-                    if(item.length){
+
+                    item = $('#'+i);
+                    if(i === 'contact_profile' || i === 'contact_logo') {
+                        setContactFileData(i)
+                    } else if(item.length){
                         if(item[0].tagName === "INPUT"){
                             if(item[0].type === "hidden" || item[0].type === "text"){
                                 item.val(listingData[i]).removeClass('placeholder');
                             }else if(item[0].type === "checkbox"){
                                 item.prop('checked',listingData[i]>0).removeClass('placeholder');
                             } else {
-                                console.log(item[0].type,item);
+                                console.log(item[0].type, item);
                             }
                         } else if(item[0].tagName === "SELECT"){
                             item.val(listingData[i]).removeClass('placeholder');
-                        } else if(item[0].tagName === "TEXTAREA"){
+                        } else if(item[0].tagName === "TEXTAREA" || item[0].tagName === "P"){
                             item.text(listingData[i]).removeClass('placeholder');
                         } else {
-                            console.log(item[0].tagName,item);
+                            //console.log(item[0].tagName, item);
                         }
                     }
                 }
                 initMarker();
             }, 'json');
+
+            function setContactFileData(fileType) {
+                console.log(fileType, listingData[fileType]);
+                if(listingData[fileType]) {
+                    $("#"+fileType).val(listingData[fileType].file_id);
+                    $("#"+fileType+"_file_name").val(listingData[fileType].file_name);
+                }
+            }
         });
 
         $("#post-listing-form .listing_upload").change(function(event){
@@ -163,7 +176,7 @@
             if(error) return false;
 
             form.append('action', 'uploadLisingFile');
-            form.append('listing_id', $("#post-listing-form #listing_id").val());
+            form.append('listing_id', listingData['listing_id']);
             form.append('file_type', $(this).data("type"));
 
             $.ajax({
@@ -193,7 +206,7 @@
             $('#prop_img').orakuploader({
                 orakuploader: true,
                 orakuploader_type: 1,
-                orakuploader_path: amData.template_url + '/includes/js/orakuploader/',
+                orakuploader_path: amData.uploader_path,
                 orakuploader_url: amData.ajaxurl,
                 orakuploader_use_sortable: true,
                 orakuploader_use_dragndrop: true,
@@ -204,7 +217,7 @@
             $('#prop_blue').orakuploader({
                 orakuploader: true,
                 orakuploader_type: 0,
-                orakuploader_path: amData.template_url + '/includes/js/orakuploader/',
+                orakuploader_path: amData.uploader_path,
                 orakuploader_url: amData.ajaxurl,
                 orakuploader_use_sortable: true,
                 orakuploader_use_dragndrop: true,
@@ -327,7 +340,6 @@
 
                     if (status === google.maps.GeocoderStatus.OK) {
                         if (results[1]) {
-                            console.log(results[0]);
                             for(i in results[0].address_components) {
                                 if(results[0].address_components[i].types[0] === 'postal_code') {
                                     if(results[0].address_components[i].long_name !== $("#post-listing-form #zip").val().trim()){
@@ -566,6 +578,8 @@
         $fieldsReq.each(function () {
             data.required[$(this).attr("id")] = $(this).val();
         });
+        $("#status_0, #status_1").removeClass("error");
+
         $fieldsZip.removeClass("error");
         $fieldsZip.each(function () {
             data.zip[$(this).attr("id")] = $(this).val();
@@ -576,11 +590,27 @@
             for(i in ret.errors){
                 if($("#"+ret.errors[i]).length){
 
+                    if(ret.errors[i] === 'status') {
+                        $("#status_0, #status_1").addClass("error");
+                    }
                     $("#"+ret.errors[i]).addClass("error");
+
                     error = true
                 }
             }
+
             listingData.listing_id = ret.listing_id;
+            listingData.contact_profile = ret.contact_profile;
+            listingData.contact_logo = ret.contact_logo;
+
+            $("#listing_id").val(listingData.listing_id);
+
+            $("#contact_profile").val(listingData.contact_profile ? listingData.contact_profile['file_id']: '');
+            $("#contact_profile_file_name").val(listingData.contact_profile ? listingData.contact_profile['file_name']: '');
+
+            $("#contact_logo").val(listingData.contact_logo ? listingData.contact_logo['file_id']: '');
+            $("#contact_logo_file_name").val(listingData.contact_logo ? listingData.contact_logo['file_name']: '');
+
             if(!error && !$(".error:visible").length) {
                 callback()
             }

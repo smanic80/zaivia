@@ -66,8 +66,8 @@ get_header(); ?>
                         <tr>
                             <td><?php echo $listing['address-text']?></td>
                             <td><?php echo $listing['sale_rent-text']; ?></td>
-                            <td><?php echo date('m/d/Y', $listing['date_created']); ?></td>
-                            <td><?php echo $listing['date_published']?date('m/d/Y', $listing['date_published']):''; ?></td>
+                            <td><?php echo ZaiviaListings::formatDate($listing['date_created']); ?></td>
+                            <td><?php echo $listing['date_published'] ? ZaiviaListings::formatDate($listing['date_published']) : ''; ?></td>
                             <td><?php echo $listing['status']; ?></td>
                             <td><?php echo $listing['active-text']; ?></td>
                             <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>

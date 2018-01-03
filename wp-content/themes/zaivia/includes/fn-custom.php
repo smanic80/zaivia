@@ -47,7 +47,7 @@
 		$list = [];
 		$listingId = isset($_POST['listing_id']) ? (int)$_POST['listing_id'] : 0;
 		$fileType = isset($_POST['file_type']) ? (int)$_POST['file_type'] : 0;
-
+		
 		if($listingId && $_FILES) {
 			$list = ZaiviaListings::addListingFile($listingId, '0', $fileType);
 		}
@@ -86,22 +86,28 @@
 				}
 			}
 		}
-		$listingId = 0;
+		$listingData = ['listing_id'=>0];
 		if($_POST['listing-data']){
 			$str = stripslashes_deep($_POST['listing-data']);
 
 			$data = json_decode($str, true);
 
 			if(isset($data['listing_id'])) {
-				$listingId = $data['listing_id'];
+				$listingData['listing_id'] = $data['listing_id'];
 			}
 
 			if(!$errors) {
-				$listingId = ZaiviaListings::save($data);
+				$listingData = ZaiviaListings::saveListing($data);
 			}
 		}
 
-		echo json_encode(["errors"=>$errors, "listing_id"=>$listingId]);
+		echo json_encode(["errors"=>$errors,
+		                  "listing_id"=>$listingData['listing_id'],
+
+		                  "contact_profile"=>$listingData['contact_files']['contact_profile'],
+		                  "contact_profile_file_name"=>$listingData['contact_files']['contact_profile_file_name'],
+		                  "contact_logo"=>$listingData['contact_files']['contact_logo'],
+			              "contact_logo_file_name"=>$listingData['contact_files']['contact_logo_file_name']]);
 
 		die;
 	}
