@@ -158,10 +158,10 @@
 
 
             <fieldset class="mb-30 saleby_0">
-                <input type="hidden" name="contact_profile" id="contact_profile" class="tosave" value="<?php echo ($contact && $contact['contact_profile']) ? $contact['contact_profile']['file_id'] : ''; ?>">
+                <input type="hidden" name="contact_profile" id="contact_profile" class="tosave" value="<?php echo ($contact && isset($contact['contact_profile'])) ? $contact['contact_profile']['file_id'] : ''; ?>">
                 <label><?php _e('Profile Image', 'am') ?></label>
                 <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('JPG, PNG files accepted', 'am') ?></em></p>
-                <p id="contact_profile_file_name"><?php echo ($contact && $contact['contact_profile'] && isset($contact['contact_profile']['file_name'])) ? basename($contact['contact_profile']['file_name']) : ''; ?></p>
+                <p id="contact_profile_file_name"><?php echo ($contact && isset($contact['contact_profile']) && isset($contact['contact_profile']['file_name'])) ? basename($contact['contact_profile']['file_name']) : ''; ?></p>
                 <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
                     <input type="file" id="contact_profile_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_profile?>" data-file="contact_profile" data-filename="contact_profile_file_name" />
                 </label>
@@ -169,10 +169,10 @@
             </fieldset>
 
             <fieldset class="mb-30 saleby_0">
-                <input type="hidden" name="contact_logo" id="contact_logo" class="tosave" value="<?php echo ($contact && $contact['contact_logo']) ? $contact['contact_logo']['file_id'] : ''; ?>">
+                <input type="hidden" name="contact_logo" id="contact_logo" class="tosave" value="<?php echo ($contact && isset($contact['contact_logo'])) ? $contact['contact_logo']['file_id'] : ''; ?>">
                 <label><?php _e('Company Logo', 'am') ?></label>
                 <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('JPG, PNG files accepted', 'am') ?></em></p>
-                <p id="contact_logo_file_name"><?php echo ($contact && $contact['contact_logo'] && isset($contact['contact_logo']['file_name'])) ? basename($contact['contact_logo']['file_name']) : ''; ?></p>
+                <p id="contact_logo_file_name"><?php echo ($contact && isset($contact['contact_logo']) && isset($contact['contact_logo']['file_name'])) ? basename($contact['contact_logo']['file_name']) : ''; ?></p>
                 <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
                     <input type="file" id="contact_logo_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_logo?>"  data-file="contact_logo" data-filename="contact_logo_file_name">
                 </label>

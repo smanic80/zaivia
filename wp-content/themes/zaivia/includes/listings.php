@@ -404,14 +404,8 @@ class ZaiviaListings {
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 
 		if(count($results)){
-			$contact_profile = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
-			$results[0]['contact_profile'] = ($contact_profile && isset($contact_profile['file_id'])) ? $contact_profile['file_id'] : '';
-			$results[0]['contact_profile_file_name'] = ($contact_profile && isset($contact_profile['file_name'])) ? $contact_profile['file_name'] : '';
-
-			$contact_logo = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
-			$results[0]['contact_logo'] = ($contact_logo && isset($contact_logo['file_id'])) ? $contact_logo['file_id'] : '';
-			$results[0]['contact_logo_file_name'] =($contact_logo && isset($contact_logo['file_name'])) ? $contact_logo['file_name'] : '';
-
+			$results[0]['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);;
+			$results[0]['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
 			return $results[0];
 		}
 		return [];
