@@ -105,28 +105,46 @@
         });
 
         $("#post-listing-form #set-draft").change(function(){
+            if(!$(this).val()) return false;
+
             var data = {
-                'action':'preloadLising',
-                'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
-                'listing_from': $(this).val()
-            },
-            item = null;
+                    'action':'preloadLising',
+                    'listing_to': $('#listing_id').val() || listingData['listing_id'] || 0,
+                    'listing_from': $(this).val()
+                },
+                item = items = values = null,
+                i,j,k;
+
             $.post(amData.ajaxurl, data, function(ret){
 
-                for(var i in listingData) if(listingData.hasOwnProperty(i)){
+                console.log(listingData);
+
+                for(i in listingData) if(listingData.hasOwnProperty(i)){
                     if(i in ret) {
                         listingData[i] = ret[i]
                     }
 
                     item = $('#'+i);
                     if(i === 'contact_profile' || i === 'contact_logo') {
-                        setContactFileData(i)
+                        setContactFileData(i);
+                    } else if(i === 'room_features') {
+                        for(j in listingData[i]){
+                            items = $('.'+j);
+                            items.each(function(k){
+                                if(listingData[i][j][k]) {
+                                    $(this).val(listingData[i][j][k]).removeClass('placeholder');
+                                } else {
+                                    $(this).val("");
+                                }
+                            });
+                        }
                     } else if(item.length){
+
                         if(item[0].tagName === "INPUT"){
                             if(item[0].type === "hidden" || item[0].type === "text"){
                                 item.val(listingData[i]).removeClass('placeholder');
                             }else if(item[0].type === "checkbox"){
-                                item.prop('checked',listingData[i]>0).removeClass('placeholder');
+                                item.prop('checked', listingData[i]>0).removeClass('placeholder');
                             } else {
                                 console.log(item[0].type, item);
                             }
@@ -136,6 +154,33 @@
                             item.text(listingData[i]).removeClass('placeholder');
                         } else {
                             //console.log(item[0].tagName, item);
+                        }
+                    } else {
+                        items = $('.'+i);
+                        if(items.length) {
+
+                            if(items[0].tagName === "INPUT"){
+                                if(items[0].type === "hidden" || items[0].type === "text"){
+                                    items.each(function(j){
+                                        if(listingData[i][j]) {
+                                            $(this).val(listingData[i][j]).removeClass('placeholder');
+                                        } else {
+                                            $(this).val("");
+                                        }
+                                    });
+                                } else if(items[0].type === "checkbox"){
+                                    items.prop("checked", false);
+
+                                    for(j in listingData[i]){
+                                        item = items.filter("[value='"+listingData[i][j]+"']");
+                                        if(item.length) {
+                                            item.prop("checked", true).removeClass('placeholder');
+                                        }
+                                    }
+                                } else {
+                                    console.log(item[0].type, item);
+                                }
+                            }
                         }
                     }
                 }
@@ -224,31 +269,7 @@
                 orakuploader_thumbnail_size: 150
             });
         }
-        $( "#search_city" ).autocomplete({
-            source: function( request, response ) {
-                $.ajax( {
-                    url: "http://geogratis.gc.ca/services/geoname/en/geonames.json",
-                    dataType: "jsonp",
-                    data: {
-                        concise: 'CITY,TOWN',
-                        'sort-field':'name',
-                        q: request.term + '*'
-                    },
-                    success: function( data ) {
-                        var res = [];
-                        for(var i in data[0].items) if(data[0].items.hasOwnProperty(i)){
-                            res.push({ label: data[0].items[i].name, value: data[0].items[i].id });
-                        }
-                        response( res );
-                    }
-                } );
-            },
-            minLength: 3,
-            select: function( event, ui ) {
-                $(event.target).val(ui.item.label);
-                return false;
-            }
-        });
+
         if ($("#post-listing-form #map").length) {
             var map;
 
@@ -304,7 +325,7 @@
             }
 
             function initMarker(){
-                $("#post-listing-form  #zip").trigger("change");
+                $("#post-listing-form #zip").trigger("change");
 
                 if($("#post-listing-form #lat").val() && $("#post-listing-form #lng").val()) {
                     var loc = {lat : parseFloat($("#post-listing-form #lat").val()), lng : parseFloat($("#post-listing-form #lng").val())};
@@ -331,6 +352,8 @@
 
                 var geocoder = new google.maps.Geocoder;
 
+
+
                 $("#post-listing-form #lat").val(marker.getPosition().lat());
                 $("#post-listing-form #lng").val(marker.getPosition().lng());
 
@@ -340,6 +363,9 @@
 
                     if (status === google.maps.GeocoderStatus.OK) {
                         if (results[1]) {
+
+                            map.setCenter(latlng);
+
                             for(i in results[0].address_components) {
                                 if(results[0].address_components[i].types[0] === 'postal_code') {
                                     if(results[0].address_components[i].long_name !== $("#post-listing-form #zip").val().trim()){
@@ -486,8 +512,6 @@
                     }
                 }
             });
-
-            console.log(listingData);
         }
 
     });

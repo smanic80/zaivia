@@ -191,7 +191,7 @@
             <p class="intro"><?php _e('Partial Space for Rent', 'am') ?></p>
 	        <?php
                 $items = get_field('partial_rent', 'option');
-	            $partial_rent = $listing ? explode(";", $listing['partial_rent']) : [];
+	            $partial_rent = $listing ? $listing['partial_rent'] : [];
 	        ?>
             <fieldset class="checkbox tosave group" data-key="partial_rent" >
 	            <?php foreach($items as $item):?>
@@ -200,7 +200,7 @@
                     <span class="wpcf7-form-control wpcf7-checkbox">
                       <span class="wpcf7-list-item">
                         <label>
-                            <input type="checkbox" name="partial_rent[]" <?php echo ($listing && in_array($item['name'], $partial_rent))?'checked':''; ?> value="<?php echo $item['name']?>" class="save-item">&nbsp;
+                            <input type="checkbox" name="partial_rent[]" <?php echo ($listing && in_array($item['name'], $partial_rent))?'checked':''; ?> value="<?php echo $item['name']?>" class="partial_rent save-item">&nbsp;
                             <span class="wpcf7-list-item-label"><?php echo $item['name']?></span>
                         </label>
                       </span>
@@ -236,7 +236,7 @@
                               <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                   <label>
-                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="save-item">&nbsp;
+                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="features_<?php echo $type?> save-item">&nbsp;
                                       <span class="wpcf7-list-item-label"><?php echo $item['name']?></span></label>
                                 </span>
                               </span>
@@ -252,7 +252,7 @@
 				<fieldset class="tosave group" data-key="features_<?php echo $type?>_custom"  >
 					<label><?php _e('Other', 'am') ?></label>
                     <?php for ($i=0;$i<5;$i++):?>
-                        <input name="features_<?php echo $type?>_custom[]" type="text" value="<?php echo isset($features_custom[$i])?$features_custom[$i]['feature']:''?>" class="save-item">
+                        <input name="features_<?php echo $type?>_custom[]" type="text" value="<?php echo isset($features_custom[$i])?$features_custom[$i]['feature']:''?>" class="features_<?php echo $type?>_custom save-item">
                     <?php endfor;?>
 				</fieldset>
 			</div>
@@ -282,7 +282,7 @@
                               <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                   <label>
-                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="save-item">&nbsp;
+                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="features_<?php echo $type?> save-item">&nbsp;
                                       <span class="wpcf7-list-item-label"><?php echo $item['name']?></span>
                                   </label>
                                 </span>
@@ -322,7 +322,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
                               <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                   <label>
-                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="save-item">&nbsp;
+                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="features_<?php echo $type?> save-item">&nbsp;
                                       <span class="wpcf7-list-item-label"><?php echo $item['name']?></span>
                                   </label>
                                 </span>
@@ -339,7 +339,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
                 <fieldset class="tosave group" data-key="features_<?php echo $type?>_custom" >
                     <label><?php _e('Other', 'am') ?></label>
 			        <?php for ($i=0;$i<5;$i++):?>
-                        <input name="features_<?php echo $type?>_custom[]" type="text" value="<?php echo isset($features_custom[$i])?$features_custom[$i]['feature']:''?>" class="save-item">
+                        <input name="features_<?php echo $type?>_custom[]" type="text" value="<?php echo isset($features_custom[$i])?$features_custom[$i]['feature']:''?>" class="features_<?php echo $type?>_custom save-item">
 			        <?php endfor;?>
                 </fieldset>
             </div>
@@ -350,7 +350,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 
 <?php
     $items = get_field('room_features', 'option');
-    $features = $listingId ? unserialize($listing['room_features']): [];
+    $features = $listingId ? $listing['room_features']: [];
 ?>
 <div class="acc-item">
 	<h3 class="toggle"><?php _e('Room Features', 'am') ?></h3>
@@ -364,7 +364,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 				</div>
                 <?php for ($i=0;$i<3;$i++):?>
                     <div class="col-sm-6 col-md-4">
-                        <input type="text" name="<?php echo $item['key']?>[]" value="<?php echo isset($features[$item['key']][$i])?$features[$item['key']][$i]:''?>" class="save-item">
+                        <input type="text" name="<?php echo $item['key']?>[]" value="<?php echo isset($features[$item['key']][$i])?$features[$item['key']][$i]:''?>" class="<?php echo $item['key']?> save-item">
                     </div>
                 <?php endfor;?>
 			</div>
@@ -382,7 +382,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 					<label><?php echo get_field("description")?></label>
 				</div>
 				<div class="col-sm-12 col-lg-8">
-					<textarea class="big" name="description" id="description" class="tosave"><?php echo $listing?$listing['description']:''; ?></textarea>
+					<textarea class="big tosave" name="description" id="description"><?php echo $listing?$listing['description']:''; ?></textarea>
 				</div>
 			</div>
 		</fieldset>
@@ -511,7 +511,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox" value="<?php echo $rent_utility['key']?>"<?php echo (in_array($rent_utility['key'], $rent['rent_utilities']))?' checked':''; ?> class="save-item">&nbsp;
+                                        <input type="checkbox" name="rent_utilities[]" value="<?php echo $rent_utility['key']?>"<?php echo ($rent['rent_utilities'] && in_array($rent_utility['key'], $rent['rent_utilities']))?' checked':''; ?> class="rent_utilities save-item">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php echo $rent_utility['name']?></span>
                                     </label>
                                 </span>

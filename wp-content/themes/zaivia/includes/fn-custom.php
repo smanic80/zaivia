@@ -64,7 +64,6 @@
 
 		$listing = ZaiviaListings::duplicateListing($listing_from, $listing_to);
 
-
         echo json_encode($listing);
         die;
     }
@@ -86,15 +85,26 @@
 				}
 			}
 		}
-		$listingData = ['listing_id'=>0];
-		if($_POST['listing-data']){
-			$str = stripslashes_deep($_POST['listing-data']);
 
-			$data = json_decode($str, true);
+		$listingData = [
+			"errors"=>$errors,
+			"listing_id"=>0,
+			"contact_profile"=>0,
+			"contact_logo"=>0,
+		];
+
+		if(isset($_POST['listing-data'])){
+			$str  = stripslashes_deep( $_POST['listing-data'] );
+			$data = @json_decode( $str, true );
 
 			if(isset($data['listing_id'])) {
 				$listingData['listing_id'] = $data['listing_id'];
 			}
+
+			$listingData = [
+				"contact_profile"=>isset($data['contact_profile']) ? ZaiviaListings::getListingFile((int)$data['contact_profile']) : 0,
+				"contact_logo"=>isset($data['contact_logo']) ? ZaiviaListings::getListingFile((int)$data['contact_logo']) : 0,
+			];
 
 			if(!$errors) {
 				$listingData = ZaiviaListings::saveListing($data);

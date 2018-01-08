@@ -81,6 +81,27 @@ class ZaiviaListings {
 		}
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
+		foreach($results as $key=>$val) {
+			$results[$key]['partial_rent'] = explode(";", $val['partial_rent']);
+			$results[$key]['room_features'] = unserialize($val['room_features']);
+
+			for($i=1; $i<=3; $i++) {
+				$featuresArray = [];
+				$features = self::getListingFeatures($listingId, $i, 0);
+				foreach($features as $feature) {
+					$featuresArray[] = $feature['feature'];
+				}
+				$results[$key]["features_{$i}"] = $featuresArray;
+
+				$featuresArray = [];
+				$features = self::getListingFeatures($listingId, $i, 1);
+				foreach($features as $feature) {
+					$featuresArray[] = $feature['feature'];
+				}
+				$results[$key]["features_{$i}_custom"] = $featuresArray;
+			}
+
+		}
 		$results = ($listingId && isset($results[0]))?$results[0]:$results;
 
 		return $results;
@@ -174,6 +195,7 @@ class ZaiviaListings {
 			$listingId = $wpdb->insert_id;
 
 		}
+
 		$res = self::updateListingContact( $listingId, $data );
 		$res['listing_id'] = $listingId;
 
@@ -198,7 +220,18 @@ class ZaiviaListings {
 		global $wpdb;
 		$files_tablename = $wpdb->prefix . self::$listing_tablename;
 
-		return (bool) $wpdb->update($files_tablename, ['activated'=>1,'user_id'=>get_current_user_id()], ['listing_id' => $listingId]);
+		$preparedData = [
+			'activated'=>1,
+			'date_published' => date('Y-m-d H:i:s', time()),
+		];
+
+		$listing = self::getUserListings(get_current_user_id(), $listingId);
+		if($listing['to_delete'] === '1') {
+			$preparedData['to_delete'] = 0;
+			$preparedData['date_created'] = date('Y-m-d H:i:s', time());
+		}
+
+		return (bool) $wpdb->update($files_tablename, $preparedData, ['listing_id' => $listingId]);
 	}
 
 
@@ -239,11 +272,11 @@ class ZaiviaListings {
 		return $results;
 	}
 
-	public static function updateListingFeatures($listingId, $i, $features, $isCustom){
+	public static function updateListingFeatures($listingId, $type, $features, $isCustom){
 		global $wpdb;
 
 		$features_tablename = $wpdb->prefix . self::$features_tablename;
-		$currentFeatures = self::getListingFeatures($listingId, $i, $isCustom);
+		$currentFeatures = self::getListingFeatures($listingId, $type, $isCustom);
 
 		foreach($currentFeatures as $currentFeature) {
 			$key = array_search($currentFeature['feature'], $features);
@@ -255,7 +288,7 @@ class ZaiviaListings {
 		}
 
 		foreach($features as $feature) {
-			$data = ['listing_id'=>$listingId, 'feature_type'=>$i, 'feature_custom'=>$isCustom, 'feature'=>$feature];
+			$data = ['listing_id'=>$listingId, 'feature_type'=>$type, 'feature_custom'=>$isCustom, 'feature'=>$feature];
 			$format = ["%d", "%d", "%d", "%s"];
 			$wpdb->insert($features_tablename, $data, $format);
 		}
@@ -406,6 +439,7 @@ class ZaiviaListings {
 		if(count($results)){
 			$results[0]['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);;
 			$results[0]['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
+
 			return $results[0];
 		}
 		return [];
@@ -452,16 +486,23 @@ class ZaiviaListings {
 			$wpdb->insert($contact_tablename, $rent);
 		}
 
+		if(isset($data['contact_profile']) && is_array($data['contact_profile']) && isset($data['contact_profile']['file_id'])) {
+			$data['contact_profile'] = $data['contact_profile']['file_id'];
+		}
+		if(isset($data['contact_logo']) && is_array($data['contact_logo']) && isset($data['contact_logo']['file_id'])) {
+			$data['contact_logo'] = $data['contact_logo']['file_id'];
+		}
+
 		if((int)$data['contact_profile']) {
 			$file = self::getListingFile($data['contact_profile']);
 			if((int)$file['listing_id'] !== $listingId) {
-				$data['contact_profile']['file_id'] = self::duplicateListingFile($data['contact_profile'], $listingId);
+				$data['contact_profile'] = self::duplicateListingFile($data['contact_profile'], $listingId);
 			}
 		}
 		if((int)$data['contact_logo']) {
 			$file = self::getListingFile($data['contact_logo']);
 			if((int)$file['listing_id'] !== $listingId) {
-				$data['contact_logo']['file_id'] = self::duplicateListingFile($data['contact_logo'], $listingId);
+				$data['contact_logo'] = self::duplicateListingFile($data['contact_logo'], $listingId);
 			}
 		}
 
@@ -489,7 +530,7 @@ class ZaiviaListings {
 		$rent['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
 		$rent['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
 
-		update_user_meta(get_current_user_id(), "listing_contact", $rent);
+//		update_user_meta(get_current_user_id(), "listing_contact", $rent);
 
 		return ['contact_profile' => $rent['contact_profile'], 'contact_logo'=>$rent['contact_logo']];
 	}
@@ -539,8 +580,15 @@ class ZaiviaListings {
 		$sql = "SELECT * from $files_tablename where file_id = ".(int)$id;
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
+	    $results = count($results)?$results[0]:[];
+		if($results){
+			$fileUrl = wp_get_attachment_url( $results['media_id']);
+			$results['file_url'] = $fileUrl ;
+			$results['file_name'] = basename($fileUrl);
+			$results['thumb'] = wp_get_attachment_image_url($results['media_id'],'listing-th');
+		}
 
-		return count($results)?$results[0]:[];
+		return $results;
 	}
 
 
@@ -589,10 +637,13 @@ class ZaiviaListings {
 		$file = self::getListingFile($fileId);
 		$file['listing_id'] = $listingId;
 		$file['confirmed'] = 0;
+
 		unset($file['file_id']);
+		unset($file['thumb']);
+		unset($file['file_name']);
+		unset($file['file_url']);
 
 		$results = $wpdb->insert($files_tablename, $file);
-
 		$res = $results ? $wpdb->insert_id : 0;
 
 		return $res;
@@ -623,7 +674,8 @@ class ZaiviaListings {
 		return $num;
 	}
 	public static function formatDate($date) {
-		return $date;
+		$d = new DateTime($date);
+		return $d->format("M j, Y ");
 	}
 }
 

@@ -2,8 +2,33 @@
 
     $(document).ready(function($) {
 
-
-
+        if ($("#map2").length) {
+            $("#search_city").autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "http://geogratis.gc.ca/services/geoname/en/geonames.json",
+                        dataType: "jsonp",
+                        data: {
+                            concise: 'CITY,TOWN',
+                            'sort-field': 'name',
+                            q: request.term + '*'
+                        },
+                        success: function (data) {
+                            var res = [];
+                            for (var i in data[0].items) if (data[0].items.hasOwnProperty(i)) {
+                                res.push({label: data[0].items[i].name, value: data[0].items[i].id});
+                            }
+                            response(res);
+                        }
+                    });
+                },
+                minLength: 3,
+                select: function (event, ui) {
+                    $(event.target).val(ui.item.label);
+                    return false;
+                }
+            });
+        }
       if ($("#map2").length) {
 
         var side_bar_html = "";
