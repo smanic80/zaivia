@@ -2,7 +2,7 @@
 
     $(document).ready(function($) {
 
-        if ($("#map2").length) {
+        if ($("#search_city").length) {
             $("#search_city").autocomplete({
                 source: function (request, response) {
                     $.ajax({
@@ -28,7 +28,21 @@
                     return false;
                 }
             });
+            $(".search_city").click(function(e){
+                e.preventDefault();
+
+                if($("#search_city").val()) {
+                    $("#search_city_error").hide();
+                    window.location.href = $(this).attr("rel")+"?city="+$("#search_city").val();
+                } else {
+                    $("#search_city_error").show();
+                }
+
+            });
         }
+
+
+
       if ($("#map2").length) {
 
         var side_bar_html = "";

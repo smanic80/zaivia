@@ -14,9 +14,10 @@ get_header(); ?>
                     <label><?php the_field("search_text")?></label>
                     <div class="set">
                         <input type="text" placeholder="Enter a city" id="search_city">
-                        <button type="submit" class="btn btn-secondary btn-lg"><?php _e('Buy', 'am') ?></button>
-                        <button type="submit" class="btn btn-secondary btn-lg"><?php _e('Rent', 'am') ?></button>
+                        <button type="submit" class="btn btn-secondary btn-lg search_city" rel="<?php the_field("page_buy", "option")?>"><?php _e('Buy', 'am') ?></button>
+                        <button type="submit" class="btn btn-secondary btn-lg search_city" rel="<?php the_field("page_rent", "option")?>"><?php _e('Rent', 'am') ?></button>
                     </div>
+                    <p id="search_city_error" class="error" style="display: none;"><?php _e('Enter a city to search', 'am') ?></p>
                 </form>
             </div>
         </div>
