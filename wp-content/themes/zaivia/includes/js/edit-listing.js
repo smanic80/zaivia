@@ -153,7 +153,7 @@
                         } else if(item[0].tagName === "TEXTAREA" || item[0].tagName === "P"){
                             item.text(listingData[i]).removeClass('placeholder');
                         } else {
-                            //console.log(item[0].tagName, item);
+                            console.log(item[0].tagName, item);
                         }
                     } else {
                         items = $('.'+i);
@@ -188,10 +188,9 @@
             }, 'json');
 
             function setContactFileData(fileType) {
-                console.log(fileType, listingData[fileType]);
                 if(listingData[fileType]) {
                     $("#"+fileType).val(listingData[fileType].file_id);
-                    $("#"+fileType+"_file_name").val(listingData[fileType].file_name);
+                    $("#"+fileType+"_file_name").text(listingData[fileType].file_name);
                 }
             }
         });
