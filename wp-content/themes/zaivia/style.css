@@ -7101,7 +7101,10 @@ select::-ms-expand {
 .main-filter .dropdown.price ul li {
   padding: 2px 0 8px;
 }
-
+#select_price_max{
+  display: none;
+  text-align: right;
+}
 .main-filter .dropdown.mega {
   padding: 30px 0 20px;
 }

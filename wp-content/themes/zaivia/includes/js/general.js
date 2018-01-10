@@ -309,11 +309,25 @@
         });
 
 
-        $(".select.price ul li a").click(function(){
-            var $sel = $(this).parents('.select');
-            $("#filter_price_min, #hidden_price_min").val($(this).attr("rel"));
-            $("#filter_price_max, #hidden_price_max").val('');
-
+        $("#select_price_min li a").click(function(){
+          var v = parseInt($(this).attr("rel"));
+          var step = 25000;
+          if(v>100000){step = 50000}
+          $("#filter_price_min,#hidden_price_min").val(v);
+          $("#select_price_min").hide();
+          var val = v+step;
+          $("#select_price_max li a").each(function () {
+              $(this).attr('rel',val).text('$'+parseInt(val/1000)+',000+');
+              val+=step;
+          });
+          $("#select_price_max").show();
+          return false;
+        });
+        $("#select_price_max li a").click(function(){
+            $("#filter_price_max,#hidden_price_max").val($(this).attr("rel"));
+            $("#select_price_max").hide();
+            $("#select_price_min").show();
+            $(".select.price > .current").trigger('click');
             return false;
         });
         $("#filter_price_min, #filter_price_max").change(function(){

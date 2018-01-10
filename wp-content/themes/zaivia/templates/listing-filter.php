@@ -58,7 +58,7 @@
                     <li><a href="#" rel="400000">$400,000+</a></li>
                     <li><a href="#" rel="500000">$500,000+</a></li>
                 </ul>
-                <ul id="select_price_min">
+                <ul id="select_price_max">
                     <li><a href="#" rel="250000">$250,000</a></li>
                     <li><a href="#" rel="50000">$50,000</a></li>
                     <li><a href="#" rel="75000">$75,000+</a></li>
