@@ -24,7 +24,7 @@ remove_action('wp_head', 'print_emoji_detection_script', 7);
 remove_action('wp_print_styles', 'print_emoji_styles');
 
 // create demo user which can not install plugins and themes
-add_action('init', 'am_demo_role');
+//add_action('init', 'am_demo_role');
 
 //acf plugin
 if( function_exists('acf_add_options_page') ) {

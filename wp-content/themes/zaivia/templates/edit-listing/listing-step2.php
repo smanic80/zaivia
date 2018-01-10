@@ -401,7 +401,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                 <fieldset>
                     <label><?php _e('Date Available', 'am') ?></label>
                     <div class="datepick">
-                        <input type="text" placeholder="June 23" class="datepicker tosave" id="rent_date" title="" value="<?php echo $rent['rent_date']; ?>">
+                        <input type="text" placeholder="June 23" class="datepicker tosave" id="rent_date" title="" value="<?php echo isset($rent['rent_date'])?$rent['rent_date']:''; ?>">
                         <div class="trigger">
                             <i class="fa fa-calendar" aria-hidden="true"></i>
                         </div>
@@ -409,41 +409,41 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                 </fieldset>
                 <fieldset>
                     <label><?php _e('Security Deposit', 'am') ?></label>
-                    <input type="text" id="rent_deposit" title="" class="tosave" value="<?php echo $rent['rent_deposit']; ?>">
+                    <input type="text" id="rent_deposit" title="" class="tosave" value="<?php echo isset($rent['rent_deposit'])?$rent['rent_deposit']:''; ?>">
                 </fieldset>
                 <fieldset>
                     <label><?php _e('Furnishings', 'am') ?></label>
                     <select id="rent_furnishings" title="" class="tosave">
-                        <option<?php echo $rent['rent_furnishings']?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
-                        <option<?php echo !$rent['rent_furnishings']?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && $rent['rent_furnishings'])?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && !$rent['rent_furnishings'])?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
                     </select>
                 </fieldset>
                 <fieldset>
                     <label><?php _e('Pets', 'am') ?></label>
                     <select id="rent_pets" title="" class="tosave">
-                        <option<?php echo $rent['rent_pets']?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
-                        <option<?php echo !$rent['rent_pets']?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && $rent['rent_pets'])?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && !$rent['rent_pets'])?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
                     </select>
                 </fieldset>
                 <fieldset>
                     <label><?php _e('Smoking', 'am') ?></label>
                     <select id="rent_smoking" title="" class="tosave">
-                        <option<?php echo $rent['rent_smoking']?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
-                        <option<?php echo !$rent['rent_smoking']?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && $rent['rent_smoking'])?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && !$rent['rent_smoking'])?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
                     </select>
                 </fieldset>
                 <fieldset>
                     <label><?php _e('Laundry', 'am') ?></label>
                     <select id="rent_laundry" title="" class="tosave">
-                        <option<?php echo $rent['rent_laundry']?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
-                        <option<?php echo !$rent['rent_laundry']?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && $rent['rent_laundry'])?' selected':''; ?> value="1"><?php _e('Yes', 'am') ?></option>
+                        <option<?php echo (isset($rent['rent_furnishings']) && !$rent['rent_laundry'])?' selected':''; ?> value="0"><?php _e('No', 'am') ?></option>
                     </select>
                 </fieldset>
                 <fieldset class="mb-30">
-                    <input type="hidden" name="rent_file" id="rent_file" class="tosave" value="<?php echo $rent['rent_file']?$rent['rent_file']['file_id']:''; ?>">
+                    <input type="hidden" name="rent_file" id="rent_file" class="tosave" value="<?php echo isset($rent['rent_file'])?$rent['rent_file']['file_id']:''; ?>">
                     <label><?php _e('Rental Application Upload', 'am') ?></label>
                     <p class="intro2"><i class="fa fa-info-circle" aria-hidden="true"></i><em><?php _e('DOC, DOCX, PDF files accepted', 'am') ?></em></p>
-                    <p id="rent_file_name"><?php echo ($rent['rent_file'] && isset($rent['rent_file']['file_name'])) ? basename($rent['rent_file']['file_name']) : ''; ?></p>
+                    <p id="rent_file_name"><?php echo (isset($rent['rent_file']) && isset($rent['rent_file']['file_name'])) ? basename($rent['rent_file']['file_name']) : ''; ?></p>
                     <label class="btn btn-secondary"><?php _e('Upload', 'am') ?>
                         <input type="file" id="rent_file_input" class="listing_upload" data-type="<?php echo ZaiviaListings::$file_rent?>"  data-file="rent_file" data-filename="rent_file_name">
                     </label>
@@ -457,7 +457,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox"<?php echo $rent['rent_electrified_parking']?' checked':''; ?> id="rent_electrified_parking" class="tosave" value="1">&nbsp;
+                                        <input type="checkbox"<?php echo (isset($rent['rent_electrified_parking']) && $rent['rent_electrified_parking'])?' checked':''; ?> id="rent_electrified_parking" class="tosave" value="1">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php _e('Electrified Parking', 'am') ?></span>
                                     </label>
                                 </span>
@@ -469,7 +469,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox"<?php echo $rent['rent_secured_entry']?' checked':''; ?> id="rent_secured_entry" class="tosave" value="1">&nbsp;
+                                        <input type="checkbox"<?php echo (isset($rent['rent_secured_entry']) && $rent['rent_secured_entry'])?' checked':''; ?> id="rent_secured_entry" class="tosave" value="1">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php _e('Secured Entry', 'am') ?></span>
                                     </label>
                                 </span>
@@ -481,7 +481,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox"<?php echo $rent['rent_private_entry']?' checked':''; ?> id="rent_private_entry" class="tosave" value="1">&nbsp;
+                                        <input type="checkbox"<?php echo (isset($rent['rent_private_entry']) && $rent['rent_private_entry'])?' checked':''; ?> id="rent_private_entry" class="tosave" value="1">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php _e('Private Entry', 'am') ?></span>
                                     </label>
                                 </span>
@@ -493,7 +493,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox"<?php echo $rent['rent_onsite']?' checked':''; ?> id="rent_onsite" class="tosave" value="1">&nbsp;
+                                        <input type="checkbox"<?php echo (isset($rent['rent_onsite']) && $rent['rent_onsite'])?' checked':''; ?> id="rent_onsite" class="tosave" value="1">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php _e('Onsite Management', 'am') ?></span>
                                     </label>
                                 </span>
@@ -511,7 +511,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
                             <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                     <label>
-                                        <input type="checkbox" name="rent_utilities[]" value="<?php echo $rent_utility['key']?>"<?php echo ($rent['rent_utilities'] && in_array($rent_utility['key'], $rent['rent_utilities']))?' checked':''; ?> class="rent_utilities save-item">&nbsp;
+                                        <input type="checkbox" name="rent_utilities[]" value="<?php echo $rent_utility['key']?>"<?php echo (isset($rent['rent_utilities']) && in_array($rent_utility['key'], $rent['rent_utilities']))?' checked':''; ?> class="rent_utilities save-item">&nbsp;
                                         <span class="wpcf7-list-item-label"><?php echo $rent_utility['name']?></span>
                                     </label>
                                 </span>
