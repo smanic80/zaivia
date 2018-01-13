@@ -236,7 +236,7 @@
                               <span class="wpcf7-form-control wpcf7-checkbox">
                                 <span class="wpcf7-list-item">
                                   <label>
-                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['name']?>" <?php echo ($listing && am_array_search($item['name'], "feature", $features)!==null)?'checked':''; ?> class="features_<?php echo $type?> save-item">&nbsp;
+                                      <input type="checkbox" name="features_<?php echo $type?>[]" value="<?php echo $item['key']?>" <?php echo ($listing && am_array_search($item['key'], "feature", $features)!==null)?'checked':''; ?> class="features_<?php echo $type?> save-item">&nbsp;
                                       <span class="wpcf7-list-item-label"><?php echo $item['name']?></span></label>
                                 </span>
                               </span>

@@ -385,7 +385,7 @@ function am_add_javascript( ) {
 
         $am_files = array(
 	        "vendor_js"=>['path' => 'includes/js/vendor.js', 'req' => ['jquery']],
-	        "general_js"=>['path' => 'includes/js/general.js', 'req' => ['jquery']],
+	        "general_js"=>['path' => 'includes/js/general.js', 'req' => ['jquery','wp-util']],
 	        "edit-listing_js"=>['path' => 'includes/js/edit-listing.js', 'req' => ['jquery']],
 	        "map_js"=>['path' => 'includes/js/map.js', 'req' => ['jquery']],
 	        "orakuploader"=>['path' => 'includes/js/orakuploader/orakuploader.js', 'req' => ['jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-draggable','jquery-ui-droppable']],

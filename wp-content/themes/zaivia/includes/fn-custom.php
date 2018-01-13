@@ -151,3 +151,10 @@
 		}
 		return null;
 	}
+
+add_action( 'wp_ajax_getListings', 'getListings' );
+add_action( 'wp_ajax_nopriv_getListings', 'getListings' );
+function getListings() {
+    echo json_encode(ZaiviaListings::search($_REQUEST));
+    die;
+}

@@ -439,7 +439,7 @@
         $(document).on('click','#post-listing-form #add-openhouse',function(){
             var $block = $("#post-listing-form #openhouse-block").clone();
             $block.find('.datepicker-hidden').addClass('datepicker').removeClass('datepicker-hidden');
-            $block.removeAttr("id").addClass('array-row').show();
+            $block.removeAttr("id").addClass('array-row').css('display','');
             $("#post-listing-form #more-openhouse").before($block);
             initdatepicker($block.find(".datepicker"));
 
@@ -469,7 +469,7 @@
             $("#post-listing-form .tosave").each(function(){
                 collect = [];
                 if( $(this).hasClass("array") ) {
-                    $(this).find("#post-listing-form .array-row").each(function(){
+                    $(this).find(".array-row").each(function(){
                         var arr = {};
                         var found = true;
                         $(this).find("input,select").each(function(){
@@ -487,7 +487,7 @@
                     $(this).find(".save-item").each(function(){
                         if($(this).attr("type") === 'checkbox' && $(this).is(":checked") ) {
                             collect.push($(this).val());
-                        } 
+                        }
                         if(['text', 'hidden'].indexOf($(this).attr("type")) != -1 && $(this).val() ) {
                             collect.push($(this).val());
                         }

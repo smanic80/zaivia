@@ -298,6 +298,7 @@
             var $sel = $(this).parents('.select');
 
             $("#"+$sel.attr("rel")).val($(this).attr("rel"));
+            search_listings();
 
             if($sel.hasClass("rad")){
                 $sel.find(".current").text($(this).text()).trigger("click");
@@ -314,6 +315,7 @@
           var step = 25000;
           if(v>100000){step = 50000}
           $("#filter_price_min,#hidden_price_min").val(v);
+          search_listings();
           $("#select_price_min").hide();
           var val = v+step;
           $("#select_price_max li a").each(function () {
@@ -325,6 +327,7 @@
         });
         $("#select_price_max li a").click(function(){
             $("#filter_price_max,#hidden_price_max").val($(this).attr("rel"));
+            search_listings();
             $("#select_price_max").hide();
             $("#select_price_min").show();
             $(".select.price > .current").trigger('click');
@@ -337,9 +340,83 @@
 
             $(this).val(val);
             $("#hidden_"+id[1]+"_"+id[2]).val(val);
+            search_listings();
         });
+        $('#filter_form').submit(function (){
+            search_listings();
+            return false;
+        });
+        $('.main-filter input,.main-filter select,#sort_by').change(function (){
+            search_listings();
+            return false;
+        });
+        $(document).on('click','a.page-numbers',function (){
+            $('#page').val($(this).data('page'));
+            search_listings();
+            return false;
+        });
+        function search_listings() {
+            $.ajax({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: {
+                    action: 'getListings',
+                    city: $('#search_city').val(),
+                    rad: $('#hidden_rad').val(),
+                    price_min: $('#hidden_price_min').val(),
+                    price_max: $('#hidden_price_max').val(),
+                    beds: $('#hidden_beds').val(),
+                    hometype: $('#hidden_hometype').val(),
+                    days_on: $('#days-on-select').val(),
+                    baths: $('#baths-select').val(),
+                    sqft_min: $('#sqft-min').val(),
+                    sqft_max: $('#sqft-max').val(),
+                    year_min: $('#year-built-min').val(),
+                    year_max: $('#year-built-max').val(),
+                    sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
+                    features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
+                    sort_by:$('#sort_by').val(),
+                    page:$('#page').val()
+                },
+                success: function (data) {
+                    var list = $('.ad-listing');
+                    var listing_item = wp.template( "listing-item" );
+                    list.empty();
+                    for(var i in data.items) if (data.items.hasOwnProperty(i)){
+                        list.append(listing_item(data.items[i]));
+                    }
+                    $('.found-line p').text(data.count + ' Listings Found For Sale In '+$('#search_city').val());
 
-
+                    var pagination = $('.pagination');
+                    pagination.empty();
+                    if(data.page == 1){
+                        pagination.append('<span class="page-numbers">Previous</span>');
+                    } else {
+                        pagination.append('<a class="prev page-numbers" data-page="'+(data.page-1)+'" href="#">Previous</a>');
+                    }
+                    var p_start = data.page - 5;
+                    if(p_start<1){
+                        p_start = 1;
+                    }
+                    var p_end = data.page + 5;
+                    if(p_end > data.pages){
+                        p_end = data.pages;
+                    }
+                    for (var p=p_start; p <= p_end; p++){
+                        if(p == data.page){
+                            pagination.append('<span class="page-numbers current">'+p+'</span>');
+                        } else {
+                            pagination.append('<a class="page-numbers" data-page="'+p+'" href="#">'+p+'</a>');
+                        }
+                    }
+                    if(data.page == data.pages){
+                        pagination.append('<span class="page-numbers">Next</span>');
+                    } else {
+                        pagination.append('<a class="prev page-numbers" data-page="'+(data.page+1)+'" href="#">Next</a>');
+                    }
+                }
+            });
+        }
         $("input.update_checks").each(function(){
             var checks = [];
 
