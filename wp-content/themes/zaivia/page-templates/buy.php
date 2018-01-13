@@ -20,7 +20,12 @@ get_header(); ?>
 
         
           <div class="sub-filter">
-            <select class="custom-sort"><option value="">Sort By</option></select>
+            <select class="custom-sort" id="sort_by" title="">
+                <option value="date_new_old">Date Posted: New to Old</option>
+                <option value="date_old_new">Date Posted: Old to New</option>
+                <option value="price_high_low">Price: High To Low</option>
+                <option value="price_low_high">Price: Low To High</option>
+            </select>
             <ul>
               <li class="current"><a href="#"><i class="fa fa-list-ul" aria-hidden="true"></i>List View</a></li>
               <li><a href="#"><i class="fa fa-th" aria-hidden="true"></i>Grid View</a></li>
@@ -28,22 +33,13 @@ get_header(); ?>
             </ul>
           </div>
 
-            <?php get_template_part('templates/listing', 'filter-applied');?>
-          
-          <section class="ad-listing">
-            <?php get_template_part('templates/listing', 'item');?>
-          </section>
+          <?php get_template_part('templates/listing', 'filter-applied');?>
+          <?php get_template_part('templates/listing', 'item');?>
+          <section class="ad-listing"></section>
           
           
           <div class="pagination-holder mb-30">
             <div class="pagination pagination-full">
-              <a class="prev page-numbers" href="https://localhost.com/wordpress/category/uncategorized/">Previous</a>
-              <a class="page-numbers" href="https://localhost.com/wordpress/category/uncategorized/">1</a>
-              <a class="page-numbers" href="https://localhost.com/wordpress/category/uncategorized/">2</a>
-              <span class="page-numbers current">3</span>
-              <a class="page-numbers" href="https://localhost.com/wordpress/category/uncategorized/page/3/">4</a>
-              <a class="page-numbers" href="https://localhost.com/wordpress/category/uncategorized/page/3/">5</a>
-              <a class="next page-numbers" href="https://localhost.com/wordpress/category/uncategorized/page/3/">Next</a>
             </div>
           </div>
         </div> 

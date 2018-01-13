@@ -1,66 +1,73 @@
-<article class="ad-item">
-  <div class="featured">
-    FEATURED LISTING
-  </div>
-  <div class="image" style="background-image: url(images/pd1.jpg)">
-    <a href="#"><img src="images/pd1.jpg" alt=""></a>
-    <div class="badges">
-      <div class="open">
-        OPEN HOUSE
-        <div class="tooltip">
-          <ul>
-            <li><i class="fa fa-calendar-o" aria-hidden="true"></i><strong>Sunday, April 27</strong><br>10:00AM - 12:00PM </li>
-            <li><i class="fa fa-calendar-o" aria-hidden="true"></i><strong>Monday, April 28</strong><br>10:00AM - 12:00PM </li>
-          </ul>
+<script type="text/html" id="tmpl-listing-item">
+    <article class="ad-item<# if ( data.premium > 0 ) { #> premium<# } #>">
+        <# if ( data.featured > 0 ) { #>
+        <div class="featured">FEATURED LISTING</div>
+        <# } else if ( data.premium > 0 ) { #>
+        <div class="featured">PREMIUM LISTING</div>
+        <# } #>
+        <div class="image" style="background-image: url('{{data.images.file_url}}')">
+            <a href="#"><img src="{{data.images.file_url}}" alt=""></a>
+            <div class="badges">
+                <# if ( data.openhouse.length > 0 ) { #>
+                <div class="open">
+                    OPEN HOUSE
+                    <div class="tooltip">
+                        <ul>
+                            <# for ( i in data.openhouse ) { #>
+                            <li><i class="fa fa-calendar-o" aria-hidden="true"></i><strong>{{data.openhouse[i].src_date}}</strong><br>{{data.openhouse[i].src_start_time}} - {{data.openhouse[i].src_end_time}}</li>
+                            <# } #>
+                        </ul>
+                    </div>
+                </div>
+                <# } #>
+                <# if ( data.new_listing > 0 ) { #>
+                <div class="new">NEW LISTING</div>
+                <# } #>
+            </div>
+            <div class="love">
+                <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
+            </div>
         </div>
-      </div>
-      <div class="new">
-        NEW LISTING
-      </div>
-    </div>
-    <div class="love">
-      <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
-    </div>
-  </div>
-  <div class="text">
-    <div class="left">
-      <h2><a href="#">303 Borlase Cove</a></h2>
-      <p>Stonebridge, Saskatoon SK</p>
-    </div>
-    <div class="price">
-      $200,000
-    </div>
-    <div class="modu">
-      <h6>Modular Home</h6>
-      <div class="cols">
-        <div class="col">
-          <ul>
-            <li>4 Bedrooms</li>
-            <li>4 Bathrooms</li>
-            <li>1,200 sq. ft.</li>
-            <li>Underground parking - secure</li>
-          </ul>
+        <div class="text">
+            <div class="left">
+                <h2><a href="#">{{data.unit_number}} {{data.address}}</a></h2>
+                <p>{{data.city}}, {{data.province}}</p>
+            </div>
+            <div class="price">${{data.price}}</div>
+            <div class="modu">
+                <h6>{{data.property_type}}</h6>
+                <div class="cols">
+                    <div class="col">
+                        <ul>
+                            <li>{{data.bedrooms}} Bedrooms</li>
+                            <li>{{data.bathrooms}} Bathrooms</li>
+                            <li>{{data.square_footage}} sq. ft.</li>
+                            <li>{{data.parking}} parking</li>
+                        </ul>
+                    </div>
+                    <div class="col">
+                        <ul>
+                            <li>Built in {{data.year_built}}</li>
+                            <li>{{data.size_x}} x {{data.size_y}} sq. {{data.size_units}}. lot</li>
+                            <li>{{data.roof_type}} roof</li>
+                            <li>{{data.exterior_type}} exterior</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <# if ( data.sale_by != 1 ) { #>
+            <div class="listed">
+                <p>Listed By<br>{{data.contact.contact_name}}</p>
+                <div class="images">
+                    <div class="ir">
+                        <a href="#"><img src="{{data.contact.contact_logo.thumb}}" alt=""></a>
+                    </div>
+                    <div class="ir">
+                        <a href="#"><img src="{{data.contact.contact_profile.thumb}}" alt=""></a>
+                    </div>
+                </div>
+            </div>
+            <# } #>
         </div>
-        <div class="col">
-          <ul>
-            <li>Built in 1894</li>
-            <li>50 x 50 sq. ft. lot</li>
-            <li>Undeveloped basement</li>
-            <li>Brick exterior</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="listed">
-      <p>Listed By<br>John Smith</p>
-      <div class="images">
-        <div class="ir">
-          <a href="#"><img src="images/ag1.jpg" alt=""></a>
-        </div>
-        <div class="ir">
-          <a href="#"><img src="images/d1.jpg" alt=""></a>
-        </div>
-      </div>
-    </div>
-  </div>
-</article>
+    </article>
+</script>

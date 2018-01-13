@@ -396,7 +396,10 @@ class ZaiviaListings {
 		$sql = "SELECT listing_id, 
 					DATE_FORMAT(`date`,'%m/%d/%Y') as `date`, 
 					(HOUR(start_time)*60+MINUTE(start_time)) as start_time, 
-					(HOUR(end_time)*60+MINUTE(end_time)) as end_time 
+					(HOUR(end_time)*60+MINUTE(end_time)) as end_time,
+					DATE_FORMAT(`date`,'%W, %M %d') as src_date, 
+					DATE_FORMAT(start_time,'%h:%i%p') as src_start_time, 
+					DATE_FORMAT(end_time,'%h:%i%p') as src_end_time 
 				from $openhouse_tablename where listing_id = ".(int)$listingId;
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 
@@ -676,6 +679,114 @@ class ZaiviaListings {
 	public static function formatDate($date) {
 		$d = new DateTime($date);
 		return $d->format("M j, Y ");
+	}
+	public static function search($request) {
+        global $wpdb;
+        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
+        $features_tablename = $wpdb->prefix . self::$features_tablename;
+        $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 ";
+        if($request['rad'] and $request['city']){
+            $geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($request['city']));
+            if($geo){
+                $geo = json_decode($geo,true);
+                if(count($geo['items'])) {
+                    $lat = $geo['items'][0]['latitude'];
+                    $lng = $geo['items'][0]['longitude'];
+                    $sql .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
+                }
+            }
+        }
+        if($request['price_min']){
+            $sql .= ' and ( price >= '.intval($request['price_min']).')';
+        }
+        if($request['price_max']){
+            $sql .= ' and ( price <= '.intval($request['price_max']).')';
+        }
+        if($request['sqft_min']){
+            $sql .= ' and ( square_footage >= '.intval($request['sqft_min']).')';
+        }
+        if($request['sqft_max']){
+            $sql .= ' and ( square_footage <= '.intval($request['sqft_max']).')';
+        }
+        if($request['year_min']){
+            $sql .= ' and ( year_built >= '.intval($request['year_min']).')';
+        }
+        if($request['year_max']){
+            $sql .= ' and ( year_built <= '.intval($request['year_max']).')';
+        }
+        if($request['beds']){
+            $sql .= ' and ( bedrooms >= '.intval($request['beds']).')';
+        }
+        if($request['baths']){
+            $sql .= ' and ( bathrooms >= '.intval($request['baths']).')';
+        }
+        if($request['days_on']){
+            $sql .= ' and ( TO_DAYS(NOW()) - TO_DAYS(date_published) <= '.intval($request['days_on']).')';
+        }
+        if($request['hometype']){
+            $items = explode(',',$request['hometype']);
+            $sql .= ' and ( ';
+            foreach ($items as $item){
+                $sql .= '(property_type like "%'.$item.'%") or ';
+            }
+            $sql .= '0)';
+        }
+        if($request['sale_by']){
+            $items = explode(',',$request['sale_by']);
+            $sql .= ' and ( ';
+            foreach ($items as $item){
+                $sql .= '(sale_by = '.intval($item).') or ';
+            }
+            $sql .= '0)';
+        }
+        if($request['features_1']){
+            $items = explode(',',$request['features_1']);
+            $sql .= ' and ( ';
+            foreach ($items as $item){
+                $sql .= '(feature = "'.$item.'") or ';
+            }
+            $sql .= '0)';
+        }
+        $cnt = $wpdb->get_results('select count(distinct a.listing_id) as cnt '.$sql,ARRAY_A);
+        $cnt = $cnt[0]['cnt'];
+
+        $sql .= ' group by a.listing_id';
+        if($request['features_1']){
+            $items_cnt = count(explode(',',$request['features_1']));
+            $sql .= ' having count(feature_id) = '.$items_cnt;
+        }
+        if(in_array($request['sort_by'],array('price_low_high','price_high_low','date_old_new','date_new_old'))){
+            $sql .= ' order by ';
+            if($request['sort_by'] == 'price_low_high'){
+                $sql .= 'price asc';
+            } elseif($request['sort_by'] == 'price_high_low'){
+                $sql .= 'price desc';
+            } elseif($request['sort_by'] == 'date_old_new'){
+                $sql .= 'date_published asc';
+            } elseif($request['sort_by'] == 'date_new_old'){
+                $sql .= 'date_published desc';
+            }
+        }
+        $per_page = 10;
+        $page = $request['page']?intval($request['page']):1;
+        if($page < 1) {
+            $page = 1;
+        }
+        $page_max = ceil($cnt/$per_page);
+        if($page > $page_max ) {
+            $page = $page_max;
+        }
+        //var_dump($sql);die;
+        $sql .= ' limit '.(($page-1)*$per_page).','.$per_page;
+//todo list only used fields
+        $results = $wpdb->get_results( 'SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing '.$sql, ARRAY_A);
+
+        foreach($results as $key=>$val) {
+            $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
+            $results[$key]['contact'] = self::getListingContact($val['listing_id']);
+            $results[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max);
 	}
 }
 

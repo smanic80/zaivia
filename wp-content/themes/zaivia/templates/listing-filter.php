@@ -2,13 +2,14 @@
       <div class="container">
         <div class="row-h">
           <div class="form">
-            <form action="#">
-                <input type="text" class="autocomplete" placeholder="Enter a city" name="city" value="<?php echo isset($_GET['city'])?$_GET['city']:''?>">
+            <form action="#" id="filter_form">
+                <input type="text" class="autocomplete" placeholder="Enter a city" name="city" id="search_city" value="<?php echo isset($_GET['city'])?$_GET['city']:''?>">
                 <input type="hidden" name="rad" id="hidden_rad" value="<?php echo isset($_GET['rad'])?$_GET['rad']:'10'?>">
                 <input type="hidden" name="price_min" id="hidden_price_min" value="<?php echo isset($_GET['price_min'])?$_GET['price_min']:''?>">
                 <input type="hidden" name="price_max" id="hidden_price_max" value="<?php echo isset($_GET['price_max'])?$_GET['price_max']:''?>">
                 <input type="hidden" name="beds" id="hidden_beds" value="<?php echo isset($_GET['beds'])?$_GET['beds']:''?>">
                 <input type="hidden" name="hometype" id="hidden_hometype" class="update_checks" value="<?php echo isset($_GET['hometype'])?$_GET['hometype']:''?>">
+                <input type="hidden" id="page" value="1">
                 <button type="submit"></button>
             </form>
           </div>
@@ -123,7 +124,18 @@
                         <label>Days On Zaivia</label>
                         <div class="select-h">
                           <div class="in">
-                            <select><option>0+</option></select>
+                            <select id="days-on-select" title="">
+                                <option value="0">Any</option>
+                                <option value="1">1 day</option>
+                                <option value="7">7 days</option>
+                                <option value="14">14 days</option>
+                                <option value="30">30 days</option>
+                                <option value="90">90 days</option>
+                                <option value="183">6 months</option>
+                                <option value="365">12 months</option>
+                                <option value="730">24 months</option>
+                                <option value="1095">36 months</option>
+                            </select>
                           </div>
                         </div>
                       </fieldset>
@@ -131,7 +143,12 @@
                         <label>Bathrooms</label>
                         <div class="select-h">
                           <div class="in">
-                            <select><option>0+</option></select>
+                              <?php $bathrooms = get_field('bathrooms', 'option'); ?>
+                              <select id="baths-select" title="">
+                              <?php foreach($bathrooms as $item):?>
+                                  <option value="<?php echo $item['name']?>"><?php echo $item['name']?>+</option>
+                              <?php endforeach; ?>
+                              </select>
                           </div>
                         </div>
                       </fieldset>
@@ -142,13 +159,13 @@
                           <label>Square Feet</label>
                           <div class="row gutters-16">
                             <div class="col-6">
-                              <input type="text" value="Min sqft">
+                              <input type="text" id="sqft-min" placeholder="Min sqft">
                             </div>
                             <div class="col-x">
                               x
                             </div>
                             <div class="col-6">
-                              <input type="text" value="Max sqft">
+                              <input type="text" id="sqft-max" placeholder="Max sqft">
                             </div>
                           </div>
                         </fieldset>
@@ -156,18 +173,19 @@
                           <label>Year Built</label>
                           <div class="row gutters-16">
                             <div class="col-6">
-                              <input type="text" value="Min Yr">
+                              <input type="text" id="year-built-min" placeholder="Min Yr">
                             </div>
                             <div class="col-x">
                               x
                             </div>
                             <div class="col-6">
-                              <input type="text" value="Max Yr">
+                              <input type="text" id="year-built-max" placeholder="Max Yr">
                             </div>
                           </div>
                         </fieldset>
                       </div>
                     </div>
+                    <?php $features_1 = get_field('features_1', 'option'); ?>
                     <div class="col-md-7 col-lg-7 col-xl-6">
                       <label class="left">Show Only</label>
                       <div class="row gutters-16">
@@ -175,72 +193,54 @@
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Active Listings</span></label>
+                                <label><input type="checkbox" class="show_only" value="0"><span>For sale by agent</span></label>
                               </div>
                             </li>
+                            <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>
+                            <?php $index++; if($index % 3 == 1):?>
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Central Air</span></label>
+                                <label><input type="checkbox" class="features_1" value="<?php echo $item['key']; ?>"><span><?php echo $item['name']; ?></span></label>
                               </div>
                             </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Revenue Suite</span></label>
-                              </div>
-                            </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Garage</span></label>
-                              </div>
-                            </li>
+                            <?php endif; ?>
+                            <?php endif; endforeach; ?>
                           </ul>
                         </div>
                         <div class="col-sm-6 col-md-4">
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>For Sale By Agent</span></label>
+                                <label><input type="checkbox" class="show_only" value="1"><span>For sale by owner</span></label>
                               </div>
                             </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Central Vac</span></label>
-                              </div>
-                            </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Pool</span></label>
-                              </div>
-                            </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>New Construction</span></label>
-                              </div>
-                            </li>
+                              <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>
+                                  <?php $index++; if($index % 3 == 2):?>
+                                      <li>
+                                          <div class="wpcf7-checkbox">
+                                              <label><input type="checkbox" class="features_1" value="<?php echo $item['key']; ?>"><span><?php echo $item['name']; ?></span></label>
+                                          </div>
+                                      </li>
+                                  <?php endif; ?>
+                              <?php endif; endforeach; ?>
                           </ul>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-sm-6 col-md-4">
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>For Sale By Agent</span></label>
+                                <label><input type="checkbox" class="show_only" value="2"><span>For sale by property management</span></label>
                               </div>
                             </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Finished Basement</span></label>
-                              </div>
-                            </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>Hot Tub</span></label>
-                              </div>
-                            </li>
-                            <li>
-                              <div class="wpcf7-checkbox">
-                                <label><input type="checkbox"><span>55+ Community</span></label>
-                              </div>
-                            </li>
+                              <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>
+                                  <?php $index++; if($index % 3 == 0):?>
+                                      <li>
+                                          <div class="wpcf7-checkbox">
+                                              <label><input type="checkbox" class="features_1" value="<?php echo $item['key']; ?>"><span><?php echo $item['name']; ?></span></label>
+                                          </div>
+                                      </li>
+                                  <?php endif; ?>
+                              <?php endif; endforeach; ?>
                           </ul>
                         </div>
                       </div>
