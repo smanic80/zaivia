@@ -1,7 +1,24 @@
 (function($) {
 
     $(document).ready(function($) {
-
+        function setSmallMap(pos, label) {
+            if($('#map').length){
+                var small_map = new google.maps.Map(document.getElementById('map'), {
+                    scrollwheel: true,
+                    navigationControl: true,
+                    mapTypeControl: true,
+                    scaleControl: true,
+                    disableDefaultUI: false,
+                    center: pos,
+                    zoom: 13
+                });
+                new google.maps.Marker({
+                    position: pos,
+                    map: small_map,
+                    title: label
+                });
+            }
+        }
         if ($("#search_city").length) {
             $("#search_city").autocomplete({
                 source: function (request, response) {
@@ -16,7 +33,7 @@
                         success: function (data) {
                             var res = [];
                             for (var i in data[0].items) if (data[0].items.hasOwnProperty(i)) {
-                                res.push({label: data[0].items[i].name, value: data[0].items[i].id});
+                                res.push({label: data[0].items[i].name, value: data[0].items[i].id, lat: data[0].items[i].latitude, lng: data[0].items[i].longitude});
                             }
                             response(res);
                         }
@@ -25,6 +42,8 @@
                 minLength: 3,
                 select: function (event, ui) {
                     $(event.target).val(ui.item.label);
+                    var pos = {lat:ui.item.lat, lng:ui.item.lng};
+                    setSmallMap(pos,ui.item.label);
                     return false;
                 }
             });
@@ -355,6 +374,65 @@
             search_listings();
             return false;
         });
+        if($('body').hasClass('page-template-buy')){
+            search_listings();
+            update_fav();
+            if($('#search_city').val()){
+                $.ajax({
+                    url: "http://geogratis.gc.ca/services/geoname/en/geonames.json",
+                    dataType: "jsonp",
+                    data: {
+                        concise: 'CITY,TOWN',
+                        'sort-field': 'name',
+                        q: $('#search_city').val()
+                    },
+                    success: function (data) {
+                        var res = data[0].items[0];
+                        var pos = {lat:res.latitude, lng:res.longitude};
+                        setSmallMap(pos,res.name);
+                    }
+                });
+            }
+        }
+        function update_fav(id, action){
+            var d = {action: 'getFavListings'};
+            if(id>0 && action){
+                d[action] = id;
+            }
+            $.ajax({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: d,
+                success: function (data) {
+                    var listing_item = wp.template( "listing-fav" );
+
+                    var fav_list = $('#fav_tab1');
+                    fav_list.empty();
+                    for(var i in data.fav) if (data.fav.hasOwnProperty(i)){
+                        fav_list.append(listing_item(data.fav[i]));
+                        $('.fa[data-id='+data.fav[i]['listing_id']+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
+                    }
+
+                    var view_list = $('#fav_tab2');
+                    view_list.empty();
+                    for(var j in data.view) if (data.view.hasOwnProperty(j)){
+                        view_list.append(listing_item(data.view[j]));
+                    }
+                }
+            });
+        }
+        $(document).on('click','.fav_add',function () {
+            var id = $(this).data('id');
+            update_fav(id,'add');
+            $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
+            return false;
+        });
+        $(document).on('click','.fav_del',function () {
+            var id = $(this).data('id');
+            update_fav(id,'del');
+            $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
+            return false;
+        });
         function search_listings() {
             $.ajax({
                 url: amData.ajaxurl,
@@ -376,14 +454,20 @@
                     sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
                     features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
                     sort_by:$('#sort_by').val(),
-                    page:$('#page').val()
+                    page:$('#page').val(),
+                    page_id:$('#page_id').val()
                 },
                 success: function (data) {
                     var list = $('.ad-listing');
                     var listing_item = wp.template( "listing-item" );
+                    var listing_ad = wp.template( "listing-ad" );
                     list.empty();
+                    var index = 0;
                     for(var i in data.items) if (data.items.hasOwnProperty(i)){
                         list.append(listing_item(data.items[i]));
+                        if(index % 5 === 4){
+                            list.append(listing_ad(data.ads));
+                        }
                     }
                     $('.found-line p').text(data.count + ' Listings Found For Sale In '+$('#search_city').val());
 

@@ -786,7 +786,45 @@ class ZaiviaListings {
             $results[$key]['contact'] = self::getListingContact($val['listing_id']);
             $results[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
         }
-		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max);
+        $ads = [
+            'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
+            'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
+        ];
+		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads);
 	}
+
+	public static function favorite($request){
+        global $wpdb;
+        $current_user = wp_get_current_user();
+        $fav_ids = get_user_meta($current_user->ID,'favorite_listing',true);
+        if(!is_array($fav_ids)){
+            $fav_ids = array();
+        }
+        $view_ids = get_user_meta($current_user->ID,'recently_listing',true);
+        if(!is_array($view_ids)){
+            $view_ids = array();
+        }
+        if($request['del'] and isset($fav_ids[intval($request['del'])])){
+            unset($fav_ids[intval($request['del'])]);
+            update_user_meta($current_user->ID,'favorite_listing', $fav_ids);
+        }
+        if($request['add']){
+            $fav_ids[intval($request['add'])] = intval($request['add']);
+            update_user_meta($current_user->ID,'favorite_listing', $fav_ids);
+        }
+        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
+        $fav_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where listing_id in (".implode(',',$fav_ids).")", ARRAY_A);
+        foreach($fav_list as $key=>$val) {
+            $fav_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+        $view_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where listing_id in (".implode(',',$view_ids).")", ARRAY_A);
+        foreach($view_list as $key=>$val) {
+            $view_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+	    return array(
+	        'fav'=>$fav_list,
+            'view'=>$view_list
+        );
+    }
 }
 
