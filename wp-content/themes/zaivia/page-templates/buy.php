@@ -5,7 +5,7 @@ Template Post Type: page
 */
 
 get_header(); ?>
-
+<input type="hidden" id="page_id" value="<?php the_ID(); ?>">
 <?php get_template_part('templates/listing', 'filter');?>
 
 <div class="found-line">
@@ -49,16 +49,13 @@ get_header(); ?>
             <div class="widget widget-map">
               <div class="map-h">
                 <div class="map" id="map"></div>
-                <script>
-                  var map1 = {lat: 52.0797723, lng: -106.6608851};
-                </script>
               </div>
             </div>
             <div class="widget widget-need">
               <h3>Do You Need A Designer?</h3>
               <div class="agent-item">
                 <div class="image">
-                  <a href="#"><img src="images/p1.jpg" alt=""></a>
+                  <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/p1.jpg" alt=""></a>
                 </div>
                 <div class="text">
                   <div class="center">
@@ -68,7 +65,7 @@ get_header(); ?>
                     </div>
                     <div class="by">
                       <p>YasTech Developments</p>
-                      <a href="#"><img src="images/a1.png" alt=""></a>
+                      <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/a1.png" alt=""></a>
                     </div>
                   </div>
                 </div>
@@ -123,77 +120,17 @@ get_header(); ?>
             </div>
             <div class="widget widget-tabs">
               <ul class="nav">
-                <li class="current"><a href="#tab1">My Faves</a></li>
-                <li><a href="#tab2">Recently Viewed</a></li>
+                <li class="current"><a href="#fav_tab1">My Faves</a></li>
+                <li><a href="#fav_tab2">Recently Viewed</a></li>
               </ul>
-              <section class="tab-s-c active" id="tab1">
-                <article>
-                  <div class="image">
-                    <a href="#"><img src="images/s1.jpg" alt=""></a>
-                  </div>
-                  <div class="text">
-                    <h4><a href="#">303 Borlase Cove</a></h4>
-                    <p>Stonebridge, <br>Saskatoon SK</p>
-                    <div class="price">
-                      $200,000
-                    </div>
-                    <div class="fav">
-                      <a href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>
-                    </div>
-                  </div>
-                </article>
-                <article>
-                  <div class="image">
-                    <a href="#"><img src="images/s1.jpg" alt=""></a>
-                  </div>
-                  <div class="text">
-                    <h4><a href="#">303 Borlase Cove</a></h4>
-                    <p>Stonebridge, <br>Saskatoon SK</p>
-                    <div class="price">
-                      $200,000
-                    </div>
-                    <div class="fav">
-                      <a href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>
-                    </div>
-                  </div>
-                </article>
-              </section>
-              <section class="tab-s-c" id="tab2">
-                <article>
-                  <div class="image">
-                    <a href="#"><img src="images/s1.jpg" alt=""></a>
-                  </div>
-                  <div class="text">
-                    <h4><a href="#">303 Borlase Cove</a></h4>
-                    <p>Stonebridge, <br>Saskatoon SK</p>
-                    <div class="price">
-                      $200,000
-                    </div>
-                    <div class="fav">
-                      <a href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>
-                    </div>
-                  </div>
-                </article>
-                <article>
-                  <div class="image">
-                    <a href="#"><img src="images/s1.jpg" alt=""></a>
-                  </div>
-                  <div class="text">
-                    <h4><a href="#">303 Borlase Cove</a></h4>
-                    <p>Stonebridge, <br>Saskatoon SK</p>
-                    <div class="price">
-                      $200,000
-                    </div>
-                    <div class="fav">
-                      <a href="#"><i class="fa fa-heart" aria-hidden="true"></i></a>
-                    </div>
-                  </div>
-                </article>
-              </section>
+              <section class="tab-s-c active" id="fav_tab1">To add listings to favorites by clicking on the heart</section>
+              <section class="tab-s-c" id="fav_tab2">No Listings Viewed</section>
             </div>
+            <?php if(get_field('sidebar_banner_url')): ?>
             <div class="widget widget-ad">
-              <a href="#"><img src="images/b2.jpg" alt=""></a>
+              <a href="<?php echo get_field('sidebar_banner_url'); ?>"><img src="<?php echo get_field('sidebar_banner_image'); ?>" alt=""></a>
             </div>
+            <?php endif; ?>
           </aside>
         </div>
         

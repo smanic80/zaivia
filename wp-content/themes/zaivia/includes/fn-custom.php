@@ -158,3 +158,10 @@ function getListings() {
     echo json_encode(ZaiviaListings::search($_REQUEST));
     die;
 }
+
+add_action( 'wp_ajax_getFavListings', 'getFavListings' );
+add_action( 'wp_ajax_nopriv_getFavListings', 'getFavListings' );
+function getFavListings() {
+    echo json_encode(ZaiviaListings::favorite($_REQUEST));
+    die;
+}

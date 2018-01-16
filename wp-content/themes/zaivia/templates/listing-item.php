@@ -5,8 +5,8 @@
         <# } else if ( data.premium > 0 ) { #>
         <div class="featured">PREMIUM LISTING</div>
         <# } #>
-        <div class="image" style="background-image: url('{{data.images.file_url}}')">
-            <a href="#"><img src="{{data.images.file_url}}" alt=""></a>
+        <div class="image"<# if(data.images.file_url) { #> style="background-image: url('{{data.images.file_url}}')"<# } #>>
+        <# if(data.images.file_url) { #><a href="#"><img src="{{data.images.file_url}}" alt=""></a><# } #>
             <div class="badges">
                 <# if ( data.openhouse.length > 0 ) { #>
                 <div class="open">
@@ -25,7 +25,7 @@
                 <# } #>
             </div>
             <div class="love">
-                <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa fa-heart-o fav_add" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
             </div>
         </div>
         <div class="text">
@@ -68,6 +68,32 @@
                 </div>
             </div>
             <# } #>
+        </div>
+    </article>
+</script>
+<script type="text/html" id="tmpl-listing-ad">
+    <div class="ad-insert">
+        <a href="{{data.list_banner_url}}">
+            <img src="{{data.list_banner_image}}" alt="">
+        </a>
+    </div>
+</script>
+<script type="text/html" id="tmpl-listing-fav">
+    <article>
+        <div class="image">
+            <# if(data.images.thumb) { #>
+            <a href="#"><img src="{{data.images.thumb}}" alt=""></a>
+            <# } else { #>
+            &nbsp;<br>&nbsp;<br>
+            <# } #>
+        </div>
+        <div class="text">
+            <h4><a href="#">{{data.unit_number}} {{data.address}}</a></h4>
+            <p>{{data.city}}, <br>{{data.province}}</p>
+            <div class="price">${{data.price}}</div>
+            <div class="fav">
+                <a href="#"><i class="fa fa-heart fav_del" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
+            </div>
         </div>
     </article>
 </script>
