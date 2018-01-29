@@ -374,7 +374,7 @@
             search_listings();
             return false;
         });
-        if($('body').hasClass('page-template-buy')){
+        if($('body').hasClass('page-template-buy') || $('body').hasClass('page-template-rent')){
             search_listings();
             update_fav();
             if($('#search_city').val()){
@@ -394,6 +394,10 @@
                 });
             }
         }
+        if($('body').hasClass('page-template-listing')){
+            var pos = {lat:parseFloat($('#map_lat').val()), lng:parseFloat($('#map_lng').val())};
+            setSmallMap(pos, $('#map_name').val());
+        }
         function update_fav(id, action){
             var d = {action: 'getFavListings'};
             if(id>0 && action){
@@ -405,18 +409,24 @@
                 data: d,
                 success: function (data) {
                     var listing_item = wp.template( "listing-fav" );
-
                     var fav_list = $('#fav_tab1');
                     fav_list.empty();
-                    for(var i in data.fav) if (data.fav.hasOwnProperty(i)){
-                        fav_list.append(listing_item(data.fav[i]));
-                        $('.fa[data-id='+data.fav[i]['listing_id']+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
+                    if(data.fav.length) {
+                        for (var i in data.fav) if (data.fav.hasOwnProperty(i)) {
+                            fav_list.append(listing_item(data.fav[i]));
+                            $('.fa[data-id=' + data.fav[i]['listing_id'] + ']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
+                        }
+                    } else {
+                        fav_list.append('To add listings to favorites by clicking on the heart');
                     }
-
                     var view_list = $('#fav_tab2');
                     view_list.empty();
-                    for(var j in data.view) if (data.view.hasOwnProperty(j)){
-                        view_list.append(listing_item(data.view[j]));
+                    if(data.fav.view) {
+                        for(var j in data.view) if (data.view.hasOwnProperty(j)){
+                            view_list.append(listing_item(data.view[j]));
+                        }
+                    } else {
+                        view_list.append('No Listings Viewed');
                     }
                 }
             });
@@ -433,7 +443,163 @@
             $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
             return false;
         });
+        $(document).on('click','.clear_price',function () {
+            $(this).parent().remove();
+            $('#hidden_price_min').val('');
+            $('#hidden_price_max').val('');
+            search_listings();
+            return false;
+        });
+        $(document).on('click','.clear_beds',function () {
+            $(this).parent().remove();
+            $('#hidden_beds').val('');
+            search_listings();
+            return false;
+        });
+        $(document).on('click','.clear_hometype',function () {
+            $('.checkbox[rel=hidden_hometype] input[value='+$(this).data('val')+']').trigger('click');
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_show_only',function () {
+            $('.show_only[value='+$(this).data('val')+']').trigger('click');
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_features_1',function () {
+            $('.features_1[value='+$(this).data('val')+']').trigger('click');
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_sqft-min',function () {
+            $('#sqft-min').val('');
+            search_listings();
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_sqft-max',function () {
+            $('#sqft-max').val('');
+            search_listings();
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_year-built-min',function () {
+            $('#year-built-min').val('');
+            search_listings();
+            $(this).parent().remove();
+            return false;
+        });
+        $(document).on('click','.clear_year-built-max',function () {
+            $('#year-built-max').val('');
+            search_listings();
+            $(this).parent().remove();
+            return false;
+        });
+        if($('#market').length){
+            $.ajax({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: {
+                    action: 'getMarket',
+                    id: $('#listing_id').val()
+                },
+                success: function (data) {
+                    var listing_item = wp.template( "listing-item" );
+                    var list = $('#sale').find('.ad-listing');
+                    list.empty();
+                    for(var i in data.sale) if (data.sale.hasOwnProperty(i)){
+                        list.append(listing_item(data.sale[i]));
+                    }
+                    list = $('#offer').find('.ad-listing');
+                    list.empty();
+                    for(var j in data.offer) if (data.offer.hasOwnProperty(j)){
+                        list.append(listing_item(data.offer[j]));
+                    }
+                    list = $('#sold').find('.ad-listing');
+                    list.empty();
+                    for(var k in data.sold) if (data.sold.hasOwnProperty(k)){
+                        list.append(listing_item(data.sold[k]));
+                    }
+                }
+            });
+        }
+
+        $(document).on('click','.save_search',function () {
+            $.ajax({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: {
+                    action: 'saveSearch',
+                    city: $('#search_city').val(),
+                    rad: $('#hidden_rad').val(),
+                    price_min: $('#hidden_price_min').val(),
+                    price_max: $('#hidden_price_max').val(),
+                    beds: $('#hidden_beds').val(),
+                    hometype: $('#hidden_hometype').val(),
+                    days_on: $('#days-on-select').val(),
+                    baths: $('#baths-select').val(),
+                    sqft_min: $('#sqft-min').val(),
+                    sqft_max: $('#sqft-max').val(),
+                    year_min: $('#year-built-min').val(),
+                    year_max: $('#year-built-max').val(),
+                    sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
+                    features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
+                    sort_by:$('#sort_by').val(),
+                    page:$('#page').val(),
+                    page_id:$('#page_id').val(),
+                    rent: $('body').hasClass('page-template-rent')
+                },
+                success: function (data) {
+                    alert('success');
+                }
+            });
+            return false;
+        });
         function search_listings() {
+            var filtered = $('.applied-filters ul');
+            filtered.empty();
+            if($('#hidden_price_min').val() && $('#hidden_price_max').val()){
+                filtered.append('<li><a href="#" class="clear_price"><i class="fa fa-times" aria-hidden="true"></i></a>'+$('#hidden_price_min').val()+' - '+$('#hidden_price_max').val()+'</li>');
+            }
+            if($('#hidden_beds').val()){
+                filtered.append('<li><a href="#" class="clear_beds"><i class="fa fa-times" aria-hidden="true"></i></a>'+$('#hidden_beds').val()+'+ Beds</li>');
+            }
+            var items = $('.checkbox[rel=hidden_hometype] input:checked');
+            if(items.length){
+                items.each(function (key,item) {
+                    filtered.append('<li><a href="#" class="clear_hometype" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).val()+'</li>');
+                })
+            }
+            items = $('.show_only:checked');
+            if(items.length){
+                items.each(function (key,item) {
+                    filtered.append('<li><a href="#" class="clear_show_only" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).next().text()+'</li>');
+                })
+            }
+            items = $('.features_1:checked');
+            if(items.length){
+                items.each(function (key,item) {
+                    filtered.append('<li><a href="#" class="clear_features_1" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).next().text()+'</li>');
+                })
+            }
+            if($('#sqft-min').val()){
+                filtered.append('<li><a href="#" class="clear_sqft-min"><i class="fa fa-times" aria-hidden="true"></i></a>Square Min '+$('#sqft-min').val()+' Feet</li>');
+            }
+            if($('#sqft-max').val()){
+                filtered.append('<li><a href="#" class="clear_sqft-max"><i class="fa fa-times" aria-hidden="true"></i></a>Square Max '+$('#sqft-max').val()+' Feet</li>');
+            }
+            if($('#year-built-min').val()){
+                filtered.append('<li><a href="#" class="clear_year-built-min"><i class="fa fa-times" aria-hidden="true"></i></a>Year Built Min '+$('#year-built-min').val()+'</li>');
+            }
+            if($('#year-built-max').val()){
+                filtered.append('<li><a href="#" class="clear_year-built-max"><i class="fa fa-times" aria-hidden="true"></i></a>Year Built Max '+$('#year-built-max').val()+'</li>');
+            }
+
+            if(filtered.find('li').length){
+                $('.applied-filters').show();
+            } else {
+                $('.applied-filters').hide();
+            }
             $.ajax({
                 url: amData.ajaxurl,
                 dataType: "json",
@@ -455,7 +621,8 @@
                     features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
                     sort_by:$('#sort_by').val(),
                     page:$('#page').val(),
-                    page_id:$('#page_id').val()
+                    page_id:$('#page_id').val(),
+                    rent: $('body').hasClass('page-template-rent')
                 },
                 success: function (data) {
                     var list = $('.ad-listing');
@@ -463,6 +630,10 @@
                     var listing_ad = wp.template( "listing-ad" );
                     list.empty();
                     var index = 0;
+                    if(data.featured){
+                        list.append(listing_item(data.featured));
+                        index++;
+                    }
                     for(var i in data.items) if (data.items.hasOwnProperty(i)){
                         list.append(listing_item(data.items[i]));
                         if(index % 5 === 4){
@@ -557,7 +728,10 @@
         $("body").removeClass("active-modal");
         $(".modal-overlay").removeClass("active");
         $("body").addClass("active-modal");
-        $($(this).attr("href")).addClass("active");
+        var form = $($(this).attr("href")).addClass("active");
+        if($(this).data('id')) {
+            form.find('input[name=listing_id]').val($(this).data('id'));
+        }
         return false;
       });
 

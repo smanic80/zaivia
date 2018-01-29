@@ -77,7 +77,7 @@ class ZaiviaListings {
 		if($listingId) {
 			$sql .= " and listing_id = ".(int)$listingId;
 		} else {
-			$sql .= " and to_delete != 1";
+			$sql .= " and deleted = 0 and to_delete != 1";
 		}
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
@@ -106,6 +106,45 @@ class ZaiviaListings {
 
 		return $results;
 	}
+
+    public static function getListing($listingId) {
+        global $wpdb;
+
+        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
+
+        $sql = "SELECT *, 
+					IF(sale_rent = ".self::$for_sale.", 'For Sale', 'For Rent') as `sale_rent-text`, 
+					IF(activated = 1, 'Yes', 'No') as `active-text`,
+					 concat(address, ', ', city, ' ', province) as `address-text`
+				from $listing_tablename 
+				where listing_id = ".(int)$listingId;
+
+        $results = $wpdb->get_results( $sql,ARRAY_A);
+        if(isset($results[0])){
+            $results[0]['partial_rent'] = explode(";", $results[0]['partial_rent']);
+            $results[0]['room_features'] = unserialize($results[0]['room_features']);
+
+            for($i=1; $i<=3; $i++) {
+                $featuresArray = [];
+                $features = self::getListingFeatures($listingId, $i, 0);
+                foreach($features as $feature) {
+                    $featuresArray[] = $feature['feature'];
+                }
+                $results[0]["features_{$i}"] = $featuresArray;
+
+                $featuresArray = [];
+                $features = self::getListingFeatures($listingId, $i, 1);
+                foreach($features as $feature) {
+                    $featuresArray[] = $feature['feature'];
+                }
+                $results[0]["features_{$i}_custom"] = $featuresArray;
+            }
+            $results[0]['rent'] = self::getListingRent($listingId);
+            $results[0]['images'] = self::getListingFiles($listingId,self::$file_image,1,false);
+            $results[0]['blueprint'] = self::getListingFiles($listingId,self::$file_blueprint,1,false);
+        }
+        return $results[0];
+    }
 
 	public static function saveListing($data) {
 		global $wpdb;
@@ -652,6 +691,18 @@ class ZaiviaListings {
 		return $res;
 	}
 
+	public static function deleteListing($listing_id, $reason = '') {
+		global $wpdb;
+        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
+
+        $sql = "SELECT user_id from $listing_tablename where listing_id = ".(int)$listing_id;
+        $listing = $wpdb->get_results( $sql,ARRAY_A);
+
+        if(isset($listing[0]) and $listing[0]['user_id'] == get_current_user_id()) {
+            $wpdb->update($listing_tablename, ['deleted_reason' => $reason, 'deleted' => 1], ['listing_id' => $listing_id]);
+        }
+	}
+
 	public static function deleteListingFile($fileData) {
 		global $wpdb;
 
@@ -684,7 +735,16 @@ class ZaiviaListings {
         global $wpdb;
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
         $features_tablename = $wpdb->prefix . self::$features_tablename;
-        $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 ";
+        $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 and deleted = 0 ";
+        $sql2 = " and to_delete != 1 and deleted = 0 and featured = 1 ";
+        if($request['rent'] == 'true'){
+            $sql .= ' and sale_rent = '.self::$for_rent;
+            $sql2 .= ' and sale_rent = '.self::$for_rent;
+        } else {
+            $sql .= ' and sale_rent = '.self::$for_sale;
+            $sql2 .= ' and sale_rent = '.self::$for_sale;
+        }
+        $featured = false;
         if($request['rad'] and $request['city']){
             $geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($request['city']));
             if($geo){
@@ -693,6 +753,16 @@ class ZaiviaListings {
                     $lat = $geo['items'][0]['latitude'];
                     $lng = $geo['items'][0]['longitude'];
                     $sql .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
+
+                    $sql2 .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
+                    $results = $wpdb->get_results( "SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing FROM $listing_tablename a JOIN (SELECT (RAND() * (SELECT MAX(listing_id) FROM $listing_tablename)) AS id) AS r2 left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 WHERE a.listing_id >= r2.id $sql2 LIMIT 1", ARRAY_A);
+                    if(isset($results[0])){
+                        $results[0]['openhouse'] = self::getListingOpenhouse($results[0]['listing_id']);
+                        $results[0]['contact'] = self::getListingContact($results[0]['listing_id']);
+                        $results[0]['images'] = self::getListingFiles($results[0]['listing_id'],self::$file_image);
+                        $results[0]['featured_one'] = 1;
+                        $featured = $results[0];
+                    }
                 }
             }
         }
@@ -748,7 +818,10 @@ class ZaiviaListings {
             $sql .= '0)';
         }
         $cnt = $wpdb->get_results('select count(distinct a.listing_id) as cnt '.$sql,ARRAY_A);
-        $cnt = $cnt[0]['cnt'];
+        $cnt = $cnt[0]['cnt']+($featured?1:0);
+        if($featured){
+            $sql .= ' and a.listing_id <> '.$featured['listing_id'];
+        }
 
         $sql .= ' group by a.listing_id';
         if($request['features_1']){
@@ -777,7 +850,7 @@ class ZaiviaListings {
             $page = $page_max;
         }
         //var_dump($sql);die;
-        $sql .= ' limit '.(($page-1)*$per_page).','.$per_page;
+        $sql .= ' limit '.(($page-1)*$per_page).','.($per_page-($featured?1:0));
 //todo list only used fields
         $results = $wpdb->get_results( 'SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing '.$sql, ARRAY_A);
 
@@ -790,7 +863,7 @@ class ZaiviaListings {
             'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
             'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
         ];
-		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads);
+		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads,'featured'=>$featured);
 	}
 
 	public static function favorite($request){
@@ -813,11 +886,11 @@ class ZaiviaListings {
             update_user_meta($current_user->ID,'favorite_listing', $fav_ids);
         }
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
-        $fav_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where listing_id in (".implode(',',$fav_ids).")", ARRAY_A);
+        $fav_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$fav_ids).")", ARRAY_A);
         foreach($fav_list as $key=>$val) {
             $fav_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
         }
-        $view_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where listing_id in (".implode(',',$view_ids).")", ARRAY_A);
+        $view_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$view_ids).")", ARRAY_A);
         foreach($view_list as $key=>$val) {
             $view_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
         }
@@ -825,6 +898,41 @@ class ZaiviaListings {
 	        'fav'=>$fav_list,
             'view'=>$view_list
         );
+    }
+
+    public static function getMarket($listing_id)
+    {
+        global $wpdb;
+        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
+        $listing = $wpdb->get_results( "SELECT lat,lng from $listing_tablename where listing_id = $listing_id", ARRAY_A);
+        if($listing){
+            $lat = $listing[0]['lat'];
+            $lng = $listing[0]['lng'];
+            $sql = "select a.* from $listing_tablename a where to_delete != 1 and deleted = 0 and listing_id <> $listing_id";
+            $sql .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < 10)';
+            $order_by = ' order by ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) asc limit 10';
+        }
+        $results = array(
+	        'sale' => $wpdb->get_results( $sql. ' and sale_rent = '.self::$for_sale.$order_by, ARRAY_A),
+	        'offer' => $wpdb->get_results( $sql. ' and status = "Conditional Offer"'.$order_by, ARRAY_A),
+	        'sold' => $wpdb->get_results( $sql. ' and status = "Sold" '.$order_by, ARRAY_A)
+        );
+        foreach($results['sale'] as $key=>$val) {
+            $results['sale'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
+            $results['sale'][$key]['contact'] = self::getListingContact($val['listing_id']);
+            $results['sale'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+        foreach($results['offer'] as $key=>$val) {
+            $results['offer'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
+            $results['offer'][$key]['contact'] = self::getListingContact($val['listing_id']);
+            $results['offer'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+        foreach($results['sold'] as $key=>$val) {
+            $results['sold'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
+            $results['sold'][$key]['contact'] = self::getListingContact($val['listing_id']);
+            $results['sold'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+        }
+        return $results;
     }
 }
 

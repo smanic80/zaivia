@@ -193,7 +193,7 @@
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox" class="show_only" value="0"><span>For sale by agent</span></label>
+                                <label><input type="checkbox" class="show_only" value="0"><span>For <?php echo $page_type; ?> by agent</span></label>
                               </div>
                             </li>
                             <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>
@@ -211,7 +211,7 @@
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox" class="show_only" value="1"><span>For sale by owner</span></label>
+                                <label><input type="checkbox" class="show_only" value="1"><span>For <?php echo $page_type; ?> by owner</span></label>
                               </div>
                             </li>
                               <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>
@@ -229,7 +229,7 @@
                           <ul class="checks">
                             <li>
                               <div class="wpcf7-checkbox">
-                                <label><input type="checkbox" class="show_only" value="2"><span>For sale by property management</span></label>
+                                <label><input type="checkbox" class="show_only" value="2"><span>For <?php echo $page_type; ?> by property management</span></label>
                               </div>
                             </li>
                               <?php $index=0; foreach($features_1 as $item): if($item['show_in_filter']):?>

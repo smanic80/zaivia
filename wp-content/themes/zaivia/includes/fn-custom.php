@@ -129,7 +129,7 @@
 			$str = stripslashes_deep($_POST['listing-data']);
 
 			$data = json_decode($str, true);
-
+            ZaiviaListings::saveListing($data);
 			if(isset($data['listing_id'])) {
 				$res = ZaiviaListings::activateListing((int)$data['listing_id']);
 			}
@@ -163,5 +163,19 @@ add_action( 'wp_ajax_getFavListings', 'getFavListings' );
 add_action( 'wp_ajax_nopriv_getFavListings', 'getFavListings' );
 function getFavListings() {
     echo json_encode(ZaiviaListings::favorite($_REQUEST));
+    die;
+}
+add_action( 'wp_ajax_saveSearch', 'saveSearch' );
+add_action( 'wp_ajax_nopriv_saveSearch', 'saveSearch' );
+function saveSearch() {
+    $request = $_REQUEST;
+    unset($request['action']);
+    echo json_encode(update_user_meta(get_current_user_id(),'saved_search',$request));
+    die;
+}
+add_action( 'wp_ajax_getMarket', 'getMarket' );
+add_action( 'wp_ajax_nopriv_getMarket', 'getMarket' );
+function getMarket() {
+    echo json_encode(ZaiviaListings::getMarket(intval($_REQUEST['id'])));
     die;
 }

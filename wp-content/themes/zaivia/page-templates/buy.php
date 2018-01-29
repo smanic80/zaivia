@@ -6,6 +6,7 @@ Template Post Type: page
 
 get_header(); ?>
 <input type="hidden" id="page_id" value="<?php the_ID(); ?>">
+<?php set_query_var( 'page_type', 'sale' ); ?>
 <?php get_template_part('templates/listing', 'filter');?>
 
 <div class="found-line">
@@ -33,7 +34,7 @@ get_header(); ?>
             </ul>
           </div>
 
-          <?php get_template_part('templates/listing', 'filter-applied');?>
+          <?php get_template_part('templates/listing', 'filters-applied');?>
           <?php get_template_part('templates/listing', 'item');?>
           <section class="ad-listing"></section>
           

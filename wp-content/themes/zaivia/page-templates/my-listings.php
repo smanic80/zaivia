@@ -18,7 +18,15 @@ get_header(); ?>
         </div>
     </div>
 <?php else: ?>
-
+<?php
+if($_REQUEST['delete']){
+    $request = $_REQUEST;
+    $listing_id = $_REQUEST['listing_id'];
+    unset($request['listing_id']);
+    unset($request['delete']);
+    ZaiviaListings::deleteListing($listing_id,json_encode($request));
+}
+?>
 <div class="sub-nav">
     <div class="container xs">
         <?php if ( has_nav_menu( 'accountmenu' ) ) : ?>
@@ -71,9 +79,9 @@ get_header(); ?>
                             <td><?php echo $listing['status']; ?></td>
                             <td><?php echo $listing['active-text']; ?></td>
                             <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                <a href="#delete" class="btn btn-secondary btn-sm open-modal"><?php _e('Delete', 'am') ?></a>
-                                <a href="#" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
-                                <a href="#" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
+                                <a href="#delete<?php echo $listing['sale_rent'] == ZaiviaListings::$for_rent ? '2' : '' ?>" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $listing['listing_id']?>"><?php _e('Delete', 'am') ?></a>
+                                <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step5" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
+                                <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step6" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
                             </td>
                         </tr>
                         <?php endforeach;?>
@@ -87,7 +95,169 @@ get_header(); ?>
         </div>
     </div>
 </div>
-
+<div class="modal-overlay" id="delete">
+    <div class="table">
+        <div class="center">
+            <div class="box">
+                <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
+                <div class="tabs-holder">
+                    <h3>Delete Listing</h3>
+                    <div class="styled-form pb">
+                        <form action="" method="post">
+                            <input type="hidden" name="listing_id">
+                            <fieldset>
+                                <label class="mb-15"><strong>Can you please tell us why you are deleting your listing?</strong></label>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="checkbox" name="reason[]" value="not_found_buyer">&nbsp;<span class="wpcf7-list-item-label">I did not find a buyer</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="checkbox" name="reason[]" value="home_sold">&nbsp;<span class="wpcf7-list-item-label">I sold my home</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                            </fieldset>
+                            <fieldset class="mb-15">
+                                <label class="mb-15">As a service to the community Zaivia likes to support buyers and sellers with home sale price data. Would you be willing to share your sale price with other</label>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="share_price" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="share_price" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <label for="price">Sale Price</label>
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <input type="text" id="price" name="price">
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <hr class="mb-30">
+                            <fieldset>
+                                <label class="mb-15">Were you satisfied with Zaivia?</label>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                            </fieldset>
+                            <fieldset>
+                                <label for="comments">Comments</label>
+                                <textarea id="comments" name="comments"></textarea>
+                            </fieldset>
+                            <div class="extra-link">
+                                <a href="#" class="close-modal">Cancel</a>
+                            </div>
+                            <input type="submit" value="Delete Listing" name="delete" class="wpcf7-form-control wpcf7-submit left">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal-overlay" id="delete2">
+    <div class="table">
+        <div class="center">
+            <div class="box">
+                <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
+                <div class="tabs-holder">
+                    <h3>Delete Listing</h3>
+                    <div class="styled-form pb">
+                        <form action="" method="post">
+                            <input type="hidden" name="listing_id">
+                            <fieldset>
+                                <label class="mb-15"><strong>Can you please tell us why you are deleting your listing?</strong></label>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="found_renter" value="0">&nbsp;<span class="wpcf7-list-item-label">I did not find a renter</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="found_renter" value="1">&nbsp;<span class="wpcf7-list-item-label">I found a renter</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                            </fieldset>
+                            <hr class="mb-30">
+                            <fieldset>
+                                <label class="mb-15">Were you satisfied with Zaivia?</label>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                                <p>
+                                    <span class="wpcf7-form-control-wrap checkbox-399">
+                                        <span class="wpcf7-form-control wpcf7-checkbox">
+                                            <span class="wpcf7-list-item first">
+                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </p>
+                            </fieldset>
+                            <fieldset>
+                                <label for="comments2">Comments</label>
+                                <textarea id="comments2" name="comments"></textarea>
+                            </fieldset>
+                            <div class="extra-link">
+                                <a href="#" class="close-modal">Cancel</a>
+                            </div>
+                            <input type="submit" value="Delete Listing" name="delete" class="wpcf7-form-control wpcf7-submit left">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <?php endif;?>
 
 <?php get_footer(); ?>

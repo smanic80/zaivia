@@ -117,10 +117,10 @@
 
             $.post(amData.ajaxurl, data, function(ret){
 
-                console.log(listingData);
+                //console.log(listingData);
 
                 for(i in listingData) if(listingData.hasOwnProperty(i)){
-                    if(i in ret) {
+                    if(i in ret) if(['premium','featured','url','bump_up'].indexOf(i)===-1){
                         listingData[i] = ret[i]
                     }
 
@@ -528,7 +528,15 @@
         $(".steps-all .cur").removeClass("cur");
         $(".steps-all li#stepbc-"+stepN).addClass("current").addClass("cur");
     }
-
+    if(window.location.hash === '#step5') {
+        $(".steps-all li:not(#stepbc-5):not(#stepbc-6)").addClass("current");
+        gotoStep(5,true);
+        window.location.hash = '';
+    }
+    if(window.location.hash === '#step6') {
+        confirmListing();
+        window.location.hash = '';
+    }
     function refreshRentSaleFields(){
         var key = $("#sale_rent").val();
 

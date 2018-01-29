@@ -1,6 +1,6 @@
 <script type="text/html" id="tmpl-listing-item">
-    <article class="ad-item<# if ( data.premium > 0 ) { #> premium<# } #>">
-        <# if ( data.featured > 0 ) { #>
+    <article class="ad-item<# if ( !data.featured_one && data.premium > 0 ) { #> premium<# } #>">
+        <# if ( data.featured_one > 0 ) { #>
         <div class="featured">FEATURED LISTING</div>
         <# } else if ( data.premium > 0 ) { #>
         <div class="featured">PREMIUM LISTING</div>
@@ -30,7 +30,7 @@
         </div>
         <div class="text">
             <div class="left">
-                <h2><a href="#">{{data.unit_number}} {{data.address}}</a></h2>
+                <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                 <p>{{data.city}}, {{data.province}}</p>
             </div>
             <div class="price">${{data.price}}</div>
