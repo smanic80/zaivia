@@ -26,10 +26,9 @@ get_header(); ?>
                         <option value="price_low_high">Price: Low To High</option>
                     </select>
                     <ul>
-                        <li class="current"><a href="#"><i class="fa fa-list-ul" aria-hidden="true"></i>List View</a>
-                        </li>
-                        <li><a href="#"><i class="fa fa-th" aria-hidden="true"></i>Grid View</a></li>
-                        <li><a href="#"><i class="fa fa-map-marker" aria-hidden="true"></i>Map View</a></li>
+                        <li class="current"><a href="#" data-type="list"><i class="fa fa-list-ul" aria-hidden="true"></i>List View</a></li>
+                        <li><a href="#" data-type="grid"><i class="fa fa-th" aria-hidden="true"></i>Grid View</a></li>
+                        <li><a href="#" data-type="map"><i class="fa fa-map-marker" aria-hidden="true"></i>Map View</a></li>
                     </ul>
                 </div>
 

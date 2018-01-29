@@ -2,6 +2,7 @@
 	add_filter('show_admin_bar', '__return_false');
 
 	add_action( 'after_setup_theme', function() {
+		add_image_size( 'listing-big', 801, 534 );
 		add_image_size( 'listing-card', 321, 214 );
 		add_image_size( 'listing-th', 118, 92 );
 	});

@@ -604,6 +604,8 @@ class ZaiviaListings {
 			$fileUrl = wp_get_attachment_url( $val['media_id']);
 			$results[$key]['file_url'] = $fileUrl ;
 			$results[$key]['file_name'] = basename($fileUrl);
+			$results[$key]['big'] = wp_get_attachment_image_url($val['media_id'],'listing-big');
+			$results[$key]['card'] = wp_get_attachment_image_url($val['media_id'],'listing-card');
 			$results[$key]['thumb'] = wp_get_attachment_image_url($val['media_id'],'listing-th');
 		}
         
@@ -627,7 +629,9 @@ class ZaiviaListings {
 			$fileUrl = wp_get_attachment_url( $results['media_id']);
 			$results['file_url'] = $fileUrl ;
 			$results['file_name'] = basename($fileUrl);
-			$results['thumb'] = wp_get_attachment_image_url($results['media_id'],'listing-th');
+            $results['big'] = wp_get_attachment_image_url($results['media_id'],'listing-big');
+            $results['card'] = wp_get_attachment_image_url($results['media_id'],'listing-card');
+            $results['thumb'] = wp_get_attachment_image_url($results['media_id'],'listing-th');
 		}
 
 		return $results;
@@ -763,6 +767,8 @@ class ZaiviaListings {
                         $results[0]['featured_one'] = 1;
                         $featured = $results[0];
                     }
+                } else {
+                    $sql .= ' and false';
                 }
             }
         }

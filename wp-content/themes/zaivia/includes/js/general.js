@@ -495,6 +495,12 @@
             $(this).parent().remove();
             return false;
         });
+        $(document).on('click','.sub-filter li a',function () {
+            $(this).parent().parent().find('.current').removeClass('current');
+            $(this).parent('li').addClass('current');
+            search_listings();
+            return false;
+        });
         if($('#market').length){
             $.ajax({
                 url: amData.ajaxurl,
@@ -625,49 +631,66 @@
                     rent: $('body').hasClass('page-template-rent')
                 },
                 success: function (data) {
+                    var type = $('.sub-filter li.current a').data('type');
                     var list = $('.ad-listing');
-                    var listing_item = wp.template( "listing-item" );
+                    var listing_item;
+                    if(type === 'grid'){
+                        listing_item = wp.template( "grid-item" );
+                        list.addClass('gallery');
+                    } else {
+                        listing_item = wp.template( "listing-item" );
+                        list.removeClass('gallery');
+                    }
                     var listing_ad = wp.template( "listing-ad" );
                     list.empty();
-                    var index = 0;
-                    if(data.featured){
-                        list.append(listing_item(data.featured));
-                        index++;
-                    }
-                    for(var i in data.items) if (data.items.hasOwnProperty(i)){
-                        list.append(listing_item(data.items[i]));
-                        if(index % 5 === 4){
-                            list.append(listing_ad(data.ads));
-                        }
-                    }
-                    $('.found-line p').text(data.count + ' Listings Found For Sale In '+$('#search_city').val());
-
                     var pagination = $('.pagination');
                     pagination.empty();
-                    if(data.page == 1){
-                        pagination.append('<span class="page-numbers">Previous</span>');
-                    } else {
-                        pagination.append('<a class="prev page-numbers" data-page="'+(data.page-1)+'" href="#">Previous</a>');
-                    }
-                    var p_start = data.page - 5;
-                    if(p_start<1){
-                        p_start = 1;
-                    }
-                    var p_end = data.page + 5;
-                    if(p_end > data.pages){
-                        p_end = data.pages;
-                    }
-                    for (var p=p_start; p <= p_end; p++){
-                        if(p == data.page){
-                            pagination.append('<span class="page-numbers current">'+p+'</span>');
-                        } else {
-                            pagination.append('<a class="page-numbers" data-page="'+p+'" href="#">'+p+'</a>');
+
+                    if(data.featured || data.items.length) {
+                        var index = 0;
+                        if (data.featured) {
+                            list.append(listing_item(data.featured));
+                            index++;
                         }
-                    }
-                    if(data.page == data.pages){
-                        pagination.append('<span class="page-numbers">Next</span>');
+                        for (var i in data.items) if (data.items.hasOwnProperty(i)) {
+                            list.append(listing_item(data.items[i]));
+
+                            if ((type==='grid' && index % 9 === 8) || (type==='list' && index % 5 === 4)) {
+                                list.append(listing_ad(data.ads));
+                            }
+                        }
+                        $('.found-line p').text(data.count + ' Listings Found For Sale In ' + $('#search_city').val());
+
+                        if (data.page == 1) {
+                            pagination.append('<span class="page-numbers">Previous</span>');
+                        } else {
+                            pagination.append('<a class="prev page-numbers" data-page="' + (data.page - 1) + '" href="#">Previous</a>');
+                        }
+                        var p_start = data.page - 5;
+                        if (p_start < 1) {
+                            p_start = 1;
+                        }
+                        var p_end = data.page + 5;
+                        if (p_end > data.pages) {
+                            p_end = data.pages;
+                        }
+                        for (var p = p_start; p <= p_end; p++) {
+                            if (p == data.page) {
+                                pagination.append('<span class="page-numbers current">' + p + '</span>');
+                            } else {
+                                pagination.append('<a class="page-numbers" data-page="' + p + '" href="#">' + p + '</a>');
+                            }
+                        }
+                        if (data.page == data.pages) {
+                            pagination.append('<span class="page-numbers">Next</span>');
+                        } else {
+                            pagination.append('<a class="prev page-numbers" data-page="' + (data.page + 1) + '" href="#">Next</a>');
+                        }
+                        $('.sub-filter').show();
                     } else {
-                        pagination.append('<a class="prev page-numbers" data-page="'+(data.page+1)+'" href="#">Next</a>');
+                        $('.found-line p').text('');
+                        $('.sub-filter').hide();
+                        list.append('<div class="no-found-line"><h1>No Search Results Found</h1><p>Please try searching for properties in a different city.</p></div>');
                     }
                 }
             });

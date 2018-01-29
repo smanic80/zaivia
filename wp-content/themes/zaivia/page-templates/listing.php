@@ -32,7 +32,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                         <div class="slides">
                             <?php foreach ($listing['images'] as $image): ?>
                             <div class="item">
-                                <img src="<?php echo $image['file_url']; ?>" alt="">
+                                <img src="<?php echo $image['big']; ?>" alt="">
                             </div>
                             <?php endforeach; ?>
                         </div>
@@ -348,12 +348,12 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         var map3 = {lat: 52.0797723, lng: -106.6608851};
                                         var map3Street = {lat: 37.869260, lng: -122.254811};
                                         var map3Locations = [
-                                            [52.0797723,-106.6608851,'images/ico_mappin.png','Public School Name'],
-                                            [52.0797723,-106.7608851,'images/mblue.png','Public School Name'],
-                                            [52.1797723,-106.5608851,'images/mgreen.png','Public School Name'],
-                                            [52.0997723,-106.6608851,'images/mdgreen.png','Public School Name'],
-                                            [52.0997723,-106.6608851,'images/mpurple.png','Public School Name'],
-                                            [52.1797723,-106.7608851,'images/myellow.png','Public School Name'],
+                                            [52.0797723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/ico_mappin.png','Public School Name'],
+                                            [52.0797723,-106.7608851,'<?php echo get_template_directory_uri(); ?>/images/mblue.png','Public School Name'],
+                                            [52.1797723,-106.5608851,'<?php echo get_template_directory_uri(); ?>/images/mgreen.png','Public School Name'],
+                                            [52.0997723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/mdgreen.png','Public School Name'],
+                                            [52.0997723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/mpurple.png','Public School Name'],
+                                            [52.1797723,-106.7608851,'<?php echo get_template_directory_uri(); ?>/images/myellow.png','Public School Name'],
                                         ];
                                     </script>
                                 </div>
@@ -415,8 +415,8 @@ $listing = ZaiviaListings::getListing($listing_id);
                                     <# if ( data.premium > 0 ) { #>
                                     <div class="featured">PREMIUM LISTING</div>
                                     <# } #>
-                                    <div class="image"<# if(data.images.file_url) { #> style="background-image: url('{{data.images.file_url}}')"<# } #>>
-                                    <# if(data.images.file_url) { #><a href="#"><img src="{{data.images.file_url}}" alt=""></a><# } #>
+                                    <div class="image"<# if(data.images.card) { #> style="background-image: url('{{data.images.card}}')"<# } #>>
+                                    <# if(data.images.card) { #><a href="#"><img src="{{data.images.card}}" alt=""></a><# } #>
                                     <div class="badges">
                                         <# if ( data.openhouse.length > 0 ) { #>
                                         <div class="open">
