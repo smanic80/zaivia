@@ -243,6 +243,8 @@
 
       if (safari) {
         $("body").addClass("safari");
+          $(window).resize(mobile);
+          mobile();
       }
 
       function mobile() {
@@ -250,13 +252,9 @@
           var cur = $(this).parent().outerHeight();
           $(this).outerHeight(cur);
         });
-      };
+      }
       function is_touch_device() {
         return 'ontouchstart' in window || navigator.maxTouchPoints;
-      };
-      if (safari) {
-        $(window).resize(mobile);
-        mobile();
       }
       if (is_touch_device()) {
         $("body").addClass("touch");
@@ -264,12 +262,9 @@
         $("body").addClass("no-touch");
       }
 
-      $(".menu-trigger").click(function() {
-        $("body").toggleClass("active-menu")
-      });
+
 
       var event = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g)) ? "touchstart" : "click";
-
       $(document).on(event, function (e) {
         if ( $(e.target).closest('.main-filter').length === 0 ) {
           $(".main-filter").removeClass("mega-hover");
@@ -277,6 +272,9 @@
         }
       });
 
+      $(".menu-trigger").click(function() {
+        $("body").toggleClass("active-menu")
+      });
 
       $(".toggle").click(function() {
         $(this).parent().toggleClass("active");
@@ -541,30 +539,41 @@
       });
 
       $(".modal-overlay .close, .close-modal").click(function() {
-        $("body").removeClass("active-modal");
-        $(".modal-overlay").removeClass("active");
-        return false;
+          closeModal();
+          return false;
       });
 
       $(document).keyup(function(e) {
         if (e.keyCode === 27) {
-          $("body").removeClass("active-modal");
-          $(".modal-overlay").removeClass("active");
+            closeModal();
         }
       });
 
-      $(".open-modal").click(function() {
-        $("body").removeClass("active-modal");
-        $(".modal-overlay").removeClass("active");
-        $("body").addClass("active-modal");
-        $($(this).attr("href")).addClass("active");
-        return false;
+
+
+      $("a.open-modal, .open-modal a").click(function() {
+          closeModal();
+          openModal($(this).attr("href"));
+          return false;
       });
 
       if (location.hash) {
-        $("body").addClass("active-modal");
-        $(location.hash).addClass("active");
+          openModal(location.hash);
       }
+
+        function closeModal(){
+            $("body").removeClass("active-modal");
+            $(".modal-overlay").removeClass("active");
+        }
+        function openModal(id){
+            $(id).find(".step1").show();
+            $(id).find(".step2").hide();
+            $(id).find("input[type=text], input[type=password]").val("");
+            $(id).find("input[type=checkbox]").prop("checked", false);
+
+            $("body").addClass("active-modal");
+            $(id).addClass("active");
+        }
 
       $(".controls a").click(function() {
         var parent = $(this).parentsUntil(".post-map").parent(".post-map");
@@ -628,7 +637,7 @@
         arrows: true,
         prevArrow: '<button type="button" class="slick-prev"><i class="fa fa-caret-left" aria-hidden="true"></i></button>',
         nextArrow: '<button type="button" class="slick-next"><i class="fa fa-caret-right" aria-hidden="true"></i></button>',
-        fade: true,
+        fade: true
       });
 
       $('.gallery-slider .slides').slick({
@@ -651,6 +660,91 @@
         focusOnSelect: true
       });
 
+
+        $("#login_form").submit(function(e){
+            e.preventDefault();
+            processAjaxForm(['login_email', 'login_password'], $(this));
+        });
+
+        $("#create_form").submit(function(e){
+            e.preventDefault();
+            var fields = [
+                'create_firstname', 'create_lastname', 'create_email',
+                'create_phone', 'create_phonetype',
+                'create_pass', 'create_pass_confirm', 'create_subscribe',
+                'create_user_nonce'
+            ];
+            processAjaxForm(fields, $(this), function (){
+                $("#confirmation_emial").text($("#create_email").val());
+
+                closeModal();
+                openModal("#confirmation_modal");
+            });
+        });
+
+        $("#restore_form").submit(function(e){
+            e.preventDefault();
+            var $this = $(this);
+
+            var fields = ['restore_email'];
+            processAjaxForm(fields, $(this), function (){
+                $this.find(".step1").hide();
+                $this.find(".step2").show();
+            });
+        });
+
     });
+
+
+    function processAjaxForm(fields, $form, callback) {
+        var data = {},
+            cur;
+
+        $(".error_placeholder").removeClass('error').hide();
+        for(var i in fields) {
+            $cur = $("#"+fields[i]);
+
+            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password") {
+                $cur.removeClass("error");
+                if(!$cur.val()) {
+                    $cur.addClass("error");
+                }
+            } else if($cur[0].type === "checkbox") {
+                $cur.parent().removeClass("error");
+                if(!$cur.prop('checked')) {
+                    $cur.parent().addClass("error");
+                }
+            }
+
+            data[fields[i]] = $cur.val();
+        }
+
+        if($form.find(".error").length ){
+            return false;
+        }
+
+        data['action'] = $form.attr("id");
+
+        $.post({
+            url: amData.ajaxurl,
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                if(typeof data['error'] === 'undefined') {
+                    if(callback) {
+                        callback();
+                    } else {
+                        location.reload();
+                    }
+                } else {
+                    $(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                $(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();;
+            }
+        });
+    }
+
 
 })(jQuery);
