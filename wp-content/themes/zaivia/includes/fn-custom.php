@@ -18,6 +18,7 @@
 	add_filter('show_admin_bar', '__return_false');
 
 	add_action( 'after_setup_theme', function() {
+		add_image_size( 'listing-big', 801, 534 );
 		add_image_size( 'listing-card', 321, 214 );
 		add_image_size( 'listing-th', 118, 92 );
 	});
@@ -144,7 +145,7 @@
 			$str = stripslashes_deep($_POST['listing-data']);
 
 			$data = json_decode($str, true);
-
+            ZaiviaListings::saveListing($data);
 			if(isset($data['listing_id'])) {
 				$res = ZaiviaListings::activateListing((int)$data['listing_id']);
 			}
@@ -166,7 +167,6 @@
 		return $items;
 	}, 10, 2 );
 
-
 	add_filter('wp_authenticate_user', function($user) {
 		$data = get_user_meta($user->ID, 'activation_hash', true);
 		if (!$data) {
@@ -175,6 +175,21 @@
 		return new WP_Error('ERROR','Please, activate account first' );
 	}, 10, 2);
 
+
+	add_action( 'init', 'am_processActivation' );
+	function am_processActivation(){
+		if(isset($_GET['akey'])){
+			$hash = $_GET['akey'];
+
+			$userId = (int)get_option('activation_hash_' . $_GET['akey']);
+			if($userId) {
+				delete_user_meta( $userId, 'activation_hash' );
+				delete_option('activation_hash_' . $hash);
+			}
+			wp_redirect(home_url(get_field("page_account_activated", "option")));
+			die;
+		}
+	}
 
 	add_action( 'wp_ajax_login_form', 'login_formProcess' );
 	add_action( 'wp_ajax_nopriv_login_form', 'login_formProcess' );
@@ -294,20 +309,22 @@
 	    die;
 	}
 
-	add_action( 'init', 'am_processActivation' );
-	function am_processActivation(){
-		if(isset($_GET['akey'])){
-			$hash = $_GET['akey'];
-
-			$userId = (int)get_option('activation_hash_' . $_GET['akey']);
-			if($userId) {
-				delete_user_meta( $userId, 'activation_hash' );
-				delete_option('activation_hash_' . $hash);
-			}
-			wp_redirect(home_url(get_field("page_account_activated", "option")));
-			die;
-		}
+	add_action( 'wp_ajax_saveSearch', 'saveSearch' );
+	add_action( 'wp_ajax_nopriv_saveSearch', 'saveSearch' );
+	function saveSearch() {
+		$request = $_REQUEST;
+		unset($request['action']);
+		echo json_encode(update_user_meta(get_current_user_id(),'saved_search',$request));
+		die;
 	}
+
+	add_action( 'wp_ajax_getMarket', 'getMarket' );
+	add_action( 'wp_ajax_nopriv_getMarket', 'getMarket' );
+	function getMarket() {
+		echo json_encode(ZaiviaListings::getMarket(intval($_REQUEST['id'])));
+		die;
+	}
+
 
 	function am_setAndSendActivation($userId, $pw){
 		$hash = wp_generate_password();
