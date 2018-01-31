@@ -378,13 +378,14 @@ function am_unregister_default_wp_widgets() {
 function am_add_javascript( ) {
     wp_enqueue_script('jquery');
     if( !is_admin() ) {
-	    wp_enqueue_script('am_gmap', "https://maps.googleapis.com/maps/api/js?key=".get_field('google_api_key', 'option'), array( ), '',true );
+	    wp_enqueue_script('am_gmap', "https://maps.googleapis.com/maps/api/js?libraries=places&key=".get_field('google_api_key', 'option'), array( ), '',true );
 
 	    wp_enqueue_script('jquery-ui-datepicker');
 	    wp_enqueue_script('jquery-ui-autocomplete');
 
         $am_files = array(
 	        "vendor_js"=>['path' => 'includes/js/vendor.js', 'req' => ['jquery']],
+	        "cluster_js"=>['path' => 'includes/js/markerclusterer.js', 'req' => []],
 	        "general_js"=>['path' => 'includes/js/general.js', 'req' => ['jquery','wp-util']],
 	        "edit-listing_js"=>['path' => 'includes/js/edit-listing.js', 'req' => ['jquery']],
 	        "map_js"=>['path' => 'includes/js/map.js', 'req' => ['jquery']],

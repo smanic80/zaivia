@@ -302,6 +302,13 @@
 	    die;
 	}
 
+	add_action( 'wp_ajax_getListingItem', 'getListingItem' );
+	add_action( 'wp_ajax_nopriv_getListingItem', 'getListingItem' );
+	function getListingItem() {
+	    echo json_encode(ZaiviaListings::getListing($_REQUEST['listing_id']));
+	    die;
+	}
+
 	add_action( 'wp_ajax_getFavListings', 'getFavListings' );
 	add_action( 'wp_ajax_nopriv_getFavListings', 'getFavListings' );
 	function getFavListings() {

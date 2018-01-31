@@ -345,16 +345,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <div class="map" id="map31"></div>
                                     </div>
                                     <script>
-                                        var map3 = {lat: 52.0797723, lng: -106.6608851};
-                                        var map3Street = {lat: 37.869260, lng: -122.254811};
-                                        var map3Locations = [
-                                            [52.0797723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/ico_mappin.png','Public School Name'],
-                                            [52.0797723,-106.7608851,'<?php echo get_template_directory_uri(); ?>/images/mblue.png','Public School Name'],
-                                            [52.1797723,-106.5608851,'<?php echo get_template_directory_uri(); ?>/images/mgreen.png','Public School Name'],
-                                            [52.0997723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/mdgreen.png','Public School Name'],
-                                            [52.0997723,-106.6608851,'<?php echo get_template_directory_uri(); ?>/images/mpurple.png','Public School Name'],
-                                            [52.1797723,-106.7608851,'<?php echo get_template_directory_uri(); ?>/images/myellow.png','Public School Name'],
-                                        ];
+                                        var position = {lat: <?php echo $listing['lat']; ?>, lng: <?php echo $listing['lng']; ?>};
                                     </script>
                                 </div>
                                 <div class="row">

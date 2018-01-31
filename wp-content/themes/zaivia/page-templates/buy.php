@@ -136,5 +136,18 @@ get_header(); ?>
         </div>
         
       </div>
-    </div>        
+    </div>
+    <div class="map-full-holder hidden">
+        <div class="sub-filter">
+            <ul>
+                <li><a href="#" data-type="list"><i class="fa fa-list-ul" aria-hidden="true"></i>List View</a></li>
+                <li><a href="#" data-type="grid"><i class="fa fa-th" aria-hidden="true"></i>Grid View</a></li>
+                <li class="current"><a href="#" data-type="map"><i class="fa fa-map-marker" aria-hidden="true"></i>Map View</a></li>
+            </ul>
+            <div class="save">
+                <a href="#"><i class="fa fa-home" aria-hidden="true"></i> Save This Search</a>
+            </div>
+        </div>
+        <div class="map-holder" id="map2"></div>
+    </div>
 <?php get_footer(); ?>
