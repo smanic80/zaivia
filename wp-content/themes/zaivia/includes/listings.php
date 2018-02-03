@@ -142,6 +142,8 @@ class ZaiviaListings {
             $results[0]['rent'] = self::getListingRent($listingId);
             $results[0]['images'] = self::getListingFiles($listingId,self::$file_image,1,false);
             $results[0]['blueprint'] = self::getListingFiles($listingId,self::$file_blueprint,1,false);
+            $results[0]['openhouse'] = self::getListingOpenhouse($listingId);
+            $results[0]['contact'] = self::getListingContact($listingId);
         }
         return $results[0];
     }
@@ -739,7 +741,11 @@ class ZaiviaListings {
         global $wpdb;
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
         $features_tablename = $wpdb->prefix . self::$features_tablename;
-        $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 and deleted = 0 ";
+        if(isset($request['type']) && $request['type']=='map') {
+            $sql = "SELECT a.listing_id,a.lat,a.lng from $listing_tablename a where to_delete != 1 and deleted = 0 ";
+        } else {
+            $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 and deleted = 0 ";
+        }
         $sql2 = " and to_delete != 1 and deleted = 0 and featured = 1 ";
         if($request['rent'] == 'true'){
             $sql .= ' and sale_rent = '.self::$for_rent;
@@ -757,15 +763,16 @@ class ZaiviaListings {
                     $lat = $geo['items'][0]['latitude'];
                     $lng = $geo['items'][0]['longitude'];
                     $sql .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
-
-                    $sql2 .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
-                    $results = $wpdb->get_results( "SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing FROM $listing_tablename a JOIN (SELECT (RAND() * (SELECT MAX(listing_id) FROM $listing_tablename)) AS id) AS r2 left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 WHERE a.listing_id >= r2.id $sql2 LIMIT 1", ARRAY_A);
-                    if(isset($results[0])){
-                        $results[0]['openhouse'] = self::getListingOpenhouse($results[0]['listing_id']);
-                        $results[0]['contact'] = self::getListingContact($results[0]['listing_id']);
-                        $results[0]['images'] = self::getListingFiles($results[0]['listing_id'],self::$file_image);
-                        $results[0]['featured_one'] = 1;
-                        $featured = $results[0];
+                    if(isset($request['type']) && $request['type']!='map') {
+                        $sql2 .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
+                        $results = $wpdb->get_results( "SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing FROM $listing_tablename a JOIN (SELECT (RAND() * (SELECT MAX(listing_id) FROM $listing_tablename)) AS id) AS r2 left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 WHERE a.listing_id >= r2.id $sql2 LIMIT 1", ARRAY_A);
+                        if(isset($results[0])){
+                            $results[0]['openhouse'] = self::getListingOpenhouse($results[0]['listing_id']);
+                            $results[0]['contact'] = self::getListingContact($results[0]['listing_id']);
+                            $results[0]['images'] = self::getListingFiles($results[0]['listing_id'],self::$file_image);
+                            $results[0]['featured_one'] = 1;
+                            $featured = $results[0];
+                        }
                     }
                 } else {
                     $sql .= ' and false';
@@ -823,53 +830,59 @@ class ZaiviaListings {
             }
             $sql .= '0)';
         }
-        $cnt = $wpdb->get_results('select count(distinct a.listing_id) as cnt '.$sql,ARRAY_A);
-        $cnt = $cnt[0]['cnt']+($featured?1:0);
-        if($featured){
-            $sql .= ' and a.listing_id <> '.$featured['listing_id'];
-        }
-
-        $sql .= ' group by a.listing_id';
-        if($request['features_1']){
-            $items_cnt = count(explode(',',$request['features_1']));
-            $sql .= ' having count(feature_id) = '.$items_cnt;
-        }
-        if(in_array($request['sort_by'],array('price_low_high','price_high_low','date_old_new','date_new_old'))){
-            $sql .= ' order by ';
-            if($request['sort_by'] == 'price_low_high'){
-                $sql .= 'price asc';
-            } elseif($request['sort_by'] == 'price_high_low'){
-                $sql .= 'price desc';
-            } elseif($request['sort_by'] == 'date_old_new'){
-                $sql .= 'date_published asc';
-            } elseif($request['sort_by'] == 'date_new_old'){
-                $sql .= 'date_published desc';
+        if(isset($request['type']) && $request['type']=='map') {
+            $results = $wpdb->get_results( $sql, ARRAY_A);
+            return array('items'=>$results,'count'=>count($results));
+        } else {
+            $cnt = $wpdb->get_results('select count(distinct a.listing_id) as cnt '.$sql,ARRAY_A);
+            $cnt = $cnt[0]['cnt']+($featured?1:0);
+            if($featured){
+                $sql .= ' and a.listing_id <> '.$featured['listing_id'];
             }
-        }
-        $per_page = 10;
-        $page = $request['page']?intval($request['page']):1;
-        if($page < 1) {
-            $page = 1;
-        }
-        $page_max = ceil($cnt/$per_page);
-        if($page > $page_max ) {
-            $page = $page_max;
-        }
-        //var_dump($sql);die;
-        $sql .= ' limit '.(($page-1)*$per_page).','.($per_page-($featured?1:0));
-//todo list only used fields
-        $results = $wpdb->get_results( 'SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing '.$sql, ARRAY_A);
 
-        foreach($results as $key=>$val) {
-            $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
-            $results[$key]['contact'] = self::getListingContact($val['listing_id']);
-            $results[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+            $sql .= ' group by a.listing_id';
+            if($request['features_1']){
+                $items_cnt = count(explode(',',$request['features_1']));
+                $sql .= ' having count(feature_id) = '.$items_cnt;
+            }
+            if (in_array($request['sort_by'], array('price_low_high', 'price_high_low', 'date_old_new', 'date_new_old'))) {
+                $sql .= ' order by ';
+                if ($request['sort_by'] == 'price_low_high') {
+                    $sql .= 'price asc';
+                } elseif ($request['sort_by'] == 'price_high_low') {
+                    $sql .= 'price desc';
+                } elseif ($request['sort_by'] == 'date_old_new') {
+                    $sql .= 'date_published asc';
+                } elseif ($request['sort_by'] == 'date_new_old') {
+                    $sql .= 'date_published desc';
+                }
+            }
+            $per_page = 10;
+            $page = $request['page'] ? intval($request['page']) : 1;
+            if ($page < 1) {
+                $page = 1;
+            }
+            $page_max = ceil($cnt / $per_page);
+            if ($page > $page_max) {
+                $page = $page_max;
+            }
+
+            $sql .= ' limit ' . (($page - 1) * $per_page) . ',' . ($per_page - ($featured ? 1 : 0));
+
+            //todo list only used fields
+            $results = $wpdb->get_results( 'SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing '.$sql, ARRAY_A);
+
+            foreach($results as $key=>$val) {
+                $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
+                $results[$key]['contact'] = self::getListingContact($val['listing_id']);
+                $results[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+            }
+            $ads = [
+                'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
+                'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
+            ];
+            return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads,'featured'=>$featured);
         }
-        $ads = [
-            'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
-            'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
-        ];
-		return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads,'featured'=>$featured);
 	}
 
 	public static function favorite($request){

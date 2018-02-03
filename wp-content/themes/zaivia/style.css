@@ -7523,7 +7523,7 @@ select::-ms-expand {
 }
 
 .map .ad-item {
-  overflow: hidden;
+  overflow: visible;
   display: -webkit-flex;
   display: -ms-flexbox;
   display: flex;
@@ -7770,6 +7770,7 @@ select::-ms-expand {
 
 .ad-item .listed img {
   border-radius: 4px;
+  max-height: 60px;
 }
 
 .ad-item .modu {
@@ -9191,7 +9192,7 @@ div.entry form p label + br {
 }
 
 .post-map .inside {
-  height: 42px;
+  /*height: 42px;*/
   background-color: white;
   border-radius: 4px;
   display: inline-block;
