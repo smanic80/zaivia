@@ -164,7 +164,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['rent']['rent_utilities'] as $item): ?>
                                                     <?php if($index++ % 3 == 0):?>
-                                                        <li><?php echo $rent_utilities[$item]; ?></li>
+                                                        <li><?php echo isset($rent_utilities[$item])?$rent_utilities[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -173,7 +173,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['rent']['rent_utilities'] as $item): ?>
                                                     <?php if($index++ % 3 == 1):?>
-                                                        <li><?php echo $rent_utilities[$item]; ?></li>
+                                                        <li><?php echo isset($rent_utilities[$item])?$rent_utilities[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -182,27 +182,21 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['rent']['rent_utilities'] as $item): ?>
                                                     <?php if($index++ % 3 == 2):?>
-                                                        <li><?php echo $rent_utilities[$item]; ?></li>
+                                                        <li><?php echo isset($rent_utilities[$item])?$rent_utilities[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
                                         </div>
                                     </div>
                                     <?php endif; ?>
-                                    <?php
-                                    $features_1 = array();
-                                    $res = get_field('features_1', 'option');
-                                    foreach ($res as $el){
-                                        $features_1[$el['key']] = $el['name'];
-                                    }
-                                    ?>
+
                                     <h3>Other Features</h3>
                                     <div class="row">
                                         <div class="col-6 col-lg-3">
                                             <ul>
                                                 <?php $index=0; foreach($listing['features_1'] as $item): ?>
                                                     <?php if($index++ % 4 == 0):?>
-                                                        <li><?php echo $features_1[$item]; ?></li>
+                                                        <li><?php echo isset($features_1[$item])?$features_1[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -211,7 +205,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['features_1'] as $item): ?>
                                                     <?php if($index++ % 4 == 1):?>
-                                                        <li><?php echo $features_1[$item]; ?></li>
+                                                        <li><?php echo isset($features_1[$item])?$features_1[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -220,7 +214,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['features_1'] as $item): ?>
                                                     <?php if($index++ % 4 == 2):?>
-                                                        <li><?php echo $features_1[$item]; ?></li>
+                                                        <li><?php echo isset($features_1[$item])?$features_1[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
@@ -229,7 +223,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <ul>
                                                 <?php $index=0; foreach($listing['features_1'] as $item): ?>
                                                     <?php if($index++ % 4 == 3):?>
-                                                        <li><?php echo $features_1[$item]; ?></li>
+                                                        <li><?php echo isset($features_1[$item])?$features_1[$item]:''; ?></li>
                                                     <?php endif; ?>
                                                 <?php endforeach; ?>
                                             </ul>
