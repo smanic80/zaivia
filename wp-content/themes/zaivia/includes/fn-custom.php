@@ -218,7 +218,7 @@
 	function create_formProcess(){
 		$nonce = $_POST['create_user_nonce'];
 		if ( ! wp_verify_nonce( $nonce, 'zai_create_user' ) ) {
-			echo json_encode(['error'=>'Security checked!']);
+			echo json_encode(['error'=>__('Security checked!')]);
 		}
 
 		$user_login = stripcslashes($_POST['create_email']);
@@ -277,10 +277,10 @@
 				"user_pass" => $pw
 			]);
 
-			$subject = 'Password restoration';
-			$message = 'Hello, '.$user_info->display_name;
+			$subject = __('Password restoration');
+			$message = __('Hello, ').$user_info->display_name;
 			$message .= "<br>";
-			$message .= 'You new password is <b>' . $pw . '</b>';
+			$message .= __('You new password is').' <b>' . $pw . '</b>';
 
 			$headers = '';
 			add_filter('wp_mail_content_type', 'am_html_email');
@@ -344,12 +344,12 @@
 		$activationLink = home_url('/').'activate?akey='.$hash;
 
 		$to = $user_info->user_email;
-		$subject = 'Member Verification';
-		$message = 'Hello, '.$user_info->display_name;
+		$subject = __('Member Verification');
+		$message = __('Hello, ').$user_info->display_name;
 		$message .= "<br>";
-		$message .= 'You password is <b>' . $pw . '</b>';
+		$message .= __('You password is').' <b>' . $pw . '</b>';
 		$message .= "<br><br>";
-		$message .= 'Please click this link to activate your account:';
+		$message .= __('Please click this link to activate your account:');
 		$message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
 
 		$headers = '';

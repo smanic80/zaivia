@@ -11,7 +11,7 @@ get_header(); ?>
             <div class="col-md-85">
                 <div class="single-post">
                     <div class="title">
-                        <h1>Please, Login first</h1>
+                        <h1><?php _e('Please, Login first','am') ?></h1>
                     </div>
                 </div>
             </div>
@@ -101,17 +101,17 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
             <div class="box">
                 <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
                 <div class="tabs-holder">
-                    <h3>Delete Listing</h3>
+                    <h3><?php _e('Delete Listing','am') ?></h3>
                     <div class="styled-form pb">
                         <form action="" method="post">
                             <input type="hidden" name="listing_id">
                             <fieldset>
-                                <label class="mb-15"><strong>Can you please tell us why you are deleting your listing?</strong></label>
+                                <label class="mb-15"><strong><?php _e('Can you please tell us why you are deleting your listing?','am') ?></strong></label>
                                 <p>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="checkbox" name="reason[]" value="not_found_buyer">&nbsp;<span class="wpcf7-list-item-label">I did not find a buyer</span></label>
+                                                <label><input type="checkbox" name="reason[]" value="not_found_buyer">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a buyer','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -120,19 +120,19 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="checkbox" name="reason[]" value="home_sold">&nbsp;<span class="wpcf7-list-item-label">I sold my home</span></label>
+                                                <label><input type="checkbox" name="reason[]" value="home_sold">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I sold my home','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
                                 </p>
                             </fieldset>
                             <fieldset class="mb-15">
-                                <label class="mb-15">As a service to the community Zaivia likes to support buyers and sellers with home sale price data. Would you be willing to share your sale price with other</label>
+                                <label class="mb-15"><?php _e('As a service to the community Zaivia likes to support buyers and sellers with home sale price data. Would you be willing to share your sale price with other','am') ?></label>
                                 <p>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="share_price" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                                <label><input type="radio" name="share_price" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -141,12 +141,12 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="share_price" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                                <label><input type="radio" name="share_price" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
                                 </p>
-                                <label for="price">Sale Price</label>
+                                <label for="price"><?php _e('Sale Price','am') ?></label>
                                 <div class="row">
                                     <div class="col-lg-6">
                                         <input type="text" id="price" name="price">
@@ -155,12 +155,12 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                             </fieldset>
                             <hr class="mb-30">
                             <fieldset>
-                                <label class="mb-15">Were you satisfied with Zaivia?</label>
+                                <label class="mb-15"><?php _e('Were you satisfied with Zaivia?','am') ?></label>
                                 <p>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -169,18 +169,18 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
                                 </p>
                             </fieldset>
                             <fieldset>
-                                <label for="comments">Comments</label>
+                                <label for="comments"><?php _e('Comments','am') ?></label>
                                 <textarea id="comments" name="comments"></textarea>
                             </fieldset>
                             <div class="extra-link">
-                                <a href="#" class="close-modal">Cancel</a>
+                                <a href="#" class="close-modal"><?php _e('Cancel','am') ?></a>
                             </div>
                             <input type="submit" value="Delete Listing" name="delete" class="wpcf7-form-control wpcf7-submit left">
                         </form>
@@ -196,17 +196,17 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
             <div class="box">
                 <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
                 <div class="tabs-holder">
-                    <h3>Delete Listing</h3>
+                    <h3><?php _e('Delete Listing','am') ?></h3>
                     <div class="styled-form pb">
                         <form action="" method="post">
                             <input type="hidden" name="listing_id">
                             <fieldset>
-                                <label class="mb-15"><strong>Can you please tell us why you are deleting your listing?</strong></label>
+                                <label class="mb-15"><strong><?php _e('Can you please tell us why you are deleting your listing?','am') ?></strong></label>
                                 <p>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="found_renter" value="0">&nbsp;<span class="wpcf7-list-item-label">I did not find a renter</span></label>
+                                                <label><input type="radio" name="found_renter" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a renter','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -215,7 +215,7 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="found_renter" value="1">&nbsp;<span class="wpcf7-list-item-label">I found a renter</span></label>
+                                                <label><input type="radio" name="found_renter" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I found a renter','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -223,12 +223,12 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                             </fieldset>
                             <hr class="mb-30">
                             <fieldset>
-                                <label class="mb-15">Were you satisfied with Zaivia?</label>
+                                <label class="mb-15"><?php _e('Were you satisfied with Zaivia?','am') ?></label>
                                 <p>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label">Yes</span></label>
+                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -237,18 +237,18 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label">No</span></label>
+                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
                                 </p>
                             </fieldset>
                             <fieldset>
-                                <label for="comments2">Comments</label>
+                                <label for="comments2"><?php _e('Comments','am') ?></label>
                                 <textarea id="comments2" name="comments"></textarea>
                             </fieldset>
                             <div class="extra-link">
-                                <a href="#" class="close-modal">Cancel</a>
+                                <a href="#" class="close-modal"><?php _e('Cancel','am') ?></a>
                             </div>
                             <input type="submit" value="Delete Listing" name="delete" class="wpcf7-form-control wpcf7-submit left">
                         </form>

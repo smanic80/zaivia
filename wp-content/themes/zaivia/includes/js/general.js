@@ -720,7 +720,9 @@
                                     list.append(listing_ad(data.ads));
                                 }
                             }
-                            $('.found-line p').text(data.count + ' Listings Found For Sale In ' + $('#search_city').val());
+                            $('.found-line p .result_num').text(data.count);
+                            $('.found-line p .result_city').text($('#search_city').val());
+                            $('.found-line p').removeClass('hidden');
 
                             if (data.page == 1) {
                                 pagination.append('<span class="page-numbers">Previous</span>');
@@ -749,7 +751,7 @@
                             }
                             $('.sub-filter').show();
                         } else {
-                            $('.found-line p').text('');
+                            $('.found-line p').addClass('hidden');
                             $('.sub-filter').hide();
                             list.append('<div class="no-found-line"><h1>No Search Results Found</h1><p>Please try searching for properties in a different city.</p></div>');
                         }

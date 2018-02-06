@@ -306,7 +306,7 @@
                             google.maps.event.trigger(map, "resize");
                             map.setCenter(center);
                         });
-                        google.maps.event.addListenerOnce(map, 'idle');
+                        // google.maps.event.addListenerOnce(map, 'idle');
 
                         google.maps.event.addListener(map, 'click', function(event) {
                             placeMarker(event.latLng);

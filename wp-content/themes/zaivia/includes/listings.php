@@ -113,8 +113,8 @@ class ZaiviaListings {
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
 
         $sql = "SELECT *, 
-					IF(sale_rent = ".self::$for_sale.", 'For Sale', 'For Rent') as `sale_rent-text`, 
-					IF(activated = 1, 'Yes', 'No') as `active-text`,
+					IF(sale_rent = ".self::$for_sale.", '".__('For Sale')."', '".__('For Rent')."') as `sale_rent-text`, 
+					IF(activated = 1, '".__('Yes')."', '".__('No')."') as `active-text`,
 					 concat(address, ', ', city, ' ', province) as `address-text`
 				from $listing_tablename 
 				where listing_id = ".(int)$listingId;
@@ -144,8 +144,9 @@ class ZaiviaListings {
             $results[0]['blueprint'] = self::getListingFiles($listingId,self::$file_blueprint,1,false);
             $results[0]['openhouse'] = self::getListingOpenhouse($listingId);
             $results[0]['contact'] = self::getListingContact($listingId);
+            return $results[0];
         }
-        return $results[0];
+        return false;
     }
 
 	public static function saveListing($data) {

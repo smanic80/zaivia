@@ -8,6 +8,7 @@ get_header();
 
 $listing_id = isset($_GET['id'])?$_GET['id']:0;
 $listing = ZaiviaListings::getListing($listing_id);
+if($listing):
 ?>
 <div class="body grey-bg">
     <div class="single-title">
@@ -16,12 +17,12 @@ $listing = ZaiviaListings::getListing($listing_id);
                 <h1><?php echo $listing['unit_number'].' '.$listing['address']; ?></h1>
                 <p><?php echo $listing['city'].', '.$listing['province']; ?></p>
             </div>
-            <div class="price">$<?php echo $listing['price']; ?><div class="time"><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>per month<?php else: ?>Est. Mortage: $<?php echo '---'; ?>/mth<?php endif; ?></div></div>
+            <div class="price">$<?php echo $listing['price']; ?><div class="time"><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent){ _e('per month','am'); } else { echo __('Est. Mortage: $','am'). '---' . __('/mth','am'); } ?></div></div>
         </div>
     </div>
     <div class="back-line">
         <div class="container sm">
-            <a href="#" class="btn-back"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>Back To Listings</a>
+            <a href="#" class="btn-back"><i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i><?php _e('Back To Listings','am') ?></a>
         </div>
     </div>
     <div class="container sm">
@@ -47,28 +48,28 @@ $listing = ZaiviaListings::getListing($listing_id);
                     <div class="tabs-holder">
                         <div class="tab-nav ll">
                             <ul>
-                                <li class="current"><a href="#details">DETAILS</a></li>
-                                <li><a href="#map-t">MAP</a></li>
-                                <li><a href="#floor">FLOORPLAN</a></li>
-                                <li><a href="#market">MARKET INFO</a></li>
+                                <li class="current"><a href="#details"><?php _e('DETAILS','am') ?></a></li>
+                                <li><a href="#map-t"><?php _e('MAP','am') ?></a></li>
+                                <li><a href="#floor"><?php _e('FLOORPLAN','am') ?></a></li>
+                                <li><a href="#market"><?php _e('MARKET INFO','am') ?></a></li>
                             </ul>
                         </div>
                         <div class="tab-c active" id="details">
                             <div class="post-detail">
-                                <div class="date">Posted on: <?php echo date('M d, Y',strtotime($listing['date_published'])); ?></div>
+                                <div class="date"><?php _e('Posted on:','am') ?> <?php echo date('M d, Y',strtotime($listing['date_published'])); ?></div>
                                 <div class="entry">
-                                    <h3>Key Features</h3>
+                                    <h3><?php _e('Key Features','am') ?></h3>
                                     <div class="row">
                                         <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>
                                         <div class="col-sm-8">
-                                            <h4><?php echo $listing['property_type']; ?> - <?php echo implode(', ',$listing['partial_rent']); ?> For Rent</h4>
+                                            <h4><?php echo $listing['property_type']; ?> - <?php echo implode(', ',$listing['partial_rent']); ?> <?php _e('For Rent','am') ?></h4>
                                         </div>
                                         <div class="col-sm-4 text-right">
-                                            <h4>$<?php echo $listing['price']; ?> / month</h4>
+                                            <h4>$<?php echo $listing['price']; ?> / <?php _e('month','am') ?></h4>
                                         </div>
                                         <?php else: ?>
                                         <div class="col-sm-8">
-                                            <h4><?php echo $listing['property_type'].($listing['house_type']?' ('.$listing['house_type'].')':''); ?> - For Sale</h4>
+                                            <h4><?php echo $listing['property_type'].($listing['house_type']?' ('.$listing['house_type'].')':''); ?> - <?php _e('For Sale','am') ?></h4>
                                         </div>
                                         <div class="col-sm-4 text-right">
                                             <h4>$<?php echo $listing['price']; ?></h4>
@@ -80,70 +81,70 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <?php if($listing['rent']): ?>
                                             <div class="col-md-5">
                                                 <dl>
-                                                    <dt>Bedrooms:</dt>
+                                                    <dt><?php _e('Bedrooms','am') ?>:</dt>
                                                     <dd><?php echo $listing['bedrooms']; ?></dd>
-                                                    <dt>Bathrooms:</dt>
+                                                    <dt><?php _e('Bathrooms','am') ?>:</dt>
                                                     <dd><?php echo $listing['bathrooms']; ?></dd>
-                                                    <dt>Parking:</dt>
+                                                    <dt><?php _e('Parking','am') ?>:</dt>
                                                     <dd><?php echo $listing['parking']; ?></dd>
-                                                    <dt>Square Footage:</dt>
-                                                    <dd><?php echo $listing['square_footage']; ?> sq. ft</dd>
-                                                    <dt>Year Built:</dt>
+                                                    <dt><?php _e('Square Footage','am') ?>:</dt>
+                                                    <dd><?php echo $listing['square_footage']; ?> <?php _e('sq. ft','am') ?></dd>
+                                                    <dt><?php _e('Year Built','am') ?>:</dt>
                                                     <dd><?php echo $listing['year_built']; ?></dd>
-                                                    <dt>Date Available:</dt>
+                                                    <dt><?php _e('Date Available','am') ?>:</dt>
                                                     <dd><?php echo $listing['rent_date']?date('M d, Y',strtotime($listing['rent_date'])):'-'; ?></dd>
-                                                    <dt>Security Deposit:</dt>
+                                                    <dt><?php _e('Security Deposit','am') ?>:</dt>
                                                     <dd><?php echo $listing['rent_deposit']?'$'.$listing['rent_deposit']:'-'; ?></dd>
-                                                    <dt>Furnishings:</dt>
-                                                    <dd><?php if($listing['rent']['rent_furnishings']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
+                                                    <dt><?php _e('Furnishings','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_furnishings']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
                                                 </dl>
                                             </div>
                                             <div class="col-md-7">
                                                 <dl>
-                                                    <dt>Pets:</dt>
-                                                    <dd><?php if($listing['rent']['rent_pets']){ ?>Yes<?php } else { ?>No pets<?php } ?></dd>
-                                                    <dt>Smoking:</dt>
-                                                    <dd><?php if($listing['rent']['rent_smoking']){ ?>Yes<?php } else { ?>Non-smoking<?php } ?></dd>
-                                                    <dt>Laundry:</dt>
-                                                    <dd><?php if($listing['rent']['rent_laundry']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
-                                                    <dt>Electrified Parking:</dt>
-                                                    <dd><?php if($listing['rent']['rent_electrified_parking']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
-                                                    <dt>Secured Entry:</dt>
-                                                    <dd><?php if($listing['rent']['rent_secured_entry']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
-                                                    <dt>Private Entry:</dt>
-                                                    <dd><?php if($listing['rent']['rent_private_entry']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
-                                                    <dt>Onsite Management:</dt>
-                                                    <dd><?php if($listing['rent']['rent_onsite']){ ?>Yes<?php } else { ?>No<?php } ?></dd>
+                                                    <dt><?php _e('Pets','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_pets']){ _e('Yes','am'); } else { _e('No pets','am'); } ?></dd>
+                                                    <dt><?php _e('Smoking','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_smoking']){ _e('Yes','am'); } else { _e('Non-smoking','am'); } ?></dd>
+                                                    <dt><?php _e('Laundry','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_laundry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
+                                                    <dt><?php _e('Electrified Parking','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_electrified_parking']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
+                                                    <dt><?php _e('Secured Entry','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_secured_entry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
+                                                    <dt><?php _e('Private Entry','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_private_entry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
+                                                    <dt><?php _e('Onsite Management','am') ?>:</dt>
+                                                    <dd><?php if($listing['rent']['rent_onsite']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
                                                 </dl>
                                             </div>
                                             <?php else: ?>
                                             <div class="col-md-5">
                                                 <dl>
-                                                    <dt>Bedrooms:</dt>
+                                                    <dt><?php _e('Bedrooms','am') ?>:</dt>
                                                     <dd><?php echo $listing['bedrooms']; ?></dd>
-                                                    <dt>Bathrooms:</dt>
+                                                    <dt><?php _e('Bathrooms','am') ?>:</dt>
                                                     <dd><?php echo $listing['bathrooms']; ?></dd>
-                                                    <dt>Floor Size:</dt>
-                                                    <dd>--- ft</dd>
-                                                    <dt>Parking:</dt>
+                                                    <dt><?php _e('Floor Size','am') ?>:</dt>
+                                                    <dd>--- <?php _e('ft','am') ?></dd>
+                                                    <dt><?php _e('Parking','am') ?>:</dt>
                                                     <dd><?php echo $listing['parking']; ?></dd>
-                                                    <dt>Driveway:</dt>
+                                                    <dt><?php _e('Driveway','am') ?>:</dt>
                                                     <dd><?php echo $listing['driveway']; ?></dd>
-                                                    <dt>Year Built:</dt>
+                                                    <dt><?php _e('Year Built','am') ?>:</dt>
                                                     <dd><?php echo $listing['year_built']; ?></dd>
                                                 </dl>
                                             </div>
                                             <div class="col-md-7">
                                                 <dl>
-                                                    <dt>Lot Size:</dt>
+                                                    <dt><?php _e('Lot Size','am') ?>:</dt>
                                                     <dd><?php echo $listing['size_x']; ?> x <?php echo $listing['size_y']; ?> <?php echo $listing['size_units']; ?></dd>
-                                                    <dt>Basement:</dt>
-                                                    <dd><?php if(in_array('finished_basement',$listing['features_1'])): ?>Finished<?php else: ?>Not Finished<?php endif; ?></dd>
-                                                    <dt>Exterior:</dt>
+                                                    <dt><?php _e('Basement','am') ?>:</dt>
+                                                    <dd><?php if(in_array('finished_basement',$listing['features_1'])){ _e('Finished','am'); } else { _e('Not Finished','am'); } ?></dd>
+                                                    <dt><?php _e('Exterior','am') ?>:</dt>
                                                     <dd><?php echo $listing['exterior_type']; ?></dd>
-                                                    <dt>Roof Type:</dt>
+                                                    <dt><?php _e('Roof Type','am') ?>:</dt>
                                                     <dd><?php echo $listing['roof_type']; ?></dd>
-                                                    <dt>Taxes:</dt>
+                                                    <dt><?php _e('Taxes','am') ?>:</dt>
                                                     <dd><?php echo $listing['annual_taxes']?'$'.$listing['annual_taxes']:'-'; ?></dd>
                                                 </dl>
                                             </div>
@@ -158,7 +159,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         $rent_utilities[$el['key']] = $el['name'];
                                     }
                                     ?>
-                                    <h3>Utilites Included</h3>
+                                    <h3><?php _e('Utilities Included','am') ?></h3>
                                     <div class="row">
                                         <div class="col-6 col-lg-3">
                                             <ul>
@@ -196,7 +197,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         $features_1[$el['key']] = $el['name'];
                                     }
                                     ?>
-                                    <h3>Other Features</h3>
+                                    <h3><?php _e('Other Features','am') ?></h3>
                                     <div class="row">
                                         <div class="col-6 col-lg-3">
                                             <ul>
@@ -235,7 +236,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             </ul>
                                         </div>
                                     </div>
-                                    <h3>Outdoor Amenities</h3>
+                                    <h3><?php _e('Outdoor Amenities','am') ?></h3>
                                     <?php $listing['features_3'] = array_merge($listing['features_3'], $listing['features_3_custom']); ?>
                                     <div class="row">
                                         <div class="col-6 col-lg-3">
@@ -275,7 +276,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             </ul>
                                         </div>
                                     </div>
-                                    <h3>Room Descriptions</h3>
+                                    <h3><?php _e('Room Descriptions','am') ?></h3>
                                     <div class="row">
                                         <?php
                                         $names = array();
@@ -295,7 +296,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         </div>
                                         <?php endforeach; ?>
                                     </div>
-                                    <h3>Appliances Included</h3>
+                                    <h3><?php _e('Appliances Included','am') ?></h3>
                                     <?php $listing['features_2'] = array_merge($listing['features_2'], $listing['features_2_custom']); ?>
                                     <div class="row">
                                         <div class="col-6 col-lg-4">
@@ -326,7 +327,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             </ul>
                                         </div>
                                     </div>
-                                    <h3>Description</h3>
+                                    <h3><?php _e('Description','am') ?></h3>
                                     <p><?php echo $listing['description']; ?></p>
                                 </div>
                             </div>
@@ -335,8 +336,8 @@ $listing = ZaiviaListings::getListing($listing_id);
                             <div class="post-map post-detail">
                                 <div class="map-h">
                                     <div class="controls">
-                                        <a href="#view" class="current"><i class="fa fa-map-o" aria-hidden="true"></i>Map View</a>
-                                        <a href="#road"><i class="fa fa-road" aria-hidden="true"></i>Street View</a>
+                                        <a href="#view" class="current"><i class="fa fa-map-o" aria-hidden="true"></i><?php _e('Map View','am') ?></a>
+                                        <a href="#road"><i class="fa fa-road" aria-hidden="true"></i><?php _e('Street View','am') ?></a>
                                     </div>
                                     <div class="map-type active" id="view">
                                         <div class="map" id="map3"></div>
@@ -353,37 +354,37 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <div class="ico green">
                                             <i class="fa fa-check" aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Schools</div>
+                                        <div class="label"><?php _e('Show Nearby Schools','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4 ml-1">
                                         <div class="ico purple">
                                             <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Grocerie Stores</div>
+                                        <div class="label"><?php _e('Show Nearby Grocerie Stores','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico dgreen">
                                             <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Banks</div>
+                                        <div class="label"><?php _e('Show Nearby Banks','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico yellow">
                                             <i class="fa fa-cutlery " aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Restaurants</div>
+                                        <div class="label"><?php _e('Show Nearby Restaurants','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4 ml-1">
                                         <div class="ico blue">
                                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Shopping</div>
+                                        <div class="label"><?php _e('Show Nearby Shopping','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico red">
                                             <i class="fa fa-shopping-bag" aria-hidden="true"></i>
                                         </div>
-                                        <div class="label">Show Nearby Gyms</div>
+                                        <div class="label"><?php _e('Show Nearby Gyms','am') ?></div>
                                     </div>
                                 </div>
                             </div>
@@ -404,14 +405,14 @@ $listing = ZaiviaListings::getListing($listing_id);
                             <script type="text/html" id="tmpl-listing-item">
                                 <article class="ad-item<# if ( data.premium > 0 ) { #> premium<# } #>">
                                     <# if ( data.premium > 0 ) { #>
-                                    <div class="featured">PREMIUM LISTING</div>
+                                    <div class="featured"><?php _e('PREMIUM LISTING','am') ?></div>
                                     <# } #>
                                     <div class="image"<# if(data.images.card) { #> style="background-image: url('{{data.images.card}}')"<# } #>>
                                     <# if(data.images.card) { #><a href="#"><img src="{{data.images.card}}" alt=""></a><# } #>
                                     <div class="badges">
                                         <# if ( data.openhouse.length > 0 ) { #>
                                         <div class="open">
-                                            OPEN HOUSE
+                                            <?php _e('OPEN HOUSE','am') ?>
                                             <div class="tooltip">
                                                 <ul>
                                                     <# for ( i in data.openhouse ) { #>
@@ -422,7 +423,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         </div>
                                         <# } #>
                                         <# if ( data.new_listing > 0 ) { #>
-                                        <div class="new">NEW LISTING</div>
+                                        <div class="new"><?php _e('NEW LISTING','am') ?></div>
                                         <# } #>
                                     </div>
                                     <div class="love">
@@ -440,17 +441,17 @@ $listing = ZaiviaListings::getListing($listing_id);
                                             <div class="cols">
                                                 <div class="col">
                                                     <ul>
-                                                        <li>{{data.bedrooms}} Bedrooms</li>
-                                                        <li>{{data.bathrooms}} Bathrooms</li>
-                                                        <li>{{data.square_footage}} sq. ft.</li>
-                                                        <li>{{data.parking}} parking</li>
+                                                        <li>{{data.bedrooms}} <?php _e('Bedrooms','am') ?></li>
+                                                        <li>{{data.bathrooms}} <?php _e('Bathrooms','am') ?></li>
+                                                        <li>{{data.square_footage}} <?php _e('sq. ft.','am') ?></li>
+                                                        <li>{{data.parking}} <?php _e('parking','am') ?></li>
                                                     </ul>
                                                 </div>
                                              </div>
                                         </div>
                                         <# if ( data.sale_by != 1 ) { #>
                                         <div class="listed">
-                                            <p>Listed By<br>{{data.contact.contact_name}}</p>
+                                            <p><?php _e('Listed By','am') ?><br>{{data.contact.contact_name}}</p>
                                             <div class="images">
                                                 <div class="ir">
                                                     <a href="#"><img src="{{data.contact.contact_logo.thumb}}" alt=""></a>
@@ -467,9 +468,9 @@ $listing = ZaiviaListings::getListing($listing_id);
                             <div class="post-market post-detail">
                                 <div class="inside-tabs">
                                     <ul class="nav">
-                                        <li class="current"><a href="#sale">For Sale</a></li>
-                                        <li><a href="#offer">Conditonal Offer</a></li>
-                                        <li><a href="#sold">Recently Sold</a></li>
+                                        <li class="current"><a href="#sale"><?php _e('For Sale','am') ?></a></li>
+                                        <li><a href="#offer"><?php _e('Conditional Offer','am') ?></a></li>
+                                        <li><a href="#sold"><?php _e('Recently Sold','am') ?></a></li>
                                     </ul>
                                     <div class="tab-ic active" id="sale">
                                         <section class="ad-listing"></section>
@@ -496,7 +497,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                     </div>
                 </div>
                 <div class="widget widget-need">
-                    <h3>Listed By Agent</h3>
+                    <h3><?php _e('Listed By Agent','am') ?></h3>
                     <div class="agent-item">
                         <div class="image">
                             <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/p1.jpg" alt=""></a>
@@ -521,7 +522,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <i class="fa fa-phone" aria-hidden="true"></i>
                                         <span class="tooltip">
                                             <i class="fa fa-phone" aria-hidden="true"></i>
-                                            <strong>Phone</strong><br>Office: 306-123-4567
+                                            <strong><?php _e('Phone','am') ?></strong><br>Office: 306-123-4567
                                         </span>
                                     </a>
                                 </li>
@@ -530,7 +531,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <i class="fa fa-envelope" aria-hidden="true"></i>
                                         <span class="tooltip">
                                             <i class="fa fa-envelope" aria-hidden="true"></i>
-                                            <strong>Mail</strong><br>email.com
+                                            <strong><?php _e('Mail','am') ?></strong><br>email.com
                                         </span>
                                     </a>
                                 </li>
@@ -539,7 +540,7 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <i class="fa fa-map-marker" aria-hidden="true"></i>
                                         <span class="tooltip">
                                             <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                            <strong>Address</strong><br>Street
+                                            <strong><?php _e('Address','am') ?></strong><br>Street
                                         </span>
                                     </a>
                                 </li>
@@ -548,25 +549,25 @@ $listing = ZaiviaListings::getListing($listing_id);
                                         <i class="fa fa-chain" aria-hidden="true"></i>
                                         <span class="tooltip">
                                             <i class="fa fa-chain" aria-hidden="true"></i>
-                                            <strong>Link</strong><br>www.com
+                                            <strong><?php _e('Link','am') ?></strong><br>www.com
                                         </span>
                                     </a>
                                 </li>
                             </ul>
                             <div class="profile">
-                                <a href="#">View Profile</a>
+                                <a href="#"><?php _e('View Profile','am') ?></a>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="widget widget-listing">
-                    <a href="#">View Other Listings</a>
+                    <a href="#"><?php _e('View Other Listings','am') ?></a>
                 </div>
                 <div class="widget widget-report">
-                    <h3><a href="#report" class="open-modal"><i class="fa fa-flag-o" aria-hidden="true"></i>Report Listing</a></h3>
+                    <h3><a href="#report" class="open-modal"><i class="fa fa-flag-o" aria-hidden="true"></i><?php _e('Report Listing','am') ?></a></h3>
                 </div>
                 <div class="widget widget-social">
-                    <h3>Share with Friends</h3>
+                    <h3><?php _e('Share with Friends','am') ?></h3>
                     <ul>
                         <li><a href="#"><i class="fa fa-facebook-square" aria-hidden="true"></i></a></li>
                         <li><a href="#"><i class="fa fa-twitter-square" aria-hidden="true"></i></a></li>
@@ -575,11 +576,11 @@ $listing = ZaiviaListings::getListing($listing_id);
                         <li><a href="#"><i class="fa fa-linkedin-square" aria-hidden="true"></i></a></li>
                     </ul>
                     <div class="save">
-                        <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i>Save as Favorite</a>
+                        <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i><?php _e('Save as Favorite','am') ?></a>
                     </div>
                     <?php if($listing['rent'] && $listing['rent']['rent_file']): ?>
                     <div class="dl">
-                        <a href="<?php echo $listing['rent']['rent_file']; ?>"><i class="fa fa-file-text-o" aria-hidden="true"></i>Download Rental Application</a>
+                        <a href="<?php echo $listing['rent']['rent_file']; ?>"><i class="fa fa-file-text-o" aria-hidden="true"></i><?php _e('Download Rental Application','am') ?></a>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -592,4 +593,4 @@ $listing = ZaiviaListings::getListing($listing_id);
         </div>
     </div>
 </div>
-<?php get_footer(); ?>
+<?php endif; get_footer(); ?>

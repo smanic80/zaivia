@@ -6,7 +6,7 @@
             <p class="intro3"><?php echo get_field("select_draft")?></p>
             <div class="row">
                 <div class="col-md-12 col-lg-5">
-                    <select id="set-draft">
+                    <select id="set-draft" title="">
                         <option value=""></option>
                         <?php foreach($storedListings as $storedListing):?>
                             <option value="<?php echo $storedListing['listing_id']?>"><?php echo $storedListing['address-text']?></option>
@@ -28,7 +28,7 @@
 						<label><?php _e('Property Is', 'am') ?>*</label>
 					</div>
 					<div class="col-sm-12 col-lg-8">
-						<select name="sale_rent" id="sale_rent" class="tosave required">
+						<select name="sale_rent" id="sale_rent" class="tosave required" title="">
 							<option value="0" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_rent)?'selected':''; ?>><?php _e('For Rent', 'am') ?></option>
 							<option value="1" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_sale)?'selected':''; ?>><?php _e('For Sale', 'am') ?></option>
 						</select>
@@ -42,7 +42,7 @@
 						<label class="salerent_<?php echo ZaiviaListings::$for_rent?>"><?php _e('For Rent By', 'am') ?>*</label>
 					</div>
 					<div class="col-sm-12 col-lg-8">
-						<select name="sale_by" id="sale_by" class="tosave required">
+						<select name="sale_by" id="sale_by" class="tosave required" title="">
 							<option value=""><?php _e('-select-', 'am') ?></option>
 							<option value="0" <?php echo ($listing && (int)$listing['sale_by'] === 0)?'selected':''; ?>><?php _e('Agent', 'am') ?></option>
 							<option value="1" <?php echo ($listing && (int)$listing['sale_by'] === 1)?'selected':''; ?>><?php _e('Owner', 'am') ?></option>
@@ -98,7 +98,7 @@
 					</div>
 					<div class="col-sm-12 col-lg-8">
 						<?php $provinces = ZaiviaListings::$provinces; ?>
-						<select name="province" id="province" class="tosave required">
+						<select name="province" id="province" class="tosave required" title="">
 							<option value=""><?php _e('-select-', 'am') ?></option>
 							<?php foreach($provinces as $code=>$name):?>
 								<option value="<?php echo $code?>" <?php echo ($listing && $listing['province'] === $code)?'selected':''; ?>><?php echo $name?></option>
@@ -124,14 +124,14 @@
 					</div>
 					<div class="col-sm-12 col-lg-8">
 
-						<select name="status" id="status_0" class="status salerent_<?php echo ZaiviaListings::$for_rent?>">
+						<select name="status" id="status_0" class="status salerent_<?php echo ZaiviaListings::$for_rent?>" title="">
 							<option value=""><?php _e('-select-', 'am') ?></option>
 							<option value="Active" <?php echo ($listing && $listing['status'] === "Active")?'selected':''; ?>><?php _e('Active', 'am') ?></option>
 							<option value="Rented" <?php echo ($listing && $listing['status'] === "Rented")?'selected':''; ?>><?php _e('Rented', 'am') ?></option>
 							<option value="Redused" <?php echo ($listing && $listing['status'] === "Redused")?'selected':''; ?>><?php _e('Redused', 'am') ?></option>
 						</select>
 
-                        <select name="status" id="status_1" class="status salerent_<?php echo ZaiviaListings::$for_sale?>">
+                        <select name="status" id="status_1" class="status salerent_<?php echo ZaiviaListings::$for_sale?>" title="">
                             <option value=""><?php _e('-select-', 'am') ?></option>
                             <option value="Active" <?php echo ($listing && $listing['status'] === "Active")?'selected':''; ?>><?php _e('Active', 'am') ?></option>
                             <option value="Conditional Offer" <?php echo ($listing && $listing['status'] === "Conditional Offer")?'selected':''; ?> ><?php _e('Conditional Offer', 'am') ?></option>
