@@ -875,6 +875,18 @@
         return false;
       });
 
+        $(".tab-control a").click(function() {
+            var $parent = $(this).parents("ul");
+
+            $($parent.find("li.current a").attr("href")).removeClass("current");
+            $parent.find("li.current").removeClass("current");
+
+            $(this).parent().addClass("current");
+            $($(this).attr("href")).addClass("current");
+
+            return false;
+        });
+
       // $(".trigger").click(function() {
       //   $(this).parent().toggleClass("active");
       //   $(this).next().toggleClass("active");
@@ -957,6 +969,21 @@
             });
         });
 
+        $("#edit_account_form").submit(function(e){
+            e.preventDefault();
+            var fields = [
+                'edit_firstname', 'create_lastname', 'create_email',
+                'edit_phone', 'create_phonetype',
+                'create_user_nonce'
+            ];
+            processAjaxForm(fields, $(this), function (){
+                $(".saved-confirmation").hide();
+                $("#edit_account_form .saved-confirmation").show();
+                setTimeout(function () {
+                    $("#edit_account_form .saved-confirmation").fadeOut(400);
+                }, 600);
+            });
+        });
     });
 
 

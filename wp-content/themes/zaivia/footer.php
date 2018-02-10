@@ -76,8 +76,8 @@
                                     <input type="text" name="create_email" id="create_email" placeholder="<?php _e('Email*', 'am') ?>">
                                     <input type="text" class="half" name="create_phone" id="create_phone" placeholder="<?php _e('Phone Number*', 'am') ?>">
                                     <select class="half-r" name="create_phonetype" id="create_phonetype">
-                                        <option><?php _e('Cell', 'am') ?></option>
-                                        <option><?php _e('Office', 'am') ?></option>
+                                        <option value="cell"><?php _e('Cell', 'am') ?></option>
+                                        <option value="office"><?php _e('Office', 'am') ?></option>
                                     </select>
                                     <input type="password" name="create_pass" id="create_pass" placeholder="<?php _e('Password*', 'am') ?>">
                                     <input type="password" name="create_pass_confirm" id="create_pass_confirm" placeholder="<?php _e('Confirm Password*', 'am') ?>">

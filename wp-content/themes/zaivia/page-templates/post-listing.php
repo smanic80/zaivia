@@ -7,15 +7,15 @@ Template Post Type: page
 get_header(); ?>
 <?php if(!get_current_user_id()):?>
     <div class="container sm mb-35">
-    <div class="row gutters-40">
-    <div class="col-md-85">
-        <div class="single-post">
-            <div class="title">
-                <h1>Please, Login first</h1>
+        <div class="row gutters-40">
+            <div class="col-md-85">
+                <div class="single-post">
+                    <div class="title">
+                        <h1>Please, Login first</h1>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
     </div>
 <?php else: ?>
 

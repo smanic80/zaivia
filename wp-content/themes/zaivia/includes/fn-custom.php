@@ -294,6 +294,39 @@
 		die;
 	}
 
+	add_action( 'wp_ajax_edit_account_form', 'edit_account_formProcess' );
+	add_action( 'wp_ajax_nopriv_edit_account_form', 'edit_account_formProcess' );
+	function edit_account_formProcess(){
+		$nonce = $_POST['edit_user_nonce'];
+		if ( ! wp_verify_nonce( $nonce, 'zai_edit_user' ) ) {
+			echo json_encode(['error'=>'Security checked!']);
+		}
+
+		$user_id = (int)$_POST['user_id'];
+		$user_email = stripcslashes($_POST['edit_email']);
+		$user_nice_name = implode(" ", [stripcslashes($_POST['edi_firstname']), stripcslashes($_POST['edi_lastname'])]);
+
+		$user_data = array(
+			'ID' => $user_id,
+			'user_email' => $user_email,
+			'display_name' => $user_nice_name,
+		);
+
+		$res = [];
+		$user_id = wp_update_user($user_data);
+
+		update_user_meta($user_id,"phone", stripcslashes($_POST['create_phone']));
+		update_user_meta($user_id,"phone_type", stripcslashes($_POST['create_phonetype']));
+		update_user_meta($user_id,"first_name", $_POST['create_firstname']);
+		update_user_meta($user_id,"last_name", $_POST['create_lastname']);
+
+		if (is_wp_error($user_id)) {
+			$res['error'] = $user_id->get_error_message();
+		} 
+
+		echo json_encode($res);
+		die;
+	}
 
 	add_action( 'wp_ajax_getListings', 'getListings' );
 	add_action( 'wp_ajax_nopriv_getListings', 'getListings' );

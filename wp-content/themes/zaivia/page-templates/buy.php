@@ -9,11 +9,11 @@ get_header(); ?>
 <?php set_query_var( 'page_type', 'sale' ); ?>
 <?php get_template_part('templates/listing', 'filter');?>
 
-<div class="found-line">
-  <div class="container pp">
-    <p>1,000 Listings Found For Sale In Saskatoon </p>
-  </div>
-</div>
+    <div class="found-line">
+      <div class="container pp">
+        <p>1,000 Listings Found For Sale In Saskatoon </p>
+      </div>
+    </div>
     
     <div class="container pp">
       <div class="row gutters-44">

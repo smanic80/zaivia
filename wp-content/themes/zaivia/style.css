@@ -9448,7 +9448,16 @@ div.entry form p label + br {
   border-color: #d93c3c !important;
 }
 
+.tabbed-content {
+  display: none;
+}
+.tabbed-content.current {
+  display: block;
+}
 
+.saved-confirmation {
+  display: none;
+}
 
 @media (min-width: 576px) {
   .col-sm {
