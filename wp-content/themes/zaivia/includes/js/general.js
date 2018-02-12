@@ -720,7 +720,9 @@
                                     list.append(listing_ad(data.ads));
                                 }
                             }
-                            $('.found-line p').text(data.count + ' Listings Found For Sale In ' + $('#search_city').val());
+                            $('.found-line p .result_num').text(data.count);
+                            $('.found-line p .result_city').text($('#search_city').val());
+                            $('.found-line p').removeClass('hidden');
 
                             if (data.page == 1) {
                                 pagination.append('<span class="page-numbers">Previous</span>');
@@ -749,7 +751,7 @@
                             }
                             $('.sub-filter').show();
                         } else {
-                            $('.found-line p').text('');
+                            $('.found-line p').addClass('hidden');
                             $('.sub-filter').hide();
                             list.append('<div class="no-found-line"><h1>No Search Results Found</h1><p>Please try searching for properties in a different city.</p></div>');
                         }
@@ -937,25 +939,18 @@
       });
 
 
+        $(".submit").click(function (e) {
+            e.preventDefault();
+
+            var $form = $(this).parents('form');
+            if($form.length) {
+                $form.submit();
+            }
+        });
+
         $("#login_form").submit(function(e){
             e.preventDefault();
             processAjaxForm(['login_email', 'login_password'], $(this));
-        });
-
-        $("#create_form").submit(function(e){
-            e.preventDefault();
-            var fields = [
-                'create_firstname', 'create_lastname', 'create_email',
-                'create_phone', 'create_phonetype',
-                'create_pass', 'create_pass_confirm', 'create_subscribe',
-                'create_user_nonce'
-            ];
-            processAjaxForm(fields, $(this), function (){
-                $("#confirmation_emial").text($("#create_email").val());
-
-                closeModal();
-                openModal("#confirmation_modal");
-            });
         });
 
         $("#restore_form").submit(function(e){
@@ -969,33 +964,153 @@
             });
         });
 
+        $("#create_form").submit(function(e){
+            e.preventDefault();
+            var fields = [
+                'create_firstname', 'create_lastname', 'create_email',
+                'create_phone', 'create_phonetype',
+                'create_pass', 'create_pass_confirm', 'create_subscribe'
+            ];
+            processAjaxForm(fields, $(this), function (){
+                $("#confirmation_emial").text($("#create_email").val());
+
+                closeModal();
+                openModal("#confirmation_modal");
+            }, ['create_user_nonce']);
+        });
+
         $("#edit_account_form").submit(function(e){
             e.preventDefault();
             var fields = [
-                'edit_firstname', 'create_lastname', 'create_email',
-                'edit_phone', 'create_phonetype',
-                'create_user_nonce'
+                'edit_firstname', 'edit_lastname', 'edit_email',
+                'edit_phone', 'edit_phonetype'
             ];
             processAjaxForm(fields, $(this), function (){
                 $(".saved-confirmation").hide();
                 $("#edit_account_form .saved-confirmation").show();
                 setTimeout(function () {
                     $("#edit_account_form .saved-confirmation").fadeOut(400);
-                }, 600);
+                }, 1000);
+            }, ['edit_user_nonce']);
+        });
+
+        $("#edit_payment_form").submit(function(e){
+            e.preventDefault();
+            var fields = [
+                'cardholder_name', 'cc_number', 'cc_type', 'ccv',
+                'cc_date_m', 'cc_date_y'
+            ];
+
+            processAjaxForm(fields, $(this), function (data){
+                $(".saved-confirmation").hide();
+                $("#edit_payment_form .saved-confirmation").show();
+                setTimeout(function () {
+                    $("#edit_payment_form .saved-confirmation").fadeOut(400);
+                }, 1000);
+
+                $("#cardholder_name, #cc_number, #cc_type, #cc_date_m, #cc_date_y, #cc_uid, #ccv").val('');
+                addUpdateCCRow(data);
+            }, ['edit_user_nonce', 'cc_uid']);
+
+            function addUpdateCCRow(data) {
+                var $row = $("#cc-list .row-"+data['cc_uid']),
+                    rowHtml = '<td>'+data['cc_type']+'</td>\n' +
+                        '<td>'+data['cc_number_safe']+'</td>\n' +
+                        '<td>'+data['cc_date_m'] + '/' + data['cc_date_y']+'</td>\n' +
+                        '<td class="text-right"><a href="#" class="btn btn-secondary btn-sm edit-cc" data-id="'+data['cc_uid']+'">Edit</a>\n' +
+                        '<a href="#" class="btn btn-secondary btn-sm delete-cc" data-id="'+data['cc_uid']+'">Delete</a></td>\n';
+
+                if($row.length) {
+                    $row.html(rowHtml);
+                } else {
+                    $("#no-cards").hide();
+                    $("#cc-list").append('<tr class="row-'+data['cc_uid']+'">\n' + rowHtml + '</tr>');
+                }
+            }
+        });
+        $("#cc-list").on("click", ".edit-cc", function (e) {
+            e.preventDefault();
+
+            var data = {'action':'edit_cc','cc_uid':$(this).data("id")};
+            $.post({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    if(typeof data['error'] === 'undefined') {
+                        $("#cardholder_name").val(data['cardholder_name']).removeClass("placeholder");
+                        $("#cc_number").val(data['cc_number']).removeClass("placeholder");
+                        $("#cc_type").val(data['cc_type']).removeClass("placeholder");
+                        $("#cc_date_m").val(data['cc_date_m']).removeClass("placeholder");
+                        $("#cc_date_y").val(data['cc_date_y']).removeClass("placeholder");
+                        $("#ccv").val(data['ccv']).removeClass("placeholder");
+                        $("#cc_uid").val(data['cc_uid']).removeClass("placeholder");
+                    } else {
+                        $("#cc-list").find(".error_placeholder").text(data['error']).addClass('error').show();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $("#cc-list").find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
+                }
+            });
+        });
+        $("#cc-list").on("click", ".delete-cc", function (e) {
+            e.preventDefault();
+            if(!confirm("Are you sure?")) return false;
+
+            var uid = $(this).data("id"),
+                data = {'action':'delete_cc','cc_uid':uid};
+            $.post({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    if(typeof data['error'] === 'undefined') {
+                        $("#edit_payment_form .delete-confirmation").show();
+                        setTimeout(function () {
+                            $("#edit_payment_form .delete-confirmation").fadeOut(400);
+                        }, 1000);
+
+                        $("#cc-list .row-"+uid).remove();
+                    } else {
+                        $("#cc-list").find(".error_placeholder").text(data['error']).addClass('error').show();
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    $("#cc-list").find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
+                }
+            });
+        });
+
+
+        $("#edit_password_form").submit(function(e){
+            e.preventDefault();
+            var fields = [
+                'edit_old_password', 'edit_new_password', 'edit_confirm_password',
+                'edit_user_nonce'
+            ];
+            processAjaxForm(fields, $(this), function (){
+                $(".saved-confirmation").hide();
+                $("#edit_password_form .saved-confirmation").show();
+                setTimeout(function () {
+                    $("#edit_password_form .saved-confirmation").fadeOut(400);
+                }, 1000);
+                $("#edit_old_password, #edit_new_password, #edit_confirm_password").val('');
             });
         });
     });
 
 
-    function processAjaxForm(fields, $form, callback) {
+    function processAjaxForm(requiredFields, $form, callback, additionalFiels) {
         var data = {},
             cur;
 
-        $(".error_placeholder").removeClass('error').hide();
-        for(var i in fields) {
-            $cur = $("#"+fields[i]);
+        $form.find(".error_placeholder").removeClass('error').hide();
 
-            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password") {
+        for(var i in requiredFields) {
+            $cur = $("#"+requiredFields[i]);
+
+            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password" || $cur[0].tagName === "SELECT") {
                 $cur.removeClass("error");
                 if(!$cur.val()) {
                     $cur.addClass("error");
@@ -1007,11 +1122,17 @@
                 }
             }
 
-            data[fields[i]] = $cur.val();
+            data[requiredFields[i]] = $cur.val();
         }
 
         if($form.find(".error").length ){
             return false;
+        }
+
+        if(additionalFiels) {
+            for(var i in additionalFiels) {
+                data[additionalFiels[i]] = $("#"+additionalFiels[i]).val();
+            }
         }
 
         data['action'] = $form.attr("id");
@@ -1023,16 +1144,16 @@
             success: function (data) {
                 if(typeof data['error'] === 'undefined') {
                     if(callback) {
-                        callback();
+                        callback(data);
                     } else {
                         location.reload();
                     }
                 } else {
-                    $(".error_placeholder").text(data['error']).addClass('error').show();
+                    $form.find(".error_placeholder").text(data['error']).addClass('error').show();
                 }
             },
             error: function(jqXHR, textStatus, errorThrown) {
-                $(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();;
+                $form.find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
             }
         });
     }

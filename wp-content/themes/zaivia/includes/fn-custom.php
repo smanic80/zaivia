@@ -218,7 +218,8 @@
 	function create_formProcess(){
 		$nonce = $_POST['create_user_nonce'];
 		if ( ! wp_verify_nonce( $nonce, 'zai_create_user' ) ) {
-			echo json_encode(['error'=>'Security checked!']);
+			echo json_encode(['error'=>__('Security checked!')]);
+			die;
 		}
 
 		$user_login = stripcslashes($_POST['create_email']);
@@ -277,10 +278,10 @@
 				"user_pass" => $pw
 			]);
 
-			$subject = 'Password restoration';
-			$message = 'Hello, '.$user_info->display_name;
+			$subject = __('Password restoration');
+			$message = __('Hello, ').$user_info->display_name;
 			$message .= "<br>";
-			$message .= 'You new password is <b>' . $pw . '</b>';
+			$message .= __('You new password is').' <b>' . $pw . '</b>';
 
 			$headers = '';
 			add_filter('wp_mail_content_type', 'am_html_email');
@@ -300,30 +301,162 @@
 		$nonce = $_POST['edit_user_nonce'];
 		if ( ! wp_verify_nonce( $nonce, 'zai_edit_user' ) ) {
 			echo json_encode(['error'=>'Security checked!']);
+			die;
 		}
 
-		$user_id = (int)$_POST['user_id'];
+		$user_id = get_current_user_id();
 		$user_email = stripcslashes($_POST['edit_email']);
-		$user_nice_name = implode(" ", [stripcslashes($_POST['edi_firstname']), stripcslashes($_POST['edi_lastname'])]);
+		$user_firstname = stripcslashes($_POST['edit_firstname']);
+		$user_lastname = stripcslashes($_POST['edit_lastname']);
+		$user_nice_name = implode(" ", [$user_firstname, $user_lastname]);
 
 		$user_data = array(
 			'ID' => $user_id,
 			'user_email' => $user_email,
+			'first_name' => $user_firstname,
+			'last_name' => $user_lastname,
 			'display_name' => $user_nice_name,
 		);
-
-		$res = [];
 		$user_id = wp_update_user($user_data);
 
-		update_user_meta($user_id,"phone", stripcslashes($_POST['create_phone']));
-		update_user_meta($user_id,"phone_type", stripcslashes($_POST['create_phonetype']));
-		update_user_meta($user_id,"first_name", $_POST['create_firstname']);
-		update_user_meta($user_id,"last_name", $_POST['create_lastname']);
-
+		$res = [];
 		if (is_wp_error($user_id)) {
 			$res['error'] = $user_id->get_error_message();
-		} 
+		} else {
+			update_user_meta($user_id,"phone", stripcslashes($_POST['edit_phone']));
+			update_user_meta($user_id,"phone_type", stripcslashes($_POST['edit_phonetype']));
+		}
 
+		echo json_encode($res);
+		die;
+	}
+
+	add_action( 'wp_ajax_edit_payment_form', 'edit_payment_formProcess' );
+	add_action( 'wp_ajax_nopriv_edit_payment_form', 'edit_payment_formProcess' );
+	function edit_payment_formProcess(){
+		$nonce = $_POST['edit_user_nonce'];
+		if ( ! wp_verify_nonce( $nonce, 'zai_edit_user' ) ) {
+			echo json_encode(['error'=>'Security checked!']);
+			die;
+		}
+
+		$user_id = get_current_user_id();
+
+		$cc_uid = $_POST['cc_uid'];
+
+		$cardholder_name = trim($_POST['cardholder_name']);
+		$cc_number = trim($_POST['cc_number']);
+		$cc_type = $_POST['cc_type'];
+		$cc_date_m = $_POST['cc_date_m'];
+		$cc_date_y = $_POST['cc_date_y'];
+		$ccv = trim($_POST['ccv']);
+
+		$cc_number_safe = am_validateCCNumber($cc_number);
+
+		if(!$cc_number_safe) {
+			echo json_encode(['error'=>'Credit Card number not valid']);
+			die;
+		}
+
+		$data = [
+			'cardholder_name' => $cardholder_name,
+			'cc_number'       => $cc_number,
+			'cc_number_safe'  => $cc_number_safe,
+			'cc_type'         => $cc_type,
+			'cc_date_m'       => $cc_date_m,
+			'cc_date_y'       => $cc_date_y,
+			'ccv'             => $ccv,
+		];
+
+		$oldCcs = am_getCurrentUserCCs();
+
+		if($cc_uid) {
+			foreach($oldCcs as $key=>$oldCc) {
+				if ( $oldCc['cc_uid'] === $cc_uid ) {
+					$data['cc_uid'] = $cc_uid;
+					$oldCcs[ $key ] = $data;
+				}
+			}
+		} else {
+			$data['cc_uid'] = $user_id . time();
+			$oldCcs[] = $data;
+		}
+
+		update_user_meta($user_id,"ccs", $oldCcs);
+		unset($data['cc_number']);
+		unset($data['ccv']);
+
+		echo json_encode($data);
+		die;
+	}
+
+	add_action( 'wp_ajax_edit_cc', 'edit_ccProcess' );
+	add_action( 'wp_ajax_nopriv_edit_cc', 'edit_ccProcess' );
+	function edit_ccProcess() {
+		$cc_uid = $_POST['cc_uid'];
+
+		$oldCcs = am_getCurrentUserCCs();
+		foreach($oldCcs as $key=>$oldCc) {
+
+			if ( $oldCc['cc_uid'] === $cc_uid ) {
+				echo json_encode($oldCc);
+				die;
+			}
+		}
+		echo json_encode(['error'=>'Credit Card not found']);
+		die;
+	}
+
+	add_action( 'wp_ajax_delete_cc', 'delete_ccProcess' );
+	add_action( 'wp_ajax_nopriv_delete_cc', 'delete_ccProcess' );
+	function delete_ccProcess() {
+		$cc_uid = $_POST['cc_uid'];
+		$user_id = get_current_user_id();
+
+		$oldCcs = am_getCurrentUserCCs();
+		foreach($oldCcs as $key=>$oldCc) {
+			if ( $oldCc['cc_uid'] === $cc_uid ) {
+				unset($oldCcs[$key]);
+				update_user_meta($user_id,"ccs", $oldCcs);
+				echo json_encode([]);
+				die;
+			}
+		}
+		echo json_encode(['error'=>'Credit Card not found']);
+		die;
+	}
+
+	add_action( 'wp_ajax_edit_password_form', 'edit_password_formProcess' );
+	add_action( 'wp_ajax_nopriv_edit_password_form', 'edit_password_formProcess' );
+	function edit_password_formProcess(){
+		$nonce = $_POST['edit_user_nonce'];
+		if ( ! wp_verify_nonce( $nonce, 'zai_edit_user' ) ) {
+			echo json_encode(['error'=>'Security checked!']);
+			die;
+		}
+
+		$user_id = get_current_user_id();
+		$userdata = wp_get_current_user();
+
+		$old_pass = stripcslashes($_POST['edit_old_password']);
+		if(!wp_check_password( $old_pass, $userdata->user_pass, $user_id )) {
+			echo json_encode(['error'=>__("Old password is incorrect.")]);
+			die;
+		}
+
+		$new_pass = stripcslashes($_POST['edit_new_password']);
+		$pass_confirm = stripcslashes($_POST['edit_confirm_password']);
+
+		if($new_pass && $new_pass !== $pass_confirm) {
+			echo json_encode(['error'=>__("Please enter the same password in both password fields.")]);
+			die;
+		}
+
+		wp_set_password($new_pass, $user_id);
+		wp_set_auth_cookie($user_id);
+		wp_set_current_user($user_id);
+
+		$res = [];
 		echo json_encode($res);
 		die;
 	}
@@ -377,12 +510,12 @@
 		$activationLink = home_url('/').'activate?akey='.$hash;
 
 		$to = $user_info->user_email;
-		$subject = 'Member Verification';
-		$message = 'Hello, '.$user_info->display_name;
+		$subject = __('Member Verification');
+		$message = __('Hello, ').$user_info->display_name;
 		$message .= "<br>";
-		$message .= 'You password is <b>' . $pw . '</b>';
+		$message .= __('You password is').' <b>' . $pw . '</b>';
 		$message .= "<br><br>";
-		$message .= 'Please click this link to activate your account:';
+		$message .= __('Please click this link to activate your account:');
 		$message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
 
 		$headers = '';
@@ -391,6 +524,49 @@
 		remove_filter('wp_mail_content_type', 'am_html_email');
 	}
 
+	function am_getCurrentUserCCs(){
+		$res = get_user_meta(get_current_user_id(), "ccs", true);
+		return $res ? $res : [];
+	}
+
+
+	function am_validateCCNumber($cc, $extra_check = true){
+		$cards = array(
+			"visa" => "(4\d{12}(?:\d{3})?)",
+			"amex" => "(3[47]\d{13})",
+			"jcb" => "(35[2-8][89]\d\d\d{10})",
+			"maestro" => "((?:5020|5038|6304|6579|6761)\d{12}(?:\d\d)?)",
+			"solo" => "((?:6334|6767)\d{12}(?:\d\d)?\d?)",
+			"mastercard" => "(5[1-5]\d{14})",
+			"switch" => "(?:(?:(?:4903|4905|4911|4936|6333|6759)\d{12})|(?:(?:564182|633110)\d{10})(\d\d)?\d?)",
+		);
+		$matches = array();
+		$pattern = "#^(?:".implode("|", $cards).")$#";
+		$result = preg_match($pattern, str_replace(" ", "", $cc), $matches);
+		if($extra_check && $result > 0){
+			$result = (validatecard($cc))?1:0;
+		}
+		if($result > 0) {
+			return str_repeat('X', strlen($cc) - 4) . substr($cc, -4);
+		} else {
+			return false;
+		}
+	}
+
+	function validatecard($cardnumber) {
+		$cardnumber=preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
+		$cardlength=strlen($cardnumber);
+		$parity=$cardlength % 2;
+		$sum=0;
+		for ($i=0; $i<$cardlength; $i++) {
+			$digit=$cardnumber[$i];
+			if ($i%2==$parity) $digit=$digit*2;
+			if ($digit>9) $digit=$digit-9;
+			$sum=$sum+$digit;
+		}
+		$valid=($sum%10==0);
+		return $valid;
+	}
 
 	function am_html_email(){ return "text/html"; }
 

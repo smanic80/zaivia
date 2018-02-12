@@ -9455,8 +9455,9 @@ div.entry form p label + br {
   display: block;
 }
 
-.saved-confirmation {
+.saved-confirmation, .delete-confirmation {
   display: none;
+  color: #08b400;
 }
 
 @media (min-width: 576px) {

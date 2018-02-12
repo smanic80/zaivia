@@ -18,9 +18,9 @@ get_header(); ?>
 		</div>
 	</div>
 <?php else: ?>
-	<?php
-		$userData = wp_get_current_user();
-	?>
+
+	<?php $userData = wp_get_current_user(); ?>
+
 	<div class="sub-nav">
 		<div class="container xs">
 			<?php if ( has_nav_menu( 'mainmenu' ) ) : ?>
@@ -58,10 +58,13 @@ get_header(); ?>
 
 							<form action="#" id="edit_account_form">
 								<span class="saved-confirmation"><?php _e('Account data saved', 'am') ?></span>
-								<?php wp_nonce_field('zai_edit_user','edit_user_nonce', true, true ); ?>
+                                <div class="error_placeholder"></div>
+
+                                <?php wp_nonce_field('zai_edit_user','edit_user_nonce', true, true ); ?>
+
 								<div class="acc-item bb">
 									<div class="btns-start pt-0">
-										<a href="#" class="btn btn-primary btn-sm"><?php _e('Save Changes', 'am') ?></a>
+										<a href="#" class="btn btn-primary btn-sm submit"><?php _e('Save Changes', 'am') ?></a>
 									</div>
 									<h3><?php _e('Profile Information', 'am') ?></h3>
 									<div class="row">
@@ -72,7 +75,7 @@ get_header(); ?>
 														<label><?php _e('First Name', 'am') ?>*</label>
 													</div>
 													<div class="col-sm-12 col-md-6">
-														<input type="text" name="edit_firstname" id="edit_firstname"  value="<?php echo get_user_meta($userData->ID, "first_name", true)  ?>">
+														<input type="text" name="edit_firstname" id="edit_firstname"  value="<?php echo $userData->first_name  ?>">
 													</div>
 												</div>
 											</fieldset>
@@ -82,7 +85,7 @@ get_header(); ?>
 														<label><?php _e('Last Name', 'am') ?>*</label>
 													</div>
 													<div class="col-sm-12 col-md-6">
-														<input type="text" name="edit_lastname" id="edit_lastname"  value="<?php echo get_user_meta($userData->ID, "last_name", true)  ?>">
+														<input type="text" name="edit_lastname" id="edit_lastname"  value="<?php echo $userData->last_name  ?>">
 													</div>
 												</div>
 											</fieldset>
@@ -125,139 +128,181 @@ get_header(); ?>
 						</div>
 
 						<div class="styled-form tabbed-content" id="edit_payment">
-							<div class="acc-item bb">
-								<h3>Price</h3>
-								<div class="table mb-15 responsive">
-									<table>
-										<tbody>
-										<tr>
-											<th>Listing</th>
-											<th>Listing</th>
-											<th>Listing</th>
-											<th class="text-right">Action</th>
-										</tr>
-										<tr>
-											<td>Visa</td>
-											<td>xxxx-xxxx-xxxx-xxxx</td>
-											<td>02/2015</td>
-											<td class="text-right"><a href="#" class="btn btn-secondary btn-sm">Edit</a><a href="#" class="btn btn-secondary btn-sm">Delete</a></td>
-										</tr>
-										</tbody>
-									</table>
-								</div>
-								<hr class="mb-30">
-								<div class="row">
-									<div class="col-lg-8">
-										<form action="#" id="edit_payment_form">
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<input type="text" placeholder="">
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<input type="text" placeholder="">
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<select><option>Cell</option></select>
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<div class="row">
-															<div class="col-6">
-																<input type="text" placeholder="">
-															</div>
-															<div class="col-6">
-																<select><option>Cell</option></select>
-															</div>
-														</div>
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<div class="row">
-															<div class="col-6">
-																<input type="text" placeholder="">
-															</div>
-														</div>
-													</div>
-												</div>
-											</fieldset>
-											<a href="#" class="btn btn-primary btn-sm">Reset</a>
-										</form>
-									</div>
-								</div>
-							</div>
+                            <form action="#" id="edit_payment_form">
+
+                                <span class="saved-confirmation"><?php _e('Payment Information saved', 'am') ?></span>
+                                <span class="delete-confirmation"><?php _e('Payment Information deleted', 'am') ?></span>
+                                <div class="error_placeholder"></div>
+
+                                <div class="acc-item bb">
+                                    <h3><?php _e('Payment Information', 'am') ?></h3>
+                                    <?php $ccs = am_getCurrentUserCCs(); ?>
+
+                                    <div class="table mb-15 responsive">
+                                        <table id="cc-list">
+                                            <tbody>
+                                            <tr>
+                                                <th><?php _e('Card Type', 'am') ?></th>
+                                                <th><?php _e('Card #', 'am') ?></th>
+                                                <th><?php _e('Expires', 'am') ?></th>
+                                                <th class="text-right"><?php _e('Action', 'am') ?></th>
+                                            </tr>
+
+                                            <?php if(!$ccs) :?>
+                                                <tr id="no-cards"><td colspan="4"><?php _e('No Credit Cards added', 'am') ?></td></tr>
+                                            <?php else:?>
+                                                <?php foreach($ccs as $cc):?>
+                                                    <tr class="row-<?php echo $cc['cc_uid']?>">
+                                                        <td><?php echo $cc['cc_type']?></td>
+                                                        <td><?php echo $cc['cc_number_safe']?></td>
+                                                        <td><?php echo $cc['cc_date_m'] .'/'.$cc['cc_date_y']?></td>
+                                                        <td class="text-right"><a href="#" class="btn btn-secondary btn-sm edit-cc" data-id="<?php echo $cc['cc_uid']?>">Edit</a>
+                                                            <a href="#" class="btn btn-secondary btn-sm delete-cc" data-id="<?php echo $cc['cc_uid']?>">Delete</a></td>
+                                                    </tr>
+                                                <?php endforeach;?>
+                                            <?php endif; ?>
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <hr class="mb-30">
+                                    <div class="row">
+
+                                        <input type="hidden" name="cc_uid" id="cc_uid"/>
+
+                                        <div class="col-lg-8">
+                                            <fieldset>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-4">
+                                                        <label><?php _e('Cardholder Name', 'am') ?></label>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <input type="text" name="cardholder_name" id="cardholder_name"  value="">
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-4">
+                                                        <label><?php _e('Credit Card Number', 'am') ?></label>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <input type="text" name="cc_number" id="cc_number"  value="">
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-4">
+                                                        <label><?php _e('Credit Card Type', 'am') ?></label>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <select name="cc_type" id="cc_type" >
+                                                            <option value=""></option>
+                                                            <option value="visa">Visa</option>
+                                                            <option value="mastercard">Master Card</option>
+                                                            <option value="amex">American Express</option>
+                                                            <option value="maestro">Maestro</option>
+                                                        </select>
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-4">
+                                                        <label><?php _e('Expiriation Date', 'am') ?></label>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                                <select name="cc_date_m" id="cc_date_m" >
+                                                                    <option value=""></option>
+                                                                    <?php for ($i=1;$i<=12;$i++):?>
+                                                                        <option value="<?php echo $i?>"><?php echo $i?></option>
+                                                                    <?php endfor;?>
+                                                                </select>
+                                                            </div>
+                                                            <div class="col-6">
+	                                                            <?php $curYear = date("Y");?>
+                                                                <select name="cc_date_y" id="cc_date_y" >
+                                                                    <option value=""></option>
+                                                                    <?php for ($i=$curYear;$i<=$curYear+12;$i++):?>
+                                                                        <option value="<?php echo $i?>"><?php echo $i?></option>
+                                                                    <?php endfor;?>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            <fieldset>
+                                                <div class="row">
+                                                    <div class="col-12 col-md-4">
+                                                        <label><?php _e('CVV', 'am') ?></label>
+                                                    </div>
+                                                    <div class="col-sm-12 col-md-6">
+                                                        <div class="row">
+                                                            <div class="col-6">
+                                                                <input type="text" name="ccv" id="ccv"  value="">
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </fieldset>
+                                            <a href="#" class="btn btn-primary btn-sm submit"><label><?php _e('Save Credit Card', 'am') ?></label></a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
 						</div>
 
 						<div class="styled-form tabbed-content" id="edit_password">
-							<div class="acc-item bb">
-								<h3>Price</h3>
-								<div class="row">
-									<div class="col-lg-8">
-										<form action="#" id="edit_payment_form">
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<input type="text" placeholder="">
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<input type="text" placeholder="">
-													</div>
-												</div>
-											</fieldset>
-											<fieldset>
-												<div class="row">
-													<div class="col-12 col-md-4">
-														<label>Label</label>
-													</div>
-													<div class="col-sm-12 col-md-6">
-														<input type="text" placeholder="">
-													</div>
-												</div>
-											</fieldset>
-											<a href="#" class="btn btn-primary btn-sm">Reset</a>
-										</form>
-									</div>
-								</div>
-							</div>
+                            <form action="#" id="edit_password_form">
+                                <span class="saved-confirmation"><?php _e('Password changed', 'am') ?></span>
+                                <div class="error_placeholder"></div>
+
+                                <div class="acc-item bb">
+                                    <h3><?php _e('Change Password', 'am') ?></h3>
+                                    <div class="row">
+                                        <div class="col-lg-8">
+                                            <form action="#" id="edit_payment_form">
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-12 col-md-4">
+                                                            <label><?php _e('Old Password', 'am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-6">
+                                                            <input type="text" name="old_password" id="edit_old_password" >
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-12 col-md-4">
+                                                            <label><?php _e('New Password', 'am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-6">
+                                                            <input type="text" name="new_password" id="edit_new_password" >
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-12 col-md-4">
+                                                            <label><?php _e('Confirm Password', 'am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-12 col-md-6">
+                                                            <input type="text" name="confirm_password" id="edit_confirm_password" >
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <a href="#" class="btn btn-primary btn-sm submit"><?php _e('Reset', 'am') ?></a>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
 						</div>
 
 					</div>

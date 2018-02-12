@@ -1,16 +1,16 @@
 <script type="text/html" id="tmpl-listing-item">
     <article class="ad-item<# if ( !data.featured_one && data.premium > 0 ) { #> premium<# } #>">
         <# if ( data.featured_one > 0 ) { #>
-        <div class="featured">FEATURED LISTING</div>
+        <div class="featured"><?php _e('FEATURED LISTING','am'); ?></div>
         <# } else if ( data.premium > 0 ) { #>
-        <div class="featured">PREMIUM LISTING</div>
+        <div class="featured"><?php _e('PREMIUM LISTING','am'); ?></div>
         <# } #>
         <div class="image"<# if(data.images.card) { #> style="background-image: url('{{data.images.card}}')"<# } #>>
         <# if(data.images.card) { #><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}"><img src="{{data.images.card}}" alt=""></a><# } #>
             <div class="badges">
                 <# if ( data.openhouse.length > 0 ) { #>
                 <div class="open">
-                    OPEN HOUSE
+                    <?php _e('OPEN HOUSE','am'); ?>
                     <div class="tooltip">
                         <ul>
                             <# for ( i in data.openhouse ) { #>
@@ -21,7 +21,7 @@
                 </div>
                 <# } #>
                 <# if ( data.new_listing > 0 ) { #>
-                <div class="new">NEW LISTING</div>
+                <div class="new"><?php _e('NEW LISTING','am'); ?></div>
                 <# } #>
             </div>
             <div class="love">
@@ -39,25 +39,25 @@
                 <div class="cols">
                     <div class="col">
                         <ul>
-                            <li>{{data.bedrooms}} Bedrooms</li>
-                            <li>{{data.bathrooms}} Bathrooms</li>
-                            <li>{{data.square_footage}} sq. ft.</li>
-                            <li>{{data.parking}} parking</li>
+                            <li>{{data.bedrooms}} <?php _e('Bedrooms','am'); ?></li>
+                            <li>{{data.bathrooms}} <?php _e('Bathrooms','am'); ?></li>
+                            <li>{{data.square_footage}} <?php _e('sq. ft.','am'); ?></li>
+                            <li>{{data.parking}} <?php _e('parking','am'); ?></li>
                         </ul>
                     </div>
                     <div class="col">
                         <ul>
-                            <li>Built in {{data.year_built}}</li>
-                            <li>{{data.size_x}} x {{data.size_y}} sq. {{data.size_units}}. lot</li>
-                            <li>{{data.roof_type}} roof</li>
-                            <li>{{data.exterior_type}} exterior</li>
+                            <li><?php _e('Built in','am'); ?> {{data.year_built}}</li>
+                            <li>{{data.size_x}} x {{data.size_y}} <?php _e('sq.','am'); ?> {{data.size_units}}. <?php _e('lot','am'); ?></li>
+                            <li>{{data.roof_type}} <?php _e('roof','am'); ?></li>
+                            <li>{{data.exterior_type}} <?php _e('exterior','am'); ?></li>
                         </ul>
                     </div>
                 </div>
             </div>
             <# if ( data.sale_by != 1 ) { #>
             <div class="listed">
-                <p>Listed By<br>{{data.contact.contact_name}}</p>
+                <p><?php _e('Listed By','am'); ?><br>{{data.contact.contact_name}}</p>
                 <div class="images">
                     <div class="ir">
                         <a href="#"><img src="{{data.contact.contact_logo.thumb}}" alt=""></a>
@@ -73,13 +73,13 @@
 </script>
 <script type="text/html" id="tmpl-grid-item">
     <article class="ad-item<# if ( data.featured_one > 0 ) { #> featured-l<# } else if ( data.premium > 0 ) { #> premium<# } #>">
-        <div class="featured"><# if ( data.featured_one > 0 ) { #>FEATURED LISTING<# } else if ( data.premium > 0 ) { #>PREMIUM LISTING<# } #></div>
+        <div class="featured"><# if ( data.featured_one > 0 ) { #><?php _e('FEATURED LISTING','am'); ?><# } else if ( data.premium > 0 ) { #><?php _e('PREMIUM LISTING','am'); ?><# } #></div>
         <div<# if(data.images.card) { #> style="background-image: url('{{data.images.card}}')"<# } #> class="image">
         <a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}"><img src="<# if(data.images.card) { #>{{data.images.card}}<# } else { #><?php echo get_template_directory_uri(); ?>/images/logo.png<# } #>" alt=""></a>
             <div class="badges">
                 <# if ( data.openhouse.length > 0 ) { #>
                 <div class="open">
-                    OPEN HOUSE
+                    <?php _e('OPEN HOUSE','am'); ?>
                     <div class="tooltip">
                         <ul>
                             <# for ( i in data.openhouse ) { #>
@@ -90,7 +90,7 @@
                 </div>
                 <# } #>
                 <# if ( data.new_listing > 0 ) { #>
-                <div class="new">NEW LISTING</div>
+                <div class="new"><?php _e('NEW LISTING','am'); ?></div>
                 <# } #>
             </div>
             <div class="love">
@@ -105,14 +105,14 @@
             </div>
             <div class="feats">
                 <ul>
-                    <li><strong>Sq, ft.</strong> {{data.square_footage}}</li>
-                    <li><strong>Beds</strong> {{data.bedrooms}}</li>
-                    <li><strong>Baths</strong> {{data.bathrooms}}</li>
+                    <li><strong><?php _e('Sq. ft.','am'); ?></strong> {{data.square_footage}}</li>
+                    <li><strong><?php _e('Beds','am'); ?></strong> {{data.bedrooms}}</li>
+                    <li><strong><?php _e('Baths','am'); ?></strong> {{data.bathrooms}}</li>
                 </ul>
             </div>
             <# if ( data.sale_by != 1 ) { #>
             <div class="listed">
-                <p>Listed By<br>{{data.contact.contact_name}}</p>
+                <p><?php _e('Listed By','am'); ?><br>{{data.contact.contact_name}}</p>
                 <div class="images">
                     <div class="ir">
                         <a href="#"><img src="{{data.contact.contact_logo.thumb}}" alt=""></a>
@@ -156,16 +156,16 @@
     <section class="ad-listing map">
         <article class="ad-item<# if ( data.premium > 0 ) { #> premium<# } #>">
             <# if ( data.featured_one > 0 ) { #>
-            <div class="featured">FEATURED LISTING</div>
+            <div class="featured"><?php _e('FEATURED LISTING','am'); ?></div>
             <# } else if ( data.premium > 0 ) { #>
-            <div class="featured">PREMIUM LISTING</div>
+            <div class="featured"><?php _e('PREMIUM LISTING','am'); ?></div>
             <# } #>
             <div<# if(data.images[0]) { #> style="background-image: url('{{data.images[0].card}}')"<# } #> class="image">
                 <a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}"><img src="<# if(data.images[0]) { #>{{data.images[0].card}}<# } else { #><?php echo get_template_directory_uri(); ?>/images/logo.png<# } #>" alt=""></a>
                 <div class="badges">
                     <# if ( data.openhouse.length > 0 ) { #>
                     <div class="open">
-                        OPEN HOUSE
+                        <?php _e('OPEN HOUSE','am'); ?>
                         <div class="tooltip">
                             <ul>
                                 <# for ( i in data.openhouse ) { #>
@@ -176,7 +176,7 @@
                     </div>
                     <# } #>
                     <# if ( data.new_listing > 0 ) { #>
-                    <div class="new">NEW LISTING</div>
+                    <div class="new"><?php _e('NEW LISTING','am'); ?></div>
                     <# } #>
                 </div>
                 <div class="love">
@@ -189,14 +189,14 @@
                 <p>{{data.city}}, {{data.province}}</p>
                 <div class="feats">
                     <ul>
-                        <li><strong>Sq, ft.</strong> {{data.square_footage}}</li>
-                        <li><strong>Beds</strong> {{data.bedrooms}}</li>
-                        <li><strong>Baths</strong> {{data.bathrooms}}</li>
+                        <li><strong><?php _e('Sq. ft.','am'); ?></strong> {{data.square_footage}}</li>
+                        <li><strong><?php _e('Beds','am'); ?></strong> {{data.bedrooms}}</li>
+                        <li><strong><?php _e('Baths','am'); ?></strong> {{data.bathrooms}}</li>
                     </ul>
                 </div>
                 <div class="listed">
                 <# if ( data.sale_by != 1 ) { #>
-                    <p>Listed By<br>{{data.contact.contact_name}}</p>
+                    <p><?php _e('Listed By','am'); ?><br>{{data.contact.contact_name}}</p>
                     <div class="images">
                         <div class="ir"><a href="#"><img src="{{data.contact.contact_logo.thumb}}" alt=""></a></div>
                         <div class="ir"><a href="#"><img src="{{data.contact.contact_profile.thumb}}" alt=""></a></div>

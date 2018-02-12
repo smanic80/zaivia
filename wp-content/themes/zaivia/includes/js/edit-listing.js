@@ -306,7 +306,7 @@
                             google.maps.event.trigger(map, "resize");
                             map.setCenter(center);
                         });
-                        google.maps.event.addListenerOnce(map, 'idle');
+                        // google.maps.event.addListenerOnce(map, 'idle');
 
                         google.maps.event.addListener(map, 'click', function(event) {
                             placeMarker(event.latLng);
@@ -368,7 +368,7 @@
                             for(i in results[0].address_components) {
                                 if(results[0].address_components[i].types[0] === 'postal_code') {
                                     if(results[0].address_components[i].long_name !== $("#post-listing-form #zip").val().trim()){
-                                        $("#post-listing-form #error-place").show();
+                                        //$("#post-listing-form #error-place").show();
                                     } else {
                                         $("#post-listing-form #error-place").hide();
                                     }
