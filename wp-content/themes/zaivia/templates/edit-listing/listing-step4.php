@@ -1,7 +1,7 @@
 <?php $contact = $listingId ? ZaiviaListings::getListingContact($listingId) : ZaiviaListings::getStoredContact(); ?>
 
 <div class="acc-item bb">
-    <h3>Price</h3>
+    <h3><?php _e('Contact Information', 'am') ?></h3>
     <p class="intro"><?php echo get_field("who_can_be_contacted")?></p>
     <div class="row">
         <div class="col-lg-8">

@@ -208,6 +208,28 @@
 			} else {
 				$res['error'] = $user->get_error_message();
 			}
+		} else {
+
+			$userId = get_current_user_id();
+
+			if($userId) {
+				$fav_ids_cookie = isset($_COOKIE['favorite_listing']) ? json_decode(stripslashes($_COOKIE['favorite_listing'])) : [];
+				$fav_ids = get_user_meta($userId,'favorite_listing',true);
+				$fav_ids = is_array($fav_ids) ? $fav_ids : [];
+
+				$fav_ids = array_merge($fav_ids, $fav_ids_cookie);
+				update_user_meta($userId,'favorite_listing', $fav_ids);
+
+
+				$view_ids_cookie = isset($_COOKIE['recently_listing']) ? json_decode(stripslashes($_COOKIE['recently_listing'])) : [];
+				$view_ids = get_user_meta($userId,'recently_listing',true);
+				$view_ids = is_array($view_ids) ? $view_ids : [];
+
+				foreach($view_ids_cookie as $listing_id) {
+					$view_ids = ZaiviaListings::combineLastViewed($listing_id, $view_ids);
+				}
+				update_user_meta($userId,'recently_listing', $view_ids);
+			}
 		}
 		echo json_encode($res);
 		die;

@@ -43,7 +43,7 @@
                 select: function (event, ui) {
                     $(event.target).val(ui.item.label);
                     var pos = {lat:ui.item.lat, lng:ui.item.lng};
-                    setSmallMap(pos,ui.item.label);
+                    setSmallMap(pos, ui.item.label);
                     return false;
                 }
             });
@@ -241,7 +241,7 @@
           var cur = $(this).parent().outerHeight();
           $(this).outerHeight(cur);
         });
-      };
+      }
       function is_touch_device() {
         return 'ontouchstart' in window || navigator.maxTouchPoints;
       }
@@ -362,9 +362,13 @@
             search_listings();
             return false;
         });
+
+
         if($('body').hasClass('page-template-buy') || $('body').hasClass('page-template-rent')){
+
             search_listings();
             update_fav();
+
             if($('#search_city').val()){
                 $.ajax({
                     url: "http://geogratis.gc.ca/services/geoname/en/geonames.json",
@@ -386,6 +390,7 @@
             var pos = {lat:parseFloat($('#map_lat').val()), lng:parseFloat($('#map_lng').val())};
             setSmallMap(pos, $('#map_name').val());
         }
+
         function update_fav(id, action){
             var d = {action: 'getFavListings'};
             if(id>0 && action){
@@ -396,22 +401,26 @@
                 dataType: "json",
                 data: d,
                 success: function (data) {
-                    var listing_item = wp.template( "listing-fav" );
-                    var fav_list = $('#fav_tab1');
+                    var fav_listing_item = wp.template( "listing-fav" ),
+                        view_listing_item = wp.template( "listing-view" ),
+                        fav_list = $('#fav_tab1'),
+                        view_list = $('#fav_tab2');
+
                     fav_list.empty();
                     if(data.fav.length) {
                         for (var i in data.fav) if (data.fav.hasOwnProperty(i)) {
-                            fav_list.append(listing_item(data.fav[i]));
+                            fav_list.append(fav_listing_item(data.fav[i]));
                             $('.fa[data-id=' + data.fav[i]['listing_id'] + ']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
                         }
                     } else {
                         fav_list.append('To add listings to favorites by clicking on the heart');
                     }
-                    var view_list = $('#fav_tab2');
+
+
                     view_list.empty();
-                    if(data.fav.view) {
+                    if(data.view.length) {
                         for(var j in data.view) if (data.view.hasOwnProperty(j)){
-                            view_list.append(listing_item(data.view[j]));
+                            view_list.append(view_listing_item(data.view[j]));
                         }
                     } else {
                         view_list.append('No Listings Viewed');
@@ -419,17 +428,19 @@
                 }
             });
         }
-        $(document).on('click','.fav_add',function () {
+        $(document).on('click','.fav_add',function (e) {
+            e.preventDefault();
+
             var id = $(this).data('id');
             update_fav(id,'add');
             $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
-            return false;
         });
-        $(document).on('click','.fav_del',function () {
+        $(document).on('click','.fav_del',function (e) {
+            e.preventDefault();
+
             var id = $(this).data('id');
             update_fav(id,'del');
             $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
-            return false;
         });
         $(document).on('click','.clear_price',function () {
             $(this).parent().remove();
@@ -591,6 +602,7 @@
                             for(var c in data.items) if(data.items.hasOwnProperty(c)) {
                                 bounds.extend(new google.maps.LatLng({lat: parseFloat(data.items[c].lat), lng: parseFloat(data.items[c].lng)}));
                             }
+
                             google.maps.event.trigger(map2,'resize');
                             map2.fitBounds(bounds);
                         }
@@ -720,35 +732,50 @@
                                     list.append(listing_ad(data.ads));
                                 }
                             }
-                            $('.found-line p .result_num').text(data.count);
-                            $('.found-line p .result_city').text($('#search_city').val());
+                            
+                            $('.found-line p .result_num').text(data.count);                            
+                            if($('#search_city').val()) {
+                                $('.found-line p .result_city_in').show();
+                                $('.found-line p .result_city').text($('#search_city').val());
+                            } else {
+                                $('.found-line p .result_city_in').hide();
+                                $('.found-line p .result_city').text('');
+                            }
+                            
+                            
                             $('.found-line p').removeClass('hidden');
 
-                            if (data.page == 1) {
-                                pagination.append('<span class="page-numbers">Previous</span>');
-                            } else {
-                                pagination.append('<a class="prev page-numbers" data-page="' + (data.page - 1) + '" href="#">Previous</a>');
-                            }
-                            var p_start = data.page - 5;
-                            if (p_start < 1) {
-                                p_start = 1;
-                            }
-                            var p_end = data.page + 5;
-                            if (p_end > data.pages) {
-                                p_end = data.pages;
-                            }
-                            for (var p = p_start; p <= p_end; p++) {
-                                if (p == data.page) {
-                                    pagination.append('<span class="page-numbers current">' + p + '</span>');
+                            if(data.pages > 1) {
+                                if (data.page == 1) {
+                                    pagination.append('<span class="page-numbers">Previous</span>');
                                 } else {
-                                    pagination.append('<a class="page-numbers" data-page="' + p + '" href="#">' + p + '</a>');
+                                    pagination.append('<a class="prev page-numbers" data-page="' + (data.page - 1) + '" href="#">Previous</a>');
                                 }
-                            }
-                            if (data.page == data.pages) {
-                                pagination.append('<span class="page-numbers">Next</span>');
+                                var p_start = data.page - 5;
+                                if (p_start < 1) {
+                                    p_start = 1;
+                                }
+                                var p_end = data.page + 5;
+                                if (p_end > data.pages) {
+                                    p_end = data.pages;
+                                }
+                                for (var p = p_start; p <= p_end; p++) {
+                                    if (p == data.page) {
+                                        pagination.append('<span class="page-numbers current">' + p + '</span>');
+                                    } else {
+                                        pagination.append('<a class="page-numbers" data-page="' + p + '" href="#">' + p + '</a>');
+                                    }
+                                }
+                                if (data.page == data.pages) {
+                                    pagination.append('<span class="page-numbers">Next</span>');
+                                } else {
+                                    pagination.append('<a class="prev page-numbers" data-page="' + (data.page + 1) + '" href="#">Next</a>');
+                                }
+                                $(".pagination-holder").show();
                             } else {
-                                pagination.append('<a class="prev page-numbers" data-page="' + (data.page + 1) + '" href="#">Next</a>');
+                                $(".pagination-holder").hide();
                             }
+
                             $('.sub-filter').show();
                         } else {
                             $('.found-line p').addClass('hidden');

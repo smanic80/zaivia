@@ -4,10 +4,15 @@ Template Name: Listing
 Template Post Type: page
 */
 
-get_header();
-
 $listing_id = isset($_GET['id'])?$_GET['id']:0;
 $listing = ZaiviaListings::getListing($listing_id);
+
+if($listing) {
+    ZaiviaListings::updateLastViewed($listing_id);
+}
+get_header();
+
+
 if($listing):
 ?>
 <div class="body grey-bg">

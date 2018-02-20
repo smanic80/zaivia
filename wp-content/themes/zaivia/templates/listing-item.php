@@ -152,6 +152,22 @@
         </div>
     </article>
 </script>
+<script type="text/html" id="tmpl-listing-view">
+    <article>
+        <div class="image">
+            <# if(data.images.thumb) { #>
+            <a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}"><img src="{{data.images.thumb}}" alt=""></a>
+            <# } else { #>
+            &nbsp;<br>&nbsp;<br>
+            <# } #>
+        </div>
+        <div class="text">
+            <h4><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h4>
+            <p>{{data.city}}, <br>{{data.province}}</p>
+            <div class="price">${{data.price}}</div>
+        </div>
+    </article>
+</script>
 <script type="text/html" id="tmpl-popup-item">
     <section class="ad-listing map">
         <article class="ad-item<# if ( data.premium > 0 ) { #> premium<# } #>">

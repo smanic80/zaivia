@@ -17,6 +17,8 @@ class ZaiviaListings {
 	public static $file_profile = 4;
 	public static $file_logo = 5;
 
+	public static $max_rescent = 5;
+
 	public static $provinces = [
 		"BC" => "British Columbia",
 		"ON" => "Ontario",
@@ -199,14 +201,16 @@ class ZaiviaListings {
 			'status' => $data['status'],
 		];
 
+		$userId = get_current_user_id();
+
 		if((int)$data['listing_id']) {
 			$listingId = (int)$data['listing_id'];
 
-			if(!self::isOwner(get_current_user_id(), $listingId)) {
+			if(!self::isOwner($userId, $listingId)) {
 				return 'This is not yours!';
 			}
 
-			$listing = self::getUserListings(get_current_user_id(), $listingId);
+			$listing = self::getUserListings($userId, $listingId);
 			if($listing['to_delete'] === '1' && isset($data['to_delete'])) {
 				$preparedData['to_delete'] = 0;
 				$preparedData['date_created'] = date('Y-m-d H:i:s', time());
@@ -230,7 +234,7 @@ class ZaiviaListings {
 				$preparedData['date_created'] = date('Y-m-d H:i:s', time());
 			}
 
-			$preparedData['user_id'] = get_current_user_id();
+			$preparedData['user_id'] = $userId;
 			$preparedData['activated'] = 0;
 
 			$wpdb->insert($listing_tablename, $preparedData);
@@ -240,6 +244,10 @@ class ZaiviaListings {
 
 		$res = self::updateListingContact( $listingId, $data );
 		$res['listing_id'] = $listingId;
+
+		if(isset($data['to_delete']) && $data['to_delete'] === 0 ) {
+			$wpdb->delete($listing_tablename, ["to_delete" => 1, "user_id" =>(int)$userId]  );
+		}
 
 		return $res;
 	}
@@ -743,11 +751,14 @@ class ZaiviaListings {
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
         $features_tablename = $wpdb->prefix . self::$features_tablename;
         if(isset($request['type']) && $request['type']=='map') {
-            $sql = "SELECT a.listing_id,a.lat,a.lng from $listing_tablename a where to_delete != 1 and deleted = 0 ";
+            $sql = "SELECT a.listing_id,a.lat,a.lng from $listing_tablename a ";
         } else {
-            $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 where to_delete != 1 and deleted = 0 ";
+            $sql = " from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 ";
         }
-        $sql2 = " and to_delete != 1 and deleted = 0 and featured = 1 ";
+		$sql .= "where to_delete != 1 and deleted = 0 and activated = 1 ";
+
+        $sql2 = " and to_delete != 1 and deleted = 0 and activated = 1 and featured = 1 ";
+
         if($request['rent'] == 'true'){
             $sql .= ' and sale_rent = '.self::$for_rent;
             $sql2 .= ' and sale_rent = '.self::$for_rent;
@@ -755,6 +766,7 @@ class ZaiviaListings {
             $sql .= ' and sale_rent = '.self::$for_sale;
             $sql2 .= ' and sale_rent = '.self::$for_sale;
         }
+
         $featured = false;
         if($request['rad'] and $request['city']){
             $geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($request['city']));
@@ -860,10 +872,12 @@ class ZaiviaListings {
             }
             $per_page = 10;
             $page = $request['page'] ? intval($request['page']) : 1;
-            if ($page < 1) {
-                $page = 1;
-            }
-            $page_max = ceil($cnt / $per_page);
+
+	        $page = ($page < 1) ? 1 : $page;
+
+
+            $page_max = ceil($cnt / $per_page) + 1;
+
             if ($page > $page_max) {
                 $page = $page_max;
             }
@@ -876,52 +890,104 @@ class ZaiviaListings {
             foreach($results as $key=>$val) {
                 $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
                 $results[$key]['contact'] = self::getListingContact($val['listing_id']);
-                $results[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+                $results[$key]['images'] = self::getListingFiles($val['listing_id'], self::$file_image);
             }
             $ads = [
                 'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
                 'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
             ];
-            return array('items'=>$results,'count'=>count($results),'page'=>$page,'pages'=>$page_max,'ads'=>$ads,'featured'=>$featured);
+            return array('items'=>$results,'count'=>count($results), 'page'=>$page, 'pages'=>($page_max-1), 'ads'=>$ads, 'featured'=>$featured);
         }
 	}
 
 	public static function favorite($request){
         global $wpdb;
-        $current_user = wp_get_current_user();
-        $fav_ids = get_user_meta($current_user->ID,'favorite_listing',true);
-        if(!is_array($fav_ids)){
-            $fav_ids = array();
-        }
-        $view_ids = get_user_meta($current_user->ID,'recently_listing',true);
-        if(!is_array($view_ids)){
-            $view_ids = array();
-        }
-        if($request['del'] and isset($fav_ids[intval($request['del'])])){
-            unset($fav_ids[intval($request['del'])]);
-            update_user_meta($current_user->ID,'favorite_listing', $fav_ids);
-        }
-        if($request['add']){
-            $fav_ids[intval($request['add'])] = intval($request['add']);
-            update_user_meta($current_user->ID,'favorite_listing', $fav_ids);
-        }
-        $listing_tablename = $wpdb->prefix . self::$listing_tablename;
-        $fav_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$fav_ids).")", ARRAY_A);
-        foreach($fav_list as $key=>$val) {
-            $fav_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
-        }
-        $view_list = $wpdb->get_results( "SELECT listing_id,unit_number,address,city,province,price from $listing_tablename where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$view_ids).")", ARRAY_A);
-        foreach($view_list as $key=>$val) {
-            $view_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
-        }
+
+		$userId = get_current_user_id();
+		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
+		$fav_list = $view_list = [];
+
+
+		if($userId) {
+			$fav_ids = get_user_meta($userId,'favorite_listing',true);
+			$fav_ids = is_array($fav_ids) ? $fav_ids : [];
+		} else {
+			$fav_ids = isset($_COOKIE['favorite_listing']) ? json_decode(stripslashes($_COOKIE['favorite_listing'])) : [];
+ 		}
+
+		if($request['del'] and isset($fav_ids[intval($request['del'])])){
+			unset($fav_ids[intval($request['del'])]);
+		}
+		if($request['add']){
+			$fav_ids[intval($request['add'])] = intval($request['add']);
+		}
+
+		if($userId) {
+			update_user_meta($userId,'favorite_listing', $fav_ids);
+		} else {
+			setcookie("favorite_listing", $fav_ids);
+		}
+
+
+		if($fav_ids) {
+			$sql = "SELECT listing_id,unit_number,address,city,province,price from {$listing_tablename} where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$fav_ids).")";
+			$fav_list = $wpdb->get_results( $sql, ARRAY_A);
+			foreach($fav_list as $key=>$val) {
+				$fav_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+			}
+		}
+
+		$view_ids = self::getLastViewed();
+		if($view_ids){
+			$sql = "SELECT listing_id,unit_number,address,city,province,price from {$listing_tablename} where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$view_ids).")";
+			$view_list = $wpdb->get_results($sql,ARRAY_A);
+			foreach($view_list as $key=>$val) {
+				$view_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+			}
+		}
+
 	    return array(
 	        'fav'=>$fav_list,
             'view'=>$view_list
         );
     }
 
-    public static function getMarket($listing_id)
-    {
+	public static function updateLastViewed($listing_id){
+		self::setLastViewed(self::combineLastViewed($listing_id, self::getLastViewed()));
+	}
+
+	public static function combineLastViewed($listing_id, $view_ids){
+		if (($key = array_search($listing_id, $view_ids)) !== false) {
+			unset($view_ids[$key]);
+		}
+		$view_ids[] = $listing_id;
+		$view_ids = array_slice($view_ids, -ZaiviaListings::$max_rescent);
+
+		return $view_ids;
+	}
+
+	public static function getLastViewed(){
+		$userId = get_current_user_id();
+		if($userId) {
+			$view_ids = get_user_meta($userId,'recently_listing',true);
+			$view_ids = is_array($view_ids) ? $view_ids : [];
+		} else {
+			$view_ids = isset($_COOKIE['recently_listing']) ? json_decode(stripslashes($_COOKIE['recently_listing'])) : [];
+		}
+
+		return $view_ids;
+	}
+
+	public static function setLastViewed($view_ids){
+		$userId = get_current_user_id();
+		if($userId) {
+			update_user_meta($userId,'recently_listing', $view_ids);
+		} else {
+			setrawcookie("recently_listing", json_encode($view_ids), 0,"/");
+		}
+	}
+
+    public static function getMarket($listing_id) {
         global $wpdb;
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
         $listing = $wpdb->get_results( "SELECT lat,lng from $listing_tablename where listing_id = $listing_id", ARRAY_A);
