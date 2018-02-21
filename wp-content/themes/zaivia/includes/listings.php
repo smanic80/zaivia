@@ -360,7 +360,7 @@ class ZaiviaListings {
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 		if(count($results)){
-			$results[0]['rent_utilities'] = explode(';',$results[0]['rent_utilities']);
+			$results[0]['rent_utilities'] = $results[0]['rent_utilities'] ? explode(';', $results[0]['rent_utilities']) : [];
 			$results[0]['rent_date'] = ($results[0]['rent_date']!='0000-00-00')?date('m/d/Y',strtotime($results[0]['rent_date'])):'';
 			$results[0]['rent_file'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent);
 			return $results[0];

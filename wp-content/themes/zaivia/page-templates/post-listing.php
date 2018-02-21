@@ -83,6 +83,9 @@ get_header(); ?>
                 <div class="styled-form listing-steps" id="step6" style="display:none;">
 		            <?php include(locate_template('templates/edit-listing/listing-step6.php')); ?>
                 </div>
+                <div class="styled-form listing-steps" id="step7" style="display:none;">
+		            <?php include(locate_template('templates/edit-listing/listing-step7.php')); ?>
+                </div>
             </div>
         </div>
     </form>
