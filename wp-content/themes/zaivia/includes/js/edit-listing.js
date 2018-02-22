@@ -76,7 +76,18 @@
         'contact_logo':'',
 
         'prop_img':[],
-        'prop_blue':[]
+        'prop_blue':[],
+
+        'source':'',
+        'source2':'',
+        'saved_card':'',
+        'cardholder_name':'',
+        'card_number':'',
+        'card_type':'',
+        'exp_month':'',
+        'exp_year':'',
+        'card_cvv':'',
+        'promo_code':''
     };
 
     $(document).ready(function($) {
@@ -106,9 +117,17 @@
             if($(this).prop("checked")) {
                 $("#post-listing-form #url").removeAttr("disabled");
             } else {
-                $("#post-listing-form #url").attr("disabled", "disabled");
+                $("#post-listing-form #url").val('').attr("disabled", "disabled");
             }
         });
+        $("#saved_card").change(function(){
+            if($(this).val()) {
+                $("#cardholder_name,#card_number,#card_cvv").val('').attr("disabled", "disabled");
+                $("#card_type,#exp_month,#exp_year").attr("disabled", "disabled");
+            } else {
+                $("#cardholder_name,#card_number,#card_cvv,#card_type,#exp_month,#exp_year").removeAttr("disabled");
+            }
+        }).trigger('change');
 
         $("#post-listing-form #set-draft").change(function(){
             if(!$(this).val()) return false;
@@ -411,7 +430,7 @@
 
             updateListingObj();
 
-            if(parseInt(nextStep, 10) === 6) {
+            if(parseInt(nextStep, 10) === 7) {
                 confirmListing();
             } else {
                 if (nextStep > curStep) {
@@ -524,6 +543,31 @@
 
 
     function gotoStep(stepN, isDone){
+        if(stepN === '6'){
+            if(listingData['premium'] || listingData['featured'] || listingData['url'] || listingData['bump_up']){
+                var sum = 0;
+                $('#summary_1,#summary_2,#summary_3,#summary_4').hide();
+                if(listingData['premium']){
+                    sum += parseFloat($('#summary_1').show().find('th:last-child').text().replace('$',''));
+                }
+                if(listingData['featured']){
+                    sum += parseFloat($('#summary_2').show().find('th:last-child').text().replace('$',''));
+                }
+                if(listingData['url']){
+                    sum += parseFloat($('#summary_3').show().find('th:last-child').text().replace('$',''));
+                }
+                if(listingData['bump_up']){
+                    sum += parseFloat($('#summary_4').show().find('th:last-child').text().replace('$',''));
+                }
+                $('#sub_total').text('$'+sum);
+                $('#total').text('$'+sum);
+                $('#payment_1').hide();
+                $('#payment_2').show();
+            } else {
+                $('#payment_1').show();
+                $('#payment_2').hide();
+            }
+        }
         $("#post-listing-form  .listing-steps").hide();
         $("#step"+stepN).show();
 
@@ -595,7 +639,7 @@
             };
         $.post(amData.ajaxurl, data, function(ret){
             if(data) {
-                gotoStep(6, true);
+                gotoStep(7, true);
                 $(".steps-all, .btns-start").hide();
             }
         }, 'json');

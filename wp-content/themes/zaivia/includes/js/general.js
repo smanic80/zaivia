@@ -537,32 +537,34 @@
                 }
             });
         }
-
+        function addFilterData(data){
+            data['city'] = $('#search_city').val();
+            data['rad'] = $('#hidden_rad').val();
+            data['price_min'] = $('#hidden_price_min').val();
+            data['price_max'] = $('#hidden_price_max').val();
+            data['beds'] = $('#hidden_beds').val();
+            data['hometype'] = $('#hidden_hometype').val();
+            data['days_on'] = $('#days-on-select').val();
+            data['baths'] = $('#baths-select').val();
+            data['sqft_min'] = $('#sqft-min').val();
+            data['sqft_max'] = $('#sqft-max').val();
+            data['year_min'] = $('#year-built-min').val();
+            data['year_max'] = $('#year-built-max').val();
+            data['sale_by'] = $('.show_only:checked').map(function(){return $(this).val()}).get().join(',');
+            data['features_1'] = $('.features_1:checked').map(function(){return $(this).val()}).get().join(',');
+            data['sort_by'] = $('#sort_by').val();
+            data['page'] = $('#page').val();
+            data['page_id'] = $('#page_id').val();
+            data['rent'] = $('body').hasClass('page-template-rent');
+            return data;
+        }
         $(document).on('click','.save_search',function () {
             $.ajax({
                 url: amData.ajaxurl,
                 dataType: "json",
-                data: {
-                    action: 'saveSearch',
-                    city: $('#search_city').val(),
-                    rad: $('#hidden_rad').val(),
-                    price_min: $('#hidden_price_min').val(),
-                    price_max: $('#hidden_price_max').val(),
-                    beds: $('#hidden_beds').val(),
-                    hometype: $('#hidden_hometype').val(),
-                    days_on: $('#days-on-select').val(),
-                    baths: $('#baths-select').val(),
-                    sqft_min: $('#sqft-min').val(),
-                    sqft_max: $('#sqft-max').val(),
-                    year_min: $('#year-built-min').val(),
-                    year_max: $('#year-built-max').val(),
-                    sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
-                    features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
-                    sort_by:$('#sort_by').val(),
-                    page:$('#page').val(),
-                    page_id:$('#page_id').val(),
-                    rent: $('body').hasClass('page-template-rent')
-                },
+                data: addFilterData({
+                    action: 'saveSearch'
+                }),
                 success: function (data) {
                     alert('success');
                 }
@@ -574,28 +576,10 @@
                 $.ajax({
                     url: amData.ajaxurl,
                     dataType: "json",
-                    data: {
+                    data: addFilterData({
                         action: 'getListings',
-                        type: 'map',
-                        city: $('#search_city').val(),
-                        rad: $('#hidden_rad').val(),
-                        price_min: $('#hidden_price_min').val(),
-                        price_max: $('#hidden_price_max').val(),
-                        beds: $('#hidden_beds').val(),
-                        hometype: $('#hidden_hometype').val(),
-                        days_on: $('#days-on-select').val(),
-                        baths: $('#baths-select').val(),
-                        sqft_min: $('#sqft-min').val(),
-                        sqft_max: $('#sqft-max').val(),
-                        year_min: $('#year-built-min').val(),
-                        year_max: $('#year-built-max').val(),
-                        sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
-                        features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
-                        sort_by:$('#sort_by').val(),
-                        page:$('#page').val(),
-                        page_id:$('#page_id').val(),
-                        rent: $('body').hasClass('page-template-rent')
-                    },
+                        type: 'map'
+                    }),
                     success: function (data) {
                         if(data.items.length){
                             var bounds = new google.maps.LatLngBounds();
@@ -682,27 +666,9 @@
                 $.ajax({
                     url: amData.ajaxurl,
                     dataType: "json",
-                    data: {
-                        action: 'getListings',
-                        city: $('#search_city').val(),
-                        rad: $('#hidden_rad').val(),
-                        price_min: $('#hidden_price_min').val(),
-                        price_max: $('#hidden_price_max').val(),
-                        beds: $('#hidden_beds').val(),
-                        hometype: $('#hidden_hometype').val(),
-                        days_on: $('#days-on-select').val(),
-                        baths: $('#baths-select').val(),
-                        sqft_min: $('#sqft-min').val(),
-                        sqft_max: $('#sqft-max').val(),
-                        year_min: $('#year-built-min').val(),
-                        year_max: $('#year-built-max').val(),
-                        sale_by: $('.show_only:checked').map(function(){return $(this).val()}).get().join(','),
-                        features_1: $('.features_1:checked').map(function(){return $(this).val()}).get().join(','),
-                        sort_by:$('#sort_by').val(),
-                        page:$('#page').val(),
-                        page_id:$('#page_id').val(),
-                        rent: $('body').hasClass('page-template-rent')
-                    },
+                    data: addFilterData({
+                        action: 'getListings'
+                    }),
                     success: function (data) {
                         var type = $('.sub-filter li.current a').data('type');
                         var list = $('.ad-listing');
