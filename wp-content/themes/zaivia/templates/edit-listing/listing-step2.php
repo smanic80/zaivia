@@ -21,14 +21,20 @@
 
                 <div class="col-md-6 col-lg-4 wrapped unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>" data-wrap="row;col-sm-12 col-lg-8">
                     <fieldset>
-                        <?php $items = get_field('home_type', 'option'); ?>
+                        <?php
+                            $items = get_field('home_type', 'option');
+                            $itemsNames = array_map(function($i){ return $i['name'];}, $items);
+                            $other = ($listing && !in_array($listing['property_type'], $itemsNames)) ? true : false;
+                        ?>
                         <label><?php _e('Property Type', 'am') ?>*</label>
-                        <select name="property_type" id="property_type" class="tosave required">
+                        <select name="property_type" id="property_type" class="tosave required have_other">
                             <option value=""><?php _e('-select-', 'am') ?></option>
                             <?php foreach($items as $item):?>
                             <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing['property_type'] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
                             <?php endforeach; ?>
+                            <option value="other" <?php echo $other ? 'selected' : ''; ?>><?php _e('Other', 'am') ?></option>
                         </select>
+                        <input name="property_type_other" id="property_type_other" value="<?php echo ($listing && $listing['property_type'])? $listing['property_type'] : "" ?>" type="text" class="value_other tosave required">
                     </fieldset>
                 </div>
                 <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">

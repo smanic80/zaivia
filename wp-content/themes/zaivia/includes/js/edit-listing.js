@@ -91,6 +91,12 @@
             $("#status").val($(this).val());
         });
 
+        $("#post-listing-form .have_other").change(function(){
+
+
+        });
+
+
         $("#post-listing-form #price").keyup(function(){
             var num = parseInt($(this).val(), 10);
             if(isNaN(num)) $(this).val('');
