@@ -87,37 +87,30 @@
                     }
                 }
 
-                infobox = new InfoBox({
-                    content: "",
-                    disableAutoPan: false,
+                var InfoBoxData = {
                     maxWidth: 630,
                     pixelOffset: new google.maps.Size(-315, 0),
-                    zIndex: null,
-                    alignBottom: true,
                     boxStyle: {
                         opacity: 1,
                         width: "630px"
                     },
+
+                    content: "",
+                    disableAutoPan: false,
+                    zIndex: null,
+                    alignBottom: true,
                     closeBoxURL: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
                     infoBoxClearance: new google.maps.Size(1, 1)
-                });
+                };
 
                 if (getWidth() < 767) {
-                    infobox = new InfoBox({
-                        content: "",
-                        disableAutoPan: false,
-                        maxWidth: 300,
-                        pixelOffset: new google.maps.Size(-150, 0),
-                        zIndex: null,
-                        alignBottom: true,
-                        boxStyle: {
-                            opacity: 1,
-                            width: "300px"
-                        },
-                        closeBoxURL: "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==",
-                        infoBoxClearance: new google.maps.Size(1, 1)
-                    });
+                    InfoBoxData.maxWidth = 300;
+                    InfoBoxData.pixelOffset = new google.maps.Size(-150, 0),
+                    InfoBoxData.boxStyle.width = "300px";
                 }
+                infobox = new InfoBox(InfoBoxData);
+
+
                 google.maps.event.addListener(map2, "click", function (event) {
                     infobox.close();
                 });
@@ -395,6 +388,8 @@
         $(document).on('click', '.fav_add', function (e) {
             e.preventDefault();
 
+console.log('qwe1');
+
             var id = $(this).data('id');
             update_fav(id, 'add');
             $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
@@ -402,7 +397,7 @@
 
         $(document).on('click', '.fav_del', function (e) {
             e.preventDefault();
-
+console.log('qwe');
             var id = $(this).data('id');
             update_fav(id, 'del');
             $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
@@ -615,6 +610,7 @@
 
                             google.maps.event.trigger(map2,'resize');
                             map2.fitBounds(bounds);
+                            map2.setZoom(map2.getZoom()-2);
                         }
                         var markers = data.items.map(function(l) {
                             var marker = new google.maps.Marker({
@@ -623,6 +619,7 @@
                             });
                             marker.listing_id = l.listing_id;
                             google.maps.event.addListener(marker, 'click', (function(m) {
+
                                 return function() {
                                     $.ajax({
                                         url: amData.ajaxurl,
@@ -635,6 +632,7 @@
                                             listing_item = wp.template( "popup-item" );
                                             infobox.setContent(listing_item(data));
                                             infobox.open(map2, m);
+                                            google.maps.event.trigger(map2, "resize");
                                         }
                                     });
                                 }

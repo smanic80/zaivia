@@ -7400,6 +7400,7 @@ select::-ms-expand {
   color: #30475f;
   font-size: 14px;
   line-height: 18px;
+  height: 63px;
 }
 
 .ad-item .feats ul {
@@ -7476,6 +7477,7 @@ select::-ms-expand {
 .gallery .ad-item .image {
   float: none;
   width: auto;
+  height:195px;
 }
 
 .gallery .ad-item .text {
@@ -7509,6 +7511,7 @@ select::-ms-expand {
   -ms-flex-align: center;
   align-items: center;
   text-align: left;
+  height: 65px;
 }
 
 .gallery .ad-item .listed p {
