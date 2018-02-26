@@ -8,7 +8,7 @@
                     <input type="hidden" name="price_min" id="hidden_price_min" value="<?php echo isset($_GET['price_min']) ? $_GET['price_min'] : '' ?>">
                     <input type="hidden" name="price_max" id="hidden_price_max" value="<?php echo isset($_GET['price_max']) ? $_GET['price_max'] : '' ?>">
                     <input type="hidden" name="beds" id="hidden_beds" value="<?php echo isset($_GET['beds']) ? $_GET['beds'] : '' ?>">
-                    <input type="hidden" name="hometype" id="hidden_hometype" class="update_checks" value="<?php echo isset($_GET['hometype']) ? $_GET['hometype'] : '' ?>">
+                    <input type="hidden" name="propertytype" id="hidden_propertytype" class="update_checks" value="<?php echo isset($_GET['propertytype']) ? $_GET['propertytype'] : '' ?>">
                     <input type="hidden" id="page" value="1">
                     <button type="submit"></button>
                 </form>
@@ -81,13 +81,13 @@
                 </div>
             </div>
 
-            <div class="select checkbox" rel="hidden_hometype">
-                <div class="current"><?php _e('Home Type','am'); ?></div>
+            <div class="select checkbox" rel="hidden_propertytype">
+                <div class="current"><?php _e('Property Type','am'); ?></div>
                 <div class="dropdown checks">
                     <div class="styled-form">
-                        <?php $homeTypes = get_field('home_type', 'option'); ?>
+                        <?php $propertyTypes = get_field('property_type', 'option'); ?>
                         <ul>
-                            <?php foreach ($homeTypes as $item): ?>
+                            <?php foreach ($propertyTypes as $item): ?>
                                 <li>
                                     <div class="wpcf7-checkbox">
                                         <label><input type="checkbox" value="<?php echo $item['name'] ?>"><span><?php echo $item['name'] ?></span></label>

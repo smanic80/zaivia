@@ -25,7 +25,7 @@
                 <# } #>
             </div>
             <div class="love">
-                <a href="#"><i class="fa fa-heart-o fav_add" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa <# if ( data.faved ) { #>fa-heart fav_del<# } else {#>fa-heart-o fav_add<# } #>" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
             </div>
         </div>
         <div class="text">
@@ -33,7 +33,7 @@
                 <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                 <p>{{data.city}}, {{data.province}}</p>
             </div>
-            <div class="price">${{data.price}}</div>
+            <div class="price">{{data.price}}</div>
             <div class="modu">
                 <h6>{{data.property_type}}</h6>
                 <div class="cols">
@@ -94,11 +94,11 @@
                 <# } #>
             </div>
             <div class="love">
-                <a href="#"><i class="fa fa-heart-o fav_add" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
+                <a href="#"><i class="fa <# if ( data.faved ) { #>fa-heart fav_del<# } else {#>fa-heart-o fav_add<# } #>" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
             </div>
         </div>
         <div class="text">
-            <div class="price">${{data.price}}</div>
+            <div class="price">{{data.price}}</div>
             <div class="left">
                 <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                 <p>{{data.city}}, {{data.province}}</p>
@@ -145,7 +145,7 @@
         <div class="text">
             <h4><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h4>
             <p>{{data.city}}, <br>{{data.province}}</p>
-            <div class="price">${{data.price}}</div>
+            <div class="price">{{data.price}}</div>
             <div class="fav">
                 <a href="#"><i class="fa fa-heart fav_del" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
             </div>
@@ -164,7 +164,7 @@
         <div class="text">
             <h4><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h4>
             <p>{{data.city}}, <br>{{data.province}}</p>
-            <div class="price">${{data.price}}</div>
+            <div class="price">{{data.price}}</div>
         </div>
     </article>
 </script>
@@ -196,11 +196,11 @@
                     <# } #>
                 </div>
                 <div class="love">
-                    <a href="#"><i class="fa fa-heart-o fav_add" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
+                    <a href="#"><i class="fa <# if ( data.faved ) { #>fa-heart fav_del<# } else {#>fa-heart-o fav_add<# } #>" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
                 </div>
             </div>
             <div class="text">
-                <div class="price">${{data.price}}</div>
+                <div class="price">{{data.price}}</div>
                 <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                 <p>{{data.city}}, {{data.province}}</p>
                 <div class="feats">

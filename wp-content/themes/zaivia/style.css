@@ -9460,6 +9460,14 @@ div.entry form p label + br {
   color: #08b400;
 }
 
+.styled-form input[type=text].value_other {
+  display:none;
+}
+.styled-form input[type=text].value_other.active {
+  display:block;
+}
+
+
 @media (min-width: 576px) {
   .col-sm {
     -ms-flex-preferred-size: 0;

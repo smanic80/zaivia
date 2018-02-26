@@ -109,7 +109,7 @@ class ZaiviaListings {
 		return $results;
 	}
 
-    public static function getListing($listingId) {
+    public static function getListing($listingId, $formatMoney = true) {
         global $wpdb;
 
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
@@ -141,11 +141,16 @@ class ZaiviaListings {
                 }
                 $results[0]["features_{$i}_custom"] = $featuresArray;
             }
+
+            $fav_ids = self::getCurrentUserFavedIds();
+
             $results[0]['rent'] = self::getListingRent($listingId);
-            $results[0]['images'] = self::getListingFiles($listingId,self::$file_image,1,false);
+	        $results[0]['price'] = $formatMoney ? self::formatMoney($results[0]['price']) : $results[0]['price'];
+            $results[0]['images'] = self::getListingImage($listingId, false);
             $results[0]['blueprint'] = self::getListingFiles($listingId,self::$file_blueprint,1,false);
             $results[0]['openhouse'] = self::getListingOpenhouse($listingId);
             $results[0]['contact'] = self::getListingContact($listingId);
+	        $results[0]['faved'] = in_array($listingId, $fav_ids);
             return $results[0];
         }
         return false;
@@ -170,12 +175,12 @@ class ZaiviaListings {
 			'lat' => $data['lat'],
 			'lng' => $data['lng'],
 
-			'price' => $data['price'],
+			'price' => (float)str_replace(",", "", $data['price']),
 			'property_type' => $data['property_type'],
 			'house_type' => $data['house_type'],
-			'square_footage' => $data['square_footage'],
-			'bedrooms' => $data['bedrooms'],
-			'bathrooms' => $data['bathrooms'],
+			'square_footage' => (float)str_replace(",","", $data['square_footage']),
+			'bedrooms' => (int)$data['bedrooms'],
+			'bathrooms' => (int)$data['bathrooms'],
 
 			'roof_type' => $data['roof_type'],
 			'exterior_type' => $data['exterior_type'],
@@ -185,9 +190,9 @@ class ZaiviaListings {
 			'size_y' => $data['size_y'],
 			'size_units' => $data['size_units'],
 
-			'year_built' => $data['year_built'],
-			'annual_taxes' => $data['annual_taxes'],
-			'condo_fees' => $data['condo_fees'],
+			'year_built' => (int)$data['year_built'],
+			'annual_taxes' => (float)str_replace(",","", $data['annual_taxes']),
+			'condo_fees' => (float)str_replace(",","", $data['condo_fees']),
 			'partial_rent' => implode(";", $data['partial_rent']),
 
 			'room_features' => serialize($data['room_features']),
@@ -448,8 +453,8 @@ class ZaiviaListings {
 					(HOUR(start_time)*60+MINUTE(start_time)) as start_time, 
 					(HOUR(end_time)*60+MINUTE(end_time)) as end_time,
 					DATE_FORMAT(`date`,'%W, %M %d') as src_date, 
-					DATE_FORMAT(start_time,'%h:%i%p') as src_start_time, 
-					DATE_FORMAT(end_time,'%h:%i%p') as src_end_time 
+					DATE_FORMAT(start_time,'%l:%i%p') as src_start_time, 
+					DATE_FORMAT(end_time,'%l:%i%p') as src_end_time 
 				from $openhouse_tablename where listing_id = ".(int)$listingId;
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 
@@ -593,7 +598,24 @@ class ZaiviaListings {
 
 
 
+	public static function getListingImage($listingId, $single = true){
+		$results = self::getListingFiles($listingId, self::$file_image,1, $single);
 
+		if(!$results) {
+			$img = "default.jpg";
+			$url = get_template_directory_uri()."/images/".$img;
+			$default = [
+				'file_url' => $url,
+				'file_name' => $img,
+				'big' => $url,
+				'card' => $url,
+				'thumb' => $url,
+			];
+			$results = $single ? $default : [$default];
+		}
+
+		return $results;
+	}
 
 	public static function getListingFiles($listingId, $type = null, $confirmed = 1, $single = true) {
 		global $wpdb;
@@ -739,15 +761,17 @@ class ZaiviaListings {
 		return (bool)count(self::getUserListings($userId, $listingId));
 	}
 
-	public static function format_price($num) {
-		return $num;
-	}
 	public static function formatDate($date) {
 		$d = new DateTime($date);
 		return $d->format("M j, Y ");
 	}
+	public static function formatMoney($var) {
+		return "$" . number_format((float)$var, 2);
+	}
+
 	public static function search($request) {
         global $wpdb;
+
         $listing_tablename = $wpdb->prefix . self::$listing_tablename;
         $features_tablename = $wpdb->prefix . self::$features_tablename;
         if(isset($request['type']) && $request['type']=='map') {
@@ -782,7 +806,7 @@ class ZaiviaListings {
                         if(isset($results[0])){
                             $results[0]['openhouse'] = self::getListingOpenhouse($results[0]['listing_id']);
                             $results[0]['contact'] = self::getListingContact($results[0]['listing_id']);
-                            $results[0]['images'] = self::getListingFiles($results[0]['listing_id'],self::$file_image);
+                            $results[0]['images'] = self::getListingImage($results[0]['listing_id']);
                             $results[0]['featured_one'] = 1;
                             $featured = $results[0];
                         }
@@ -819,8 +843,8 @@ class ZaiviaListings {
         if($request['days_on']){
             $sql .= ' and ( TO_DAYS(NOW()) - TO_DAYS(date_published) <= '.intval($request['days_on']).')';
         }
-        if($request['hometype']){
-            $items = explode(',',$request['hometype']);
+        if($request['propertytype']){
+            $items = explode(',',$request['propertytype']);
             $sql .= ' and ( ';
             foreach ($items as $item){
                 $sql .= '(property_type like "%'.$item.'%") or ';
@@ -887,10 +911,13 @@ class ZaiviaListings {
             //todo list only used fields
             $results = $wpdb->get_results( 'SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing '.$sql, ARRAY_A);
 
+	        $fav_ids = self::getCurrentUserFavedIds();
             foreach($results as $key=>$val) {
+	            $results[$key]['faved'] = in_array($results[$key]['listing_id'], $fav_ids);
+	            $results[$key]['price'] = self::formatMoney($results[$key]['price']);
                 $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
                 $results[$key]['contact'] = self::getListingContact($val['listing_id']);
-                $results[$key]['images'] = self::getListingFiles($val['listing_id'], self::$file_image);
+                $results[$key]['images'] = self::getListingImage($val['listing_id']);
             }
             $ads = [
                 'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
@@ -908,12 +935,7 @@ class ZaiviaListings {
 		$fav_list = $view_list = [];
 
 
-		if($userId) {
-			$fav_ids = get_user_meta($userId,'favorite_listing',true);
-			$fav_ids = is_array($fav_ids) ? $fav_ids : [];
-		} else {
-			$fav_ids = isset($_COOKIE['favorite_listing']) ? json_decode(stripslashes($_COOKIE['favorite_listing'])) : [];
- 		}
+		$fav_ids = self::getCurrentUserFavedIds();
 
 		if($request['del'] and isset($fav_ids[intval($request['del'])])){
 			unset($fav_ids[intval($request['del'])]);
@@ -933,16 +955,18 @@ class ZaiviaListings {
 			$sql = "SELECT listing_id,unit_number,address,city,province,price from {$listing_tablename} where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$fav_ids).")";
 			$fav_list = $wpdb->get_results( $sql, ARRAY_A);
 			foreach($fav_list as $key=>$val) {
-				$fav_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+				$fav_list[$key]['images'] = self::getListingImage($val['listing_id']);
+				$fav_list[$key]['price'] = self::formatMoney($val['price']);
 			}
 		}
 
-		$view_ids = self::getLastViewed();
+		$view_ids = self::getCurrentUserViewedIds();
 		if($view_ids){
 			$sql = "SELECT listing_id,unit_number,address,city,province,price from {$listing_tablename} where to_delete != 1 and deleted = 0 and listing_id in (".implode(',',$view_ids).")";
 			$view_list = $wpdb->get_results($sql,ARRAY_A);
 			foreach($view_list as $key=>$val) {
-				$view_list[$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+				$view_list[$key]['images'] = self::getListingImage($val['listing_id']);
+				$view_list[$key]['price'] = self::formatMoney($val['price']);
 			}
 		}
 
@@ -952,8 +976,32 @@ class ZaiviaListings {
         );
     }
 
+	public static function getCurrentUserFavedIds() {
+		$userId = get_current_user_id();
+		if($userId) {
+			$fav_ids = get_user_meta($userId,'favorite_listing',true);
+			$fav_ids = is_array($fav_ids) ? $fav_ids : [];
+		} else {
+			$fav_ids = isset($_COOKIE['favorite_listing']) ? json_decode(stripslashes($_COOKIE['favorite_listing'])) : [];
+		}
+
+		return $fav_ids;
+	}
+
+	public static function getCurrentUserViewedIds(){
+		$userId = get_current_user_id();
+		if($userId) {
+			$view_ids = get_user_meta($userId,'recently_listing',true);
+			$view_ids = is_array($view_ids) ? $view_ids : [];
+		} else {
+			$view_ids = isset($_COOKIE['recently_listing']) ? json_decode(stripslashes($_COOKIE['recently_listing'])) : [];
+		}
+
+		return $view_ids;
+	}
+
 	public static function updateLastViewed($listing_id){
-		self::setLastViewed(self::combineLastViewed($listing_id, self::getLastViewed()));
+		self::setLastViewed(self::combineLastViewed($listing_id, self::getCurrentUserViewedIds()));
 	}
 
 	public static function combineLastViewed($listing_id, $view_ids){
@@ -962,18 +1010,6 @@ class ZaiviaListings {
 		}
 		$view_ids[] = $listing_id;
 		$view_ids = array_slice($view_ids, -ZaiviaListings::$max_rescent);
-
-		return $view_ids;
-	}
-
-	public static function getLastViewed(){
-		$userId = get_current_user_id();
-		if($userId) {
-			$view_ids = get_user_meta($userId,'recently_listing',true);
-			$view_ids = is_array($view_ids) ? $view_ids : [];
-		} else {
-			$view_ids = isset($_COOKIE['recently_listing']) ? json_decode(stripslashes($_COOKIE['recently_listing'])) : [];
-		}
 
 		return $view_ids;
 	}
@@ -1004,21 +1040,88 @@ class ZaiviaListings {
 	        'sold' => $wpdb->get_results( $sql. ' and status = "Sold" '.$order_by, ARRAY_A)
         );
         foreach($results['sale'] as $key=>$val) {
+	        $results['sale'][$key]['price'] = self::formatMoney($val['price']);
             $results['sale'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
             $results['sale'][$key]['contact'] = self::getListingContact($val['listing_id']);
-            $results['sale'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+            $results['sale'][$key]['images'] = self::getListingImage($val['listing_id']);
         }
         foreach($results['offer'] as $key=>$val) {
+	        $results['offer'][$key]['price'] = self::formatMoney($val['price']);
             $results['offer'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
             $results['offer'][$key]['contact'] = self::getListingContact($val['listing_id']);
-            $results['offer'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+            $results['offer'][$key]['images'] = self::getListingImage($val['listing_id']);
         }
         foreach($results['sold'] as $key=>$val) {
+	        $results['sold'][$key]['price'] = self::formatMoney($val['price']);
             $results['sold'][$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
             $results['sold'][$key]['contact'] = self::getListingContact($val['listing_id']);
-            $results['sold'][$key]['images'] = self::getListingFiles($val['listing_id'],self::$file_image);
+            $results['sold'][$key]['images'] = self::getListingImage($val['listing_id']);
         }
         return $results;
     }
+
+	public static function calculateMortage($price) {
+		return $price / 12;
+	}
+
+	public static function prepareRenderListingData($listing) {
+		$na = __("N/A", 'am');
+
+		$listing['price_per_month'] = ($listing['sale_rent'] == ZaiviaListings::$for_rent) ?
+			__('per month','am') :
+			__('Est. Mortage: $','am') . ZaiviaListings::formatMoney(ZaiviaListings::calculateMortage($listing['price'])) . __('/mth','am');
+
+		$listing['price'] = ZaiviaListings::formatMoney($listing['price']);
+		$listing['date_published'] = date('M d, Y',strtotime($listing['date_published']));
+		$listing['MLSNumber'] = $listing['MLSNumber'] ? $listing['MLSNumber'] : $na;
+
+		$listing['listing_type_title'] = $listing['property_type'] . " - " . (($listing['sale_rent'] == ZaiviaListings::$for_rent) ?
+			(($listing['partial_rent'] ? (implode(', ',$listing['partial_rent'])." ") : "" ) .  __('for rent','am') ) :
+			__('For Sale','am'));
+
+
+		$listing['bedrooms'] = $listing['bedrooms'] ? self::getRenderBathroom($listing, 'bedrooms') : $na;
+		$listing['bathrooms'] = $listing['bathrooms'] ? self::getRenderBathroom($listing, 'bathrooms') : $na;
+
+		$listing['parking'] = $listing['parking'] ? $listing['parking'] : $na;
+		$listing['square_footage'] = $listing['square_footage'] ? $listing['square_footage'].' '.__('sq. ft','am') : $na;
+		$listing['year_built'] = $listing['year_built'] ? $listing['parking'] : $na;
+
+		$listing['rent_date'] = (isset($listing['rent']['rent_date']) && $listing['rent']['rent_date']) ? date('M d, Y',strtotime($listing['rent']['rent_date'])) : $na;
+		$listing['rent_deposit'] = (isset($listing['rent']['rent_deposit']) && $listing['rent']['rent_deposit']) ? ZaiviaListings::formatMoney($listing['rent']['rent_deposit']) : $na;
+		$listing['rent_furnishings'] = (isset($listing['rent']['rent_furnishings']) && $listing['rent']['rent_furnishings']) ?  __('Yes','am') : __('No','am');
+		$listing['rent_pets'] = (isset($listing['rent']['rent_pets']) && $listing['rent']['rent_pets']) ?  __('Yes','am') : __('No','am');
+		$listing['rent_smoking'] = (isset($listing['rent']['rent_smoking']) && $listing['rent']['rent_smoking']) ?  __('Yes','am') : __('Non-smoking','am');
+		$listing['rent_laundry'] = (isset($listing['rent']['rent_laundry']) && $listing['rent']['rent_laundry'])  ?  __('Yes','am') : __('No','am');
+		$listing['rent_electrified_parking'] = (isset($listing['rent']['rent_furnishings']) && $listing['rent']['rent_electrified_parking']) ?  __('Yes','am') : __('No','am');
+		$listing['rent_secured_entry'] = (isset($listing['rent']['rent_furnishings']) && $listing['rent']['rent_secured_entry']) ?  __('Yes','am') : __('No','am');
+		$listing['rent_private_entry'] = (isset($listing['rent']['rent_furnishings']) && $listing['rent']['rent_private_entry']) ?  __('Yes','am') : __('No','am');
+		$listing['rent_onsite'] = (isset($listing['rent']['rent_furnishings']) && $listing['rent']['rent_onsite']) ?  __('Yes','am') : __('No','am');
+
+		$listing['driveway'] = $listing['driveway'] ? $listing['driveway'] : $na;
+		$listing['lot_size'] = ($listing['size_x'] && $listing['size_y']) ? ($listing['size_x'] . ' x ' . $listing['size_y'] . ' ' . $listing['size_units']) : $na;
+		$listing['finished_basement'] = isset($listing['finished_basement']) ? ($listing['finished_basement'] ? __('Finished','am') : __('Not Finished','am')) : $na;
+		$listing['exterior_type'] = $listing['exterior_type'] ? $listing['exterior_type'] : $na;
+		$listing['roof_type'] = $listing['roof_type'] ? $listing['roof_type'] : $na;
+		$listing['annual_taxes'] = $listing['annual_taxes'] ? ZaiviaListings::formatMoney($listing['annual_taxes']) : $na;
+
+		return $listing;
+	}
+
+	private static function getRenderBathroom($listing, $key){
+		$res = (int)$listing[$key];
+		if($res) {
+			$items = get_field($key, 'option');
+			$cnt = 1;
+			foreach($items as $item){
+				if($res === (int)$item['name'] && $cnt === count($items)) {
+					$res .= "+";
+				}
+				$cnt++;
+			}
+		}
+
+		return $res;
+	}
 }
 

@@ -1,6 +1,8 @@
 (function($) {
 
     $(document).ready(function($) {
+        $('.us-price').mask("000,000,000,000", {reverse: true});
+
         function setSmallMap(pos, label) {
             if($('#map').length){
                 var small_map = new google.maps.Map(document.getElementById('map'), {
@@ -363,9 +365,12 @@
             return false;
         });
 
+        if($('body').hasClass('page-template-listing')){
+            var pos = {lat:parseFloat($('#map_lat').val()), lng:parseFloat($('#map_lng').val())};
+            setSmallMap(pos, $('#map_name').val());
+        }
 
         if($('body').hasClass('page-template-buy') || $('body').hasClass('page-template-rent')){
-
             search_listings();
             update_fav();
 
@@ -386,10 +391,40 @@
                 });
             }
         }
-        if($('body').hasClass('page-template-listing')){
-            var pos = {lat:parseFloat($('#map_lat').val()), lng:parseFloat($('#map_lng').val())};
-            setSmallMap(pos, $('#map_name').val());
-        }
+
+        $(document).on('click', '.fav_add', function (e) {
+            e.preventDefault();
+
+            var id = $(this).data('id');
+            update_fav(id, 'add');
+            $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
+        });
+
+        $(document).on('click', '.fav_del', function (e) {
+            e.preventDefault();
+
+            var id = $(this).data('id');
+            update_fav(id, 'del');
+            $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
+        });
+
+        $(".save-favs a").click(function(e){
+            e.preventDefault();
+
+            var $item = $(this).find("i:visible"),
+                id = $(this).data('id');
+
+            if($item.hasClass("fav_add")) {
+                update_fav(id, 'add');
+                $(this).find("i.fav_add").parent().hide();
+                $(this).find("i.fav_del").parent().show();
+            } else {
+                update_fav(id, 'del');
+                $(this).find("i.fav_add").parent().show();
+                $(this).find("i.fav_del").parent().hide();
+            }
+        });
+
 
         function update_fav(id, action){
             var d = {action: 'getFavListings'};
@@ -405,6 +440,19 @@
                         view_listing_item = wp.template( "listing-view" ),
                         fav_list = $('#fav_tab1'),
                         view_list = $('#fav_tab2');
+                    if(!fav_list.length ) {
+                        return true;
+                    }
+
+                    view_list.empty();
+
+                    if(data.view.length) {
+                        for(var j in data.view) if (data.view.hasOwnProperty(j)){
+                            view_list.append(view_listing_item(data.view[j]));
+                        }
+                    } else {
+                        view_list.append('No Listings Viewed');
+                    }
 
                     fav_list.empty();
                     if(data.fav.length) {
@@ -415,33 +463,11 @@
                     } else {
                         fav_list.append('To add listings to favorites by clicking on the heart');
                     }
-
-
-                    view_list.empty();
-                    if(data.view.length) {
-                        for(var j in data.view) if (data.view.hasOwnProperty(j)){
-                            view_list.append(view_listing_item(data.view[j]));
-                        }
-                    } else {
-                        view_list.append('No Listings Viewed');
-                    }
                 }
             });
         }
-        $(document).on('click','.fav_add',function (e) {
-            e.preventDefault();
 
-            var id = $(this).data('id');
-            update_fav(id,'add');
-            $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
-        });
-        $(document).on('click','.fav_del',function (e) {
-            e.preventDefault();
 
-            var id = $(this).data('id');
-            update_fav(id,'del');
-            $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
-        });
         $(document).on('click','.clear_price',function () {
             $(this).parent().remove();
             $('#hidden_price_min').val('');
@@ -455,8 +481,8 @@
             search_listings();
             return false;
         });
-        $(document).on('click','.clear_hometype',function () {
-            $('.checkbox[rel=hidden_hometype] input[value='+$(this).data('val')+']').trigger('click');
+        $(document).on('click','.clear_propertytype',function () {
+            $('.checkbox[rel=hidden_propertytype] input[value='+$(this).data('val')+']').trigger('click');
             $(this).parent().remove();
             return false;
         });
@@ -543,7 +569,7 @@
             data['price_min'] = $('#hidden_price_min').val();
             data['price_max'] = $('#hidden_price_max').val();
             data['beds'] = $('#hidden_beds').val();
-            data['hometype'] = $('#hidden_hometype').val();
+            data['propertytype'] = $('#hidden_propertytype').val();
             data['days_on'] = $('#days-on-select').val();
             data['baths'] = $('#baths-select').val();
             data['sqft_min'] = $('#sqft-min').val();
@@ -627,10 +653,10 @@
                 if($('#hidden_beds').val()){
                     filtered.append('<li><a href="#" class="clear_beds"><i class="fa fa-times" aria-hidden="true"></i></a>'+$('#hidden_beds').val()+'+ Beds</li>');
                 }
-                var items = $('.checkbox[rel=hidden_hometype] input:checked');
+                var items = $('.checkbox[rel=hidden_propertytypee] input:checked');
                 if(items.length){
                     items.each(function (key,item) {
-                        filtered.append('<li><a href="#" class="clear_hometype" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).val()+'</li>');
+                        filtered.append('<li><a href="#" class="clear_propertytype" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).val()+'</li>');
                     })
                 }
                 items = $('.show_only:checked');

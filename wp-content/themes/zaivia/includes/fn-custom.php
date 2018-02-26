@@ -84,9 +84,9 @@
         die;
     }
 
-	add_action( 'wp_ajax_valideLisingStep', 'valideLisingStep' );
-	add_action( 'wp_ajax_nopriv_valideLisingStep', 'valideLisingStep' );
-	function valideLisingStep() {
+	add_action( 'wp_ajax_validateLisingStep', 'validateLisingStep' );
+	add_action( 'wp_ajax_nopriv_validateLisingStep', 'validateLisingStep' );
+	function validateLisingStep() {
 		$errors = [];
 		if(isset($_POST['required'])) {
 			foreach($_POST['required'] as $fName=>$fVal){
@@ -117,10 +117,8 @@
 				$listingData['listing_id'] = $data['listing_id'];
 			}
 
-			$listingData = [
-				"contact_profile"=>isset($data['contact_profile']) ? ZaiviaListings::getListingFile((int)$data['contact_profile']) : 0,
-				"contact_logo"=>isset($data['contact_logo']) ? ZaiviaListings::getListingFile((int)$data['contact_logo']) : 0,
-			];
+			$listingData["contact_profile"] = isset($data['contact_profile']) ? ZaiviaListings::getListingFile((int)$data['contact_profile']) : 0;
+			$listingData["contact_logo"] = isset($data['contact_logo']) ? ZaiviaListings::getListingFile((int)$data['contact_logo']) : 0;
 
 			if(!$errors) {
 				$listingData = ZaiviaListings::saveListing($data);
@@ -599,4 +597,20 @@
 			}
 		}
 		return null;
+	}
+
+	function am_renderOtherControl($listing, $key, $additionalClass="") {
+            $items = get_field($key, 'option');
+            $itemsNames = array_map(function($i){ return $i['name'];}, $items);
+            $other = ($listing && $listing[$key] && !in_array($listing[$key], $itemsNames)) ? true : false;
+        ?>
+        <select name="<?php echo $key?>" id="<?php echo $key?>" class="tosave have_other <?php echo $additionalClass?>">
+            <option value=""><?php _e('-select-', 'am') ?></option>
+            <?php foreach($items as $item):?>
+            <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing[$key] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+            <?php endforeach; ?>
+            <option value="other" <?php echo $other ? 'selected' : ''; ?>><?php _e('Other', 'am') ?></option>
+        </select>
+        <input name="<?php echo $key?>_other" id="<?php echo $key?>_other" value="<?php echo $other ? $listing[$key] : "" ?>" type="text" class="value_other<?php echo $other ? ' active' : ''; ?>">
+		<?php
 	}

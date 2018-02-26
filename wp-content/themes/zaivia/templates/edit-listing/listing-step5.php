@@ -11,7 +11,7 @@
                     <span class="wpcf7-form-control wpcf7-checkbox">
                       <span class="wpcf7-list-item first">
                         <label class="big yellow"><input type="checkbox" name="premium" id="premium" value="1" <?php if($listing && $listing['premium']):?>checked<?php endif; ?> class="tosave">&nbsp;
-                            <span class="wpcf7-list-item-label"><span class="price">$<?php echo ZaiviaListings::format_price(get_field("premium_price"))?></span>
+                            <span class="wpcf7-list-item-label"><span class="price"><?php echo ZaiviaListings::formatMoney(get_field("premium_price"))?></span>
                                 <strong><?php _e('Premium Listing', 'am') ?></strong><br><?php echo get_field("premium_description")?>
                             </span>
                         </label>
@@ -26,7 +26,7 @@
                     <span class="wpcf7-form-control wpcf7-checkbox">
                       <span class="wpcf7-list-item first">
                         <label class="big blue"><input type="checkbox" name="featured" id="featured" value="1" <?php if($listing && $listing['featured']):?>checked<?php endif; ?> class="tosave">&nbsp;
-                            <span class="wpcf7-list-item-label"><span class="price">$<?php echo ZaiviaListings::format_price(get_field("featured_price"))?></span>
+                            <span class="wpcf7-list-item-label"><span class="price"><?php echo ZaiviaListings::formatMoney(get_field("featured_price"))?></span>
                                 <strong><?php _e('Featured Listing', 'am') ?></strong><br><?php echo get_field("featured_description")?>
                             </span>
                         </label>
@@ -41,7 +41,7 @@
                     <span class="wpcf7-form-control wpcf7-checkbox">
                       <span class="wpcf7-list-item first">
                         <label class="big"><input type="checkbox" name="set_url" id="set_url" value="1" <?php if($listing && $listing['url']):?>checked<?php endif; ?>>&nbsp;
-                            <span class="wpcf7-list-item-label"><span class="price">$<?php echo ZaiviaListings::format_price(get_field("url_price"))?></span>
+                            <span class="wpcf7-list-item-label"><span class="price"><?php echo ZaiviaListings::formatMoney(get_field("url_price"))?></span>
                                 <strong><?php _e('Website URL', 'am') ?></strong><br><?php echo get_field("url_description")?>
                             </span>
                         </label>
@@ -63,7 +63,7 @@
                     <span class="wpcf7-form-control wpcf7-checkbox">
                       <span class="wpcf7-list-item first">
                         <label class="big"><input type="checkbox" name="bump_up" id="bump_up" value="1" <?php if($listing && $listing['bump_up']):?>checked<?php endif; ?> class="tosave">&nbsp;
-                            <span class="wpcf7-list-item-label"><span class="price">$<?php echo ZaiviaListings::format_price(get_field("bump_price"))?></span>
+                            <span class="wpcf7-list-item-label"><span class="price"><?php echo ZaiviaListings::formatMoney(get_field("bump_price"))?></span>
                                 <strong><?php _e('Bump Up', 'am') ?></strong><br><?php echo get_field("bump_description")?>
                             </span>
                         </label>

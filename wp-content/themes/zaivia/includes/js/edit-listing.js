@@ -1,5 +1,6 @@
-(function($) {
+var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
+(function($) {
     var marker = null;
     var listingData = {
         'listing_id': $("#listing_id").val(),
@@ -103,8 +104,11 @@
         });
 
         $("#post-listing-form .have_other").change(function(){
-
-
+            if($(this).val() === 'other') {
+                $("#"+$(this).attr("id")+"_other").addClass("active");
+            } else {
+                $("#"+$(this).attr("id")+"_other").removeClass("active");
+            }
         });
 
 
@@ -235,7 +239,7 @@
                     allowed = ['doc','docx','pdf'];
                 }
                 if($.inArray(ext, allowed) === -1) {
-                    $("#"+$this.attr("id")+"_file-errors").text('Invalid file type!');
+                    $("#"+$this.attr("id")+"_file-errors").text('Invalid file type!').show();
                     error = true;
                 } else {
                     form.append(key, value);
@@ -408,11 +412,11 @@
                                 }
                             }
                             if(!$("#post-listing-form #error-place").is(":visible")){
-                                $("#post-listing-form #unit_number").val(addr.unit_number).removeClass("placeholder");
-                                $("#post-listing-form #address").val(addr.address).removeClass("placeholder");
-                                $("#post-listing-form #city").val(addr.city).removeClass("placeholder");
-                                $("#post-listing-form #province").val(addr.province).removeClass("placeholder");
-                                $("#post-listing-form #neighbourhood").val(addr.neighbourhood).removeClass("placeholder");
+                                if(!$("#post-listing-form #unit_number").val()) $("#post-listing-form #unit_number").val(addr.unit_number).removeClass("placeholder");
+                                if(!$("#post-listing-form #address").val()) $("#post-listing-form #address").val(addr.address).removeClass("placeholder");
+                                if(!$("#post-listing-form #city").val()) $("#post-listing-form #city").val(addr.city).removeClass("placeholder");
+                                if(!$("#post-listing-form #province").val()) $("#post-listing-form #province").val(addr.province).removeClass("placeholder");
+                                if(!$("#post-listing-form #neighbourhood").val()) $("#post-listing-form #neighbourhood").val(addr.neighbourhood).removeClass("placeholder");
                             }
                         } else {
                             window.alert('No results found');
@@ -527,7 +531,18 @@
                             listingData[$(this).data("key")] = collect;
                         }
                     }
+                } else if( $(this).hasClass("have_other") ) {
+                    if($(this).attr("id") in listingData) {
 
+                        if($(this).val() === 'other') {
+                            listingData[$(this).attr("id")] = $("#"+$(this).attr("id")+"_other").val();
+                        } else {
+                            listingData[$(this).attr("id")] = $(this).val();
+                        }
+
+                    } else {
+                        alert("listing key not found " + $(this).attr("id"));
+                    }
                 } else {
                     if($(this).attr("id") in listingData) {
                         listingData[$(this).attr("id")] = ( ($(this).attr('type')==='checkbox') ? ($(this).prop('checked')?1:0) : $(this).val() );
@@ -559,8 +574,9 @@
                 if(listingData['bump_up']){
                     sum += parseFloat($('#summary_4').show().find('th:last-child').text().replace('$',''));
                 }
-                $('#sub_total').text('$'+sum);
-                $('#total').text('$'+sum);
+
+                $('#sub_total').text(moneyFormat.format(sum));
+                $('#total').text(moneyFormat.format(sum));
                 $('#payment_1').hide();
                 $('#payment_2').show();
             } else {
@@ -649,7 +665,7 @@
         var $fieldsReq = $form.find(".required"),
             $fieldsZip = $form.find(".zip"),
             data = {
-                'action':'valideLisingStep',
+                'action':'validateLisingStep',
                 'required': {},
                 'zip': {},
                 'listing-data': JSON.stringify(listingData)
@@ -657,13 +673,13 @@
 
         $fieldsReq.removeClass("error");
         $fieldsReq.each(function () {
-            data.required[$(this).attr("id")] = $(this).val();
+            data.required[$(this).attr("id")] = listingData[$(this).attr("id")];
         });
         $("#status_0, #status_1").removeClass("error");
 
         $fieldsZip.removeClass("error");
         $fieldsZip.each(function () {
-            data.zip[$(this).attr("id")] = $(this).val();
+            data.zip[$(this).attr("id")] = listingData[$(this).attr("id")];
         });
 
         $.post(amData.ajaxurl, data, function(ret){

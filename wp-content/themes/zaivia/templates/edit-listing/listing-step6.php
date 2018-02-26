@@ -130,22 +130,22 @@
                     <tr id="summary_1">
                         <th><?php _e('Premium Listing', 'am') ?></th>
                         <th></th>
-                        <th class="text-right">$<?php echo ZaiviaListings::format_price(get_field("premium_price"))?></th>
+                        <th class="text-right"><?php echo ZaiviaListings::formatMoney(get_field("premium_price"))?></th>
                     </tr>
                     <tr id="summary_2">
                         <th><?php _e('Featured Listing', 'am') ?></th>
                         <th></th>
-                        <th class="text-right">$<?php echo ZaiviaListings::format_price(get_field("featured_price"))?></th>
+                        <th class="text-right"><?php echo ZaiviaListings::formatMoney(get_field("featured_price"))?></th>
                     </tr>
                     <tr id="summary_3">
                         <th><?php _e('Website URL', 'am') ?></th>
                         <th></th>
-                        <th class="text-right">$<?php echo ZaiviaListings::format_price(get_field("url_price"))?></th>
+                        <th class="text-right"><?php echo ZaiviaListings::formatMoney(get_field("url_price"))?></th>
                     </tr>
                     <tr id="summary_4">
                         <th><?php _e('Bump Up', 'am') ?></th>
                         <th></th>
-                        <th class="text-right">$<?php echo ZaiviaListings::format_price(get_field("bump_price"))?></th>
+                        <th class="text-right"><?php echo ZaiviaListings::formatMoney(get_field("bump_price"))?></th>
                     </tr>
                     </thead>
                     <tbody>

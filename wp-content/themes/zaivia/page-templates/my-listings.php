@@ -51,7 +51,7 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
         <div class="styled-form">
             <div class="entry text-center mb-30">
                 <h2><?php echo get_field("button_title")?></h2>
-                <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary submit"><?php echo get_field("button_text")?></a>
+                <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary"><?php echo get_field("button_text")?></a>
             </div>
             <div class="acc-item bb">
                 <h3><?php echo get_field("table_title")?></h3>

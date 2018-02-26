@@ -5,16 +5,16 @@ Template Post Type: page
 */
 
 $listing_id = isset($_GET['id'])?$_GET['id']:0;
-$listing = ZaiviaListings::getListing($listing_id);
+$listing = ZaiviaListings::getListing($listing_id, false);
 
 if($listing) {
     ZaiviaListings::updateLastViewed($listing_id);
+	$listing = ZaiviaListings::prepareRenderListingData($listing);
 }
 get_header();
 
 
-if($listing):
-?>
+if($listing): ?>
 <div class="body grey-bg">
     <div class="single-title">
         <div class="container sm">
@@ -22,7 +22,7 @@ if($listing):
                 <h1><?php echo $listing['unit_number'].' '.$listing['address']; ?></h1>
                 <p><?php echo $listing['city'].', '.$listing['province']; ?></p>
             </div>
-            <div class="price">$<?php echo $listing['price']; ?><div class="time"><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent){ _e('per month','am'); } else { echo __('Est. Mortage: $','am'). '---' . __('/mth','am'); } ?></div></div>
+            <div class="price"><?php echo $listing['price']; ?><div class="time"><?php echo $listing['price_per_month'] ?></div></div>
         </div>
     </div>
     <div class="back-line">
@@ -42,7 +42,7 @@ if($listing):
                             </div>
                             <?php endforeach; ?>
                         </div>
-                        <div class="thumbs">
+                        <div class="thumbs" <?php if(count($listing['images'])<=1):?>style="display:none;"<?php endif;?>>
                             <?php foreach ($listing['images'] as $image): ?>
                             <div class="item">
                                 <img src="<?php echo $image['thumb']; ?>" alt="">
@@ -61,141 +61,63 @@ if($listing):
                         </div>
                         <div class="tab-c active" id="details">
                             <div class="post-detail">
-                                <div class="date"><?php _e('Posted on:','am') ?> <?php echo date('M d, Y',strtotime($listing['date_published'])); ?></div>
+                                <div class="date">
+                                    <?php _e('Posted on:','am') ?> <?php echo $listing['date_published']; ?>
+                                    <?php if($listing['sale_rent'] == ZaiviaListings::$for_sale): ?><br/><?php echo $listing['MLSNumber']; ?><?php endif; ?>
+                                </div>
                                 <div class="entry">
+
                                     <h3><?php _e('Key Features','am') ?></h3>
                                     <div class="row">
-                                        <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>
                                         <div class="col-sm-8">
-                                            <h4><?php echo $listing['property_type']; ?> - <?php echo implode(', ',$listing['partial_rent']); ?> <?php _e('For Rent','am') ?></h4>
+                                            <h4><?php echo $listing['listing_type_title']; ?></h4>
                                         </div>
                                         <div class="col-sm-4 text-right">
-                                            <h4>$<?php echo $listing['price']; ?> / <?php _e('month','am') ?></h4>
+                                            <h4><?php echo $listing['price']; ?><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?> / <?php _e('month','am') ?><?php endif; ?></h4>
                                         </div>
-                                        <?php else: ?>
-                                        <div class="col-sm-8">
-                                            <h4><?php echo $listing['property_type'].($listing['house_type']?' ('.$listing['house_type'].')':''); ?> - <?php _e('For Sale','am') ?></h4>
-                                        </div>
-                                        <div class="col-sm-4 text-right">
-                                            <h4>$<?php echo $listing['price']; ?></h4>
-                                        </div>
-                                        <?php endif; ?>
                                     </div>
+
                                     <div class="features">
                                         <div class="row no-gutters">
-                                            <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>
                                             <div class="col-md-5">
                                                 <dl>
-                                                    <dt><?php _e('Bedrooms','am') ?>:</dt>
-                                                    <dd><?php echo $listing['bedrooms']; ?></dd>
-                                                    <dt><?php _e('Bathrooms','am') ?>:</dt>
-                                                    <dd><?php echo $listing['bathrooms']; ?></dd>
-                                                    <?php if ($listing['parking']): ?>
-                                                    <dt><?php _e('Parking','am') ?>:</dt>
-                                                    <dd><?php echo $listing['parking']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['square_footage']>0): ?>
-                                                    <dt><?php _e('Square Footage','am') ?>:</dt>
-                                                    <dd><?php echo $listing['square_footage']; ?> <?php _e('sq. ft','am') ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['year_built']): ?>
-                                                    <dt><?php _e('Year Built','am') ?>:</dt>
-                                                    <dd><?php echo $listing['year_built']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_date']) && $listing['rent']['rent_date']): ?>
-                                                    <dt><?php _e('Date Available','am') ?>:</dt>
-                                                    <dd><?php echo date('M d, Y',strtotime($listing['rent']['rent_date'])); ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_deposit']) && $listing['rent']['rent_deposit']): ?>
-                                                    <dt><?php _e('Security Deposit','am') ?>:</dt>
-                                                    <dd><?php echo '$'.$listing['rent']['rent_deposit']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_furnishings'])): ?>
-                                                    <dt><?php _e('Furnishings','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_furnishings']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
+                                                    <dt><?php _e('Bedrooms','am') ?>:</dt><dd><?php echo $listing['bedrooms']; ?></dd>
+                                                    <dt><?php _e('Bathrooms','am') ?>:</dt><dd><?php echo $listing['bathrooms']; ?></dd>
+                                                    <dt><?php _e('Parking','am') ?>:</dt><dd><?php echo $listing['parking']?></dd>
+                                                    <dt><?php _e('Square Footage','am') ?>:</dt><dd><?php echo $listing['square_footage']?> </dd>
+                                                    <dt><?php _e('Year Built','am') ?>:</dt><dd><?php echo $listing['year_built']; ?></dd>
+
+	                                                <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>
+                                                        <dt><?php _e('Date Available','am') ?>:</dt><dd><?php echo $listing['rent_date'] ?></dd>
+                                                        <dt><?php _e('Security Deposit','am') ?>:</dt><dd><?php echo $listing['rent_deposit'] ?></dd>
+                                                        <dt><?php _e('Furnishings','am') ?>:</dt><dd><?php echo $listing['rent_furnishings'] ?></dd>
+	                                                <?php else: ?>
+                                                        <dt><?php _e('Driveway','am') ?>:</dt><dd><?php echo $listing['driveway']; ?></dd>
+	                                                <?php endif; ?>
                                                 </dl>
                                             </div>
                                             <div class="col-md-7">
                                                 <dl>
-                                                    <?php if (isset($listing['rent']['rent_pets'])): ?>
-                                                    <dt><?php _e('Pets','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_pets']){ _e('Yes','am'); } else { _e('No pets','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_smoking'])): ?>
-                                                    <dt><?php _e('Smoking','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_smoking']){ _e('Yes','am'); } else { _e('Non-smoking','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_laundry'])): ?>
-                                                    <dt><?php _e('Laundry','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_laundry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_electrified_parking'])): ?>
-                                                    <dt><?php _e('Electrified Parking','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_electrified_parking']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_secured_entry'])): ?>
-                                                    <dt><?php _e('Secured Entry','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_secured_entry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_private_entry'])): ?>
-                                                    <dt><?php _e('Private Entry','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_private_entry']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if (isset($listing['rent']['rent_onsite'])): ?>
-                                                    <dt><?php _e('Onsite Management','am') ?>:</dt>
-                                                    <dd><?php if($listing['rent']['rent_onsite']){ _e('Yes','am'); } else { _e('No','am'); } ?></dd>
-                                                    <?php endif; ?>
+	                                                <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?>
+                                                        <dt><?php _e('Pets','am') ?>:</dt><dd><?php echo $listing['rent_pets']; ?></dd>
+                                                        <dt><?php _e('Smoking','am') ?>:</dt><dd><?php echo $listing['rent_smoking']; ?></dd>
+                                                        <dt><?php _e('Laundry','am') ?>:</dt><dd><?php echo $listing['rent_laundry']; ?></dd>
+                                                        <dt><?php _e('Electrified Parking','am') ?>:</dt><dd><?php echo $listing['rent_electrified_parking']; ?></dd>
+                                                        <dt><?php _e('Secured Entry','am') ?>:</dt><dd><?php echo $listing['rent_secured_entry']; ?></dd>
+                                                        <dt><?php _e('Private Entry','am') ?>:</dt><dd><?php echo $listing['rent_private_entry']; ?></dd>
+                                                        <dt><?php _e('Onsite Management','am') ?>:</dt><dd><?php echo $listing['rent_onsite']; ?></dd>
+	                                                <?php else: ?>
+                                                        <dt><?php _e('Lot Size','am') ?>:</dt><dd><?php echo $listing['lot_size']; ?></dd>
+                                                        <dt><?php _e('Basement','am') ?>:</dt><dd><?php echo $listing['finished_basement']; ?></dd>
+                                                        <dt><?php _e('Exterior','am') ?>:</dt><dd><?php echo $listing['exterior_type']; ?></dd>
+                                                        <dt><?php _e('Roof Type','am') ?>:</dt><dd><?php echo $listing['roof_type']; ?></dd>
+                                                        <dt><?php _e('Taxes','am') ?>:</dt><dd><?php echo $listing['annual_taxes']; ?></dd>
+	                                                <?php endif; ?>
                                                 </dl>
                                             </div>
-                                            <?php else: ?>
-                                            <div class="col-md-5">
-                                                <dl>
-                                                    <dt><?php _e('Bedrooms','am') ?>:</dt>
-                                                    <dd><?php echo $listing['bedrooms']; ?></dd>
-                                                    <dt><?php _e('Bathrooms','am') ?>:</dt>
-                                                    <dd><?php echo $listing['bathrooms']; ?></dd>
-                                                    <?php if (false): ?>
-                                                    <dt><?php _e('Floor Size','am') ?>:</dt>
-                                                    <dd>--- <?php _e('ft','am') ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['parking']): ?>
-                                                    <dt><?php _e('Parking','am') ?>:</dt>
-                                                    <dd><?php echo $listing['parking']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['driveway']): ?>
-                                                    <dt><?php _e('Driveway','am') ?>:</dt>
-                                                    <dd><?php echo $listing['driveway']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['year_built']): ?>
-                                                    <dt><?php _e('Year Built','am') ?>:</dt>
-                                                    <dd><?php echo $listing['year_built']; ?></dd>
-                                                    <?php endif; ?>
-                                                </dl>
-                                            </div>
-                                            <div class="col-md-7">
-                                                <dl>
-                                                    <?php if ($listing['size_x'] && $listing['size_y']): ?>
-                                                    <dt><?php _e('Lot Size','am') ?>:</dt>
-                                                    <dd><?php echo $listing['size_x']; ?> x <?php echo $listing['size_y']; ?> <?php echo $listing['size_units']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <dt><?php _e('Basement','am') ?>:</dt>
-                                                    <dd><?php if(in_array('finished_basement',$listing['features_1'])){ _e('Finished','am'); } else { _e('Not Finished','am'); } ?></dd>
-                                                    <?php if ($listing['exterior_type']): ?>
-                                                    <dt><?php _e('Exterior','am') ?>:</dt>
-                                                    <dd><?php echo $listing['exterior_type']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <?php if ($listing['roof_type']): ?>
-                                                    <dt><?php _e('Roof Type','am') ?>:</dt>
-                                                    <dd><?php echo $listing['roof_type']; ?></dd>
-                                                    <?php endif; ?>
-                                                    <dt><?php _e('Taxes','am') ?>:</dt>
-                                                    <dd><?php echo '$'.$listing['annual_taxes']; ?></dd>
-                                                </dl>
-                                            </div>
-                                            <?php endif; ?>
                                         </div>
                                     </div>
+
                                     <?php if(isset($listing['rent']['rent_utilities']) && $listing['rent']['rent_utilities']): ?>
                                     <?php
                                     $rent_utilities = array();
@@ -463,34 +385,36 @@ if($listing):
                                     <div class="featured"><?php _e('PREMIUM LISTING','am') ?></div>
                                     <# } #>
                                     <div class="image"<# if(data.images.card) { #> style="background-image: url('{{data.images.card}}')"<# } #>>
-                                    <# if(data.images.card) { #><a href="#"><img src="{{data.images.card}}" alt=""></a><# } #>
-                                    <div class="badges">
-                                        <# if ( data.openhouse.length > 0 ) { #>
-                                        <div class="open">
-                                            <?php _e('OPEN HOUSE','am') ?>
-                                            <div class="tooltip">
-                                                <ul>
-                                                    <# for ( i in data.openhouse ) { #>
-                                                    <li><i class="fa fa-calendar-o" aria-hidden="true"></i><strong>{{data.openhouse[i].src_date}}</strong><br>{{data.openhouse[i].src_start_time}} - {{data.openhouse[i].src_end_time}}</li>
-                                                    <# } #>
-                                                </ul>
+                                        <# if(data.images.card) { #><a href="#"><img src="{{data.images.card}}" alt=""></a><# } #>
+                                        <div class="badges">
+                                            <# if ( data.openhouse.length > 0 ) { #>
+                                            <div class="open">
+                                                <?php _e('OPEN HOUSE','am') ?>
+                                                <div class="tooltip">
+                                                    <ul>
+                                                        <# for ( i in data.openhouse ) { #>
+                                                        <li><i class="fa fa-calendar-o" aria-hidden="true"></i><strong>{{data.openhouse[i].src_date}}</strong><br>{{data.openhouse[i].src_start_time}} - {{data.openhouse[i].src_end_time}}</li>
+                                                        <# } #>
+                                                    </ul>
+                                                </div>
                                             </div>
+                                            <# } #>
+                                            <# if ( data.new_listing > 0 ) { #>
+                                            <div class="new"><?php _e('NEW LISTING','am') ?></div>
+                                            <# } #>
                                         </div>
-                                        <# } #>
-                                        <# if ( data.new_listing > 0 ) { #>
-                                        <div class="new"><?php _e('NEW LISTING','am') ?></div>
-                                        <# } #>
-                                    </div>
-                                    <div class="love">
-                                        <a href="#"><i class="fa fa-heart-o fav_add" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
-                                    </div>
+                                        <div class="love">
+                                            <a href="#">
+                                                <i class="fa <# if ( data.faved ) { #>fa-heart fav_del<# } else {#>fa-heart-o fav_add<# } #>" data-id="{{data.listing_id}}" aria-hidden="true"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                     <div class="text">
                                         <div class="left">
                                             <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                                             <p>{{data.city}}, {{data.province}}</p>
                                         </div>
-                                        <div class="price">${{data.price}}</div>
+                                        <div class="price">{{data.price}}</div>
                                         <div class="modu">
                                             <h6>{{data.property_type}}</h6>
                                             <div class="cols">
@@ -630,12 +554,15 @@ if($listing):
                         <li><a href="#"><i class="fa fa-pinterest-square" aria-hidden="true"></i></a></li>
                         <li><a href="#"><i class="fa fa-linkedin-square" aria-hidden="true"></i></a></li>
                     </ul>
-                    <div class="save">
-                        <a href="#"><i class="fa fa-heart-o" aria-hidden="true"></i><?php _e('Save as Favorite','am') ?></a>
+                    <div class="save save-favs">
+                        <a href="#" data-id="<?php echo $listing['listing_id'] ?>" >
+                            <span <?php if( !$listing['faved'] ): ?>style="display:none;"<?php endif; ?>><i class="fa fa-heart fav_del" aria-hidden="true" ></i><?php _e('Remove from Favorites','am') ?></span>
+                            <span <?php if( $listing['faved'] ): ?>style="display:none;"<?php endif; ?>><i class="fa fa-heart-o fav_add" aria-hidden="true" ></i><?php _e('Save as Favorite','am') ?></span>
+                        </a>
                     </div>
                     <?php if($listing['rent'] && $listing['rent']['rent_file']): ?>
                     <div class="dl">
-                        <a href="<?php echo $listing['rent']['rent_file']; ?>"><i class="fa fa-file-text-o" aria-hidden="true"></i><?php _e('Download Rental Application','am') ?></a>
+                        <a href="<?php echo $listing['rent']['rent_file']['file_url']; ?>"><i class="fa fa-file-text-o" aria-hidden="true"></i><?php _e('Download Rental Application','am') ?></a>
                     </div>
                     <?php endif; ?>
                 </div>
