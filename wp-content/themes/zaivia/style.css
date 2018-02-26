@@ -6100,6 +6100,9 @@ body {
   font-size: 16px;
   font-weight: 400;
 }
+.hero.no-bg input {
+  width: calc(100% - 10px);
+}
 
 .intro-h {
   padding: 83px 0 56px;
@@ -9467,6 +9470,9 @@ div.entry form p label + br {
   display:block;
 }
 
+.no-bg {
+  background: none;
+}
 
 @media (min-width: 576px) {
   .col-sm {

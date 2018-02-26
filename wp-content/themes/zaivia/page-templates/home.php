@@ -9,9 +9,9 @@ get_header(); ?>
     <div class="hero">
         <div class="container">
             <div class="box">
-                <h1><?php the_field("search_title")?></h1>
+                <h1><?php the_field("search_title", "option")?></h1>
                 <form action="#">
-                    <label><?php the_field("search_text")?></label>
+                    <label><?php the_field("search_text", "option")?></label>
                     <div class="set">
                         <input type="text" placeholder="Enter a city" id="search_city">
                         <button type="submit" class="btn btn-secondary btn-lg search_city" rel="<?php the_field("page_buy", "option")?>"><?php _e('Buy', 'am') ?></button>
