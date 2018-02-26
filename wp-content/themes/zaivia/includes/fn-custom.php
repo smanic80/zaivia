@@ -84,9 +84,9 @@
         die;
     }
 
-	add_action( 'wp_ajax_validateLisingStep', 'validateLisingStep' );
-	add_action( 'wp_ajax_nopriv_validateLisingStep', 'validateLisingStep' );
-	function validateLisingStep() {
+	add_action( 'wp_ajax_validateListingStep', 'validateListingStep' );
+	add_action( 'wp_ajax_nopriv_validateListingStep', 'validateListingStep' );
+	function validateListingStep() {
 		$errors = [];
 		if(isset($_POST['required'])) {
 			foreach($_POST['required'] as $fName=>$fVal){
