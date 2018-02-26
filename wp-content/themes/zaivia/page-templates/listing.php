@@ -326,40 +326,40 @@ if($listing): ?>
                                         var position = {lat: <?php echo $listing['lat']; ?>, lng: <?php echo $listing['lng']; ?>};
                                     </script>
                                 </div>
-                                <div class="row">
+                                <div class="row" id="marker_type">
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico green">
-                                            <i class="fa fa-check" aria-hidden="true"></i>
+                                            <i data-class="fa fa-graduation-cap" data-type="school" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Schools','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4 ml-1">
                                         <div class="ico purple">
-                                            <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                            <i data-class="fa fa-shopping-cart" data-type="store" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Grocerie Stores','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico dgreen">
-                                            <i class="fa fa-shopping-cart" aria-hidden="true"></i>
+                                            <i data-class="fa fa-shopping-cart" data-type="bank" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Banks','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico yellow">
-                                            <i class="fa fa-cutlery " aria-hidden="true"></i>
+                                            <i data-class="fa fa-cutlery" data-type="restaurant" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Restaurants','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4 ml-1">
                                         <div class="ico blue">
-                                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                                            <i data-class="fa fa-shopping-bag" data-type="supermarket" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Shopping','am') ?></div>
                                     </div>
                                     <div class="col-sm-6 col-xl-4">
                                         <div class="ico red">
-                                            <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+                                            <i data-class="fa fa-shopping-bag" data-type="gym" aria-hidden="true"></i>
                                         </div>
                                         <div class="label"><?php _e('Show Nearby Gyms','am') ?></div>
                                     </div>

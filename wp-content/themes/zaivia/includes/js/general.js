@@ -66,6 +66,8 @@
         var map2 = null;
         var infobox = null;
         if ($("#map2").length) {
+            var markers = [];
+            var markerCluster = null;
             google.maps.event.addDomListener(window, 'load', function () {
                 map2 = new google.maps.Map(document.getElementById('map2'), {
                     zoom: 14,
@@ -139,6 +141,20 @@
                 });
                 var service = new google.maps.places.PlacesService(map);
                 var types = ['school','store','bank','gym','restaurant','supermarket'];
+                var selected_types = ['school'];
+                var markers = [];
+
+                $(document).on('click','#marker_type i[data-type]',function () {
+                    var v = $(this).data('type');
+                    var i = selected_types.indexOf(v);
+                    if(i > -1){
+                        selected_types.splice(i,1);
+                    } else {
+                        selected_types.push(v);
+                    }
+                    console.log(selected_types);
+                    refresh_map();
+                });
 
                 function callback(results, status) {
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
@@ -169,10 +185,11 @@
                         position: place.geometry.location,
                         icon: icon
                     });
-
+                    markers.push(marker);
                     google.maps.event.addListener(marker, 'click', function() {
                         infobox.setContent("<div class=inside>" + place.name + "</div>");
                         infobox.open(map, this);
+                        google.maps.event.trigger(map, "resize");
                     });
                 }
 
@@ -199,11 +216,22 @@
                     map.setCenter(center);
                 });
                 function refresh_map() {
+                    var mt = $('#marker_type');
+                    mt.find('i[data-class]').each(function () {
+                        $(this).attr('class', $(this).data('class'));
+                    });
+                    for(var m in markers) {
+                        markers[m].setMap(null);
+                    }
+                    markers = [];
                     for(var t in types) {
-                        service.nearbySearch({
-                            bounds: map.getBounds(),
-                            type: types[t]
-                        }, callback);
+                        if(selected_types.length && selected_types.indexOf(types[t])>=0) {
+                            service.nearbySearch({
+                                bounds: map.getBounds(),
+                                type: types[t]
+                            }, callback);
+                            mt.find('i[data-type='+types[t]+']').attr('class','fa fa-check');
+                        }
                     }
                 }
                 refresh_map();
@@ -612,7 +640,10 @@ console.log('qwe');
                             map2.fitBounds(bounds);
                             map2.setZoom(map2.getZoom()-2);
                         }
-                        var markers = data.items.map(function(l) {
+                        if(markerCluster){
+                            markerCluster.setMap(null);
+                        }
+                        markers = data.items.map(function(l) {
                             var marker = new google.maps.Marker({
                                 position: {lat:parseFloat(l.lat), lng:parseFloat(l.lng)},
                                 icon: amData.template_url+'/images/ico_mappin.png'
@@ -639,7 +670,7 @@ console.log('qwe');
                             })(marker));
                             return marker;
                         });
-                        var markerCluster = new MarkerClusterer(map2, markers, {imagePath: amData.template_url+'/images/m'});
+                        markerCluster = new MarkerClusterer(map2, markers, {imagePath: amData.template_url+'/images/m'});
                     }
                 });
             } else {
