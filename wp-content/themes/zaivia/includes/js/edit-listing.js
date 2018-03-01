@@ -665,7 +665,7 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
         var $fieldsReq = $form.find(".required"),
             $fieldsZip = $form.find(".zip"),
             data = {
-                'action':'validateLisingStep',
+                'action':'validateListingStep',
                 'required': {},
                 'zip': {},
                 'listing-data': JSON.stringify(listingData)

@@ -793,16 +793,21 @@ class ZaiviaListings {
 
         $featured = false;
         if($request['rad'] and $request['city']){
+
             $geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($request['city']));
             if($geo){
                 $geo = json_decode($geo,true);
                 if(count($geo['items'])) {
+
                     $lat = $geo['items'][0]['latitude'];
                     $lng = $geo['items'][0]['longitude'];
                     $sql .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
-                    if(isset($request['type']) && $request['type']!='map') {
+
+                    if(!isset($request['type']) || $request['type'] != 'map') {
                         $sql2 .= ' and ( ( 6971 * acos( cos( radians(' . $lat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $lng . ') ) + sin( radians(' . $lat . ') ) * sin(radians(lat)) ) ) < ' . intval($request['rad']) . ')';
-                        $results = $wpdb->get_results( "SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing FROM $listing_tablename a JOIN (SELECT (RAND() * (SELECT MAX(listing_id) FROM $listing_tablename)) AS id) AS r2 left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 WHERE a.listing_id >= r2.id $sql2 LIMIT 1", ARRAY_A);
+						$sql2 = "SELECT a.*,(TO_DAYS(NOW()) - TO_DAYS(date_published)<=10) as new_listing FROM $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1 WHERE 1=1 $sql2 ORDER BY RAND() LIMIT 1";
+
+                        $results = $wpdb->get_results( $sql2, ARRAY_A);
                         if(isset($results[0])){
                             $results[0]['openhouse'] = self::getListingOpenhouse($results[0]['listing_id']);
                             $results[0]['contact'] = self::getListingContact($results[0]['listing_id']);
@@ -918,6 +923,7 @@ class ZaiviaListings {
                 $results[$key]['openhouse'] = self::getListingOpenhouse($val['listing_id']);
                 $results[$key]['contact'] = self::getListingContact($val['listing_id']);
                 $results[$key]['images'] = self::getListingImage($val['listing_id']);
+	            $results[$key]['partial_rent_text'] = $val['partial_rent'] ? implode(', ',explode(";", $val['partial_rent'])) : "";
             }
             $ads = [
                 'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
@@ -1076,7 +1082,7 @@ class ZaiviaListings {
 		$listing['MLSNumber'] = $listing['MLSNumber'] ? $listing['MLSNumber'] : $na;
 
 		$listing['listing_type_title'] = $listing['property_type'] . " - " . (($listing['sale_rent'] == ZaiviaListings::$for_rent) ?
-			(($listing['partial_rent'] ? (implode(', ',$listing['partial_rent'])." ") : "" ) .  __('for rent','am') ) :
+			(($listing['partial_rent'] ? (implode(', ',$listing['partial_rent'])." ") : "" ) .  __('for Rent','am') ) :
 			__('For Sale','am'));
 
 

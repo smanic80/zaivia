@@ -48,9 +48,13 @@
                     <div class="col">
                         <ul>
                             <li><?php _e('Built in','am'); ?> {{data.year_built}}</li>
-                            <li>{{data.size_x}} x {{data.size_y}} <?php _e('sq.','am'); ?> {{data.size_units}}. <?php _e('lot','am'); ?></li>
-                            <li>{{data.roof_type}} <?php _e('roof','am'); ?></li>
-                            <li>{{data.exterior_type}} <?php _e('exterior','am'); ?></li>
+                        <# if(data.sale_rent == 0) { #>
+                            <# if(data.partial_rent_text) { #><li>{{data.partial_rent_text}} <?php _e('For Rent','am'); ?></li><# } #>
+                        <# } else {#>
+                            <# if(data.size_units > 0) { #><li>{{data.size_x}} x {{data.size_y}} <?php _e('sq.','am'); ?> {{data.size_units}}. <?php _e('lot','am'); ?></li><# } #>
+                            <# if(data.roof_type) { #><li>{{data.roof_type}} <?php _e('roof','am'); ?></li><# } #>
+                            <# if(data.exterior_type) { #><li>{{data.exterior_type}} <?php _e('exterior','am'); ?></li><# } #>
+                        <# } #>
                         </ul>
                     </div>
                 </div>

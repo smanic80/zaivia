@@ -183,7 +183,11 @@
 			if($userId) {
 				delete_user_meta( $userId, 'activation_hash' );
 				delete_option('activation_hash_' . $hash);
-			}
+			} else {
+			    var_dump('activation_hash_' . $_GET['akey']);
+			    die;
+            }
+
 			wp_redirect(home_url(get_field("page_account_activated", "option")));
 			die;
 		}
@@ -282,6 +286,33 @@
 		echo json_encode($res);
 		die;
 	}
+
+    function am_setAndSendActivation($userId, $pw){
+        $hash = wp_generate_password(12, false);
+
+        add_user_meta( $userId, 'activation_hash', $hash );
+        add_option('activation_hash_' . $hash, $userId);
+
+        $user_info = get_userdata($userId);
+
+        $activationLink = home_url('/').'activate?akey='.$hash;
+
+        $to = $user_info->user_email;
+        $subject = __('Member Verification');
+        $message = __('Hello, ').$user_info->display_name;
+        $message .= "<br>";
+        $message .= __('You password is').' <b>' . $pw . '</b>';
+        $message .= "<br><br>";
+        $message .= __('Please click this link to activate your account:');
+        $message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
+
+        $headers = '';
+        add_filter('wp_mail_content_type', 'am_html_email');
+        wp_mail( $to, $subject, $message, $headers );
+        remove_filter('wp_mail_content_type', 'am_html_email');
+    }
+
+
 
 	add_action( 'wp_ajax_restore_form', 'restore_formProcess' );
 	add_action( 'wp_ajax_nopriv_restore_form', 'restore_formProcess' );
@@ -519,30 +550,6 @@
 	}
 
 
-	function am_setAndSendActivation($userId, $pw){
-		$hash = wp_generate_password();
-
-		add_user_meta( $userId, 'activation_hash', $hash );
-		add_option('activation_hash_' . $hash, $userId);
-
-		$user_info = get_userdata($userId);
-
-		$activationLink = home_url('/').'activate?akey='.$hash;
-
-		$to = $user_info->user_email;
-		$subject = __('Member Verification');
-		$message = __('Hello, ').$user_info->display_name;
-		$message .= "<br>";
-		$message .= __('You password is').' <b>' . $pw . '</b>';
-		$message .= "<br><br>";
-		$message .= __('Please click this link to activate your account:');
-		$message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
-
-		$headers = '';
-		add_filter('wp_mail_content_type', 'am_html_email');
-		wp_mail( $to, $subject, $message, $headers );
-		remove_filter('wp_mail_content_type', 'am_html_email');
-	}
 
 	function am_getCurrentUserCCs(){
 		$res = get_user_meta(get_current_user_id(), "ccs", true);
@@ -572,21 +579,20 @@
 			return false;
 		}
 	}
-
-	function validatecard($cardnumber) {
-		$cardnumber=preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
-		$cardlength=strlen($cardnumber);
-		$parity=$cardlength % 2;
-		$sum=0;
-		for ($i=0; $i<$cardlength; $i++) {
-			$digit=$cardnumber[$i];
-			if ($i%2==$parity) $digit=$digit*2;
-			if ($digit>9) $digit=$digit-9;
-			$sum=$sum+$digit;
-		}
-		$valid=($sum%10==0);
-		return $valid;
-	}
+    function validatecard($cardnumber) {
+        $cardnumber=preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
+        $cardlength=strlen($cardnumber);
+        $parity=$cardlength % 2;
+        $sum=0;
+        for ($i=0; $i<$cardlength; $i++) {
+            $digit=$cardnumber[$i];
+            if ($i%2==$parity) $digit=$digit*2;
+            if ($digit>9) $digit=$digit-9;
+            $sum=$sum+$digit;
+        }
+        $valid=($sum%10==0);
+        return $valid;
+    }
 
 	function am_html_email(){ return "text/html"; }
 
