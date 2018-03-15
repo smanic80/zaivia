@@ -15,10 +15,8 @@
 <div class="acc-item bb">
 	<h3><?php _e('Key Features', 'am') ?></h3>
 	<div class="row">
-
         <div class="col-sm-12 col-lg-8">
             <div class="row">
-
                 <div class="col-md-6 col-lg-4 wrapped unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>" data-wrap="row;col-sm-12 col-lg-8">
                     <fieldset>
                         <label><?php _e('Property Type', 'am') ?>*</label>
@@ -74,7 +72,6 @@
                     </fieldset>
                 </div>
 
-
                 <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?>">
                     <div class="row gutters-16">
                         <div class="col-6 col-lg-5">
@@ -122,7 +119,6 @@
                     </fieldset>
                 </div>
 
-
                 <div class="col-md-6 col-lg-4 unwrap_<?php echo ZaiviaListings::$for_sale?> wrap_<?php echo ZaiviaListings::$for_rent?> salerent_<?php echo ZaiviaListings::$for_sale?>">
                     <div class="row gutters-16">
                         <div class="col-12">
@@ -151,7 +147,6 @@
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 

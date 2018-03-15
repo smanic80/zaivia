@@ -161,7 +161,6 @@
                     if (status === google.maps.places.PlacesServiceStatus.OK) {
                         for (var i = 0; i < results.length; i++) {
                             var icon = null;
-                            console.log(results);
                             if (results[i].types.indexOf('school') !== -1) {
                                 icon = amData.template_url + '/images/mgreen.png';
                             } else if (results[i].types.indexOf('supermarket') !== -1) {
@@ -418,9 +417,6 @@
 
         $(document).on('click', '.fav_add', function (e) {
             e.preventDefault();
-
-            console.log('qwe1');
-
             var id = $(this).data('id');
             update_fav(id, 'add');
             $('.fa[data-id='+id+']').removeClass('fav_add fa-heart-o').addClass('fav_del fa-heart');
@@ -428,7 +424,6 @@
 
         $(document).on('click', '.fav_del', function (e) {
             e.preventDefault();
-            console.log('qwe');
             var id = $(this).data('id');
             update_fav(id, 'del');
             $('.fa[data-id='+id+']').addClass('fav_add fa-heart-o').removeClass('fav_del fa-heart');
@@ -611,16 +606,50 @@
             return data;
         }
         $(document).on('click','.save_search',function () {
-            $.ajax({
-                url: amData.ajaxurl,
-                dataType: "json",
-                data: addFilterData({
-                    action: 'saveSearch'
-                }),
-                success: function (data) {
-                    alert('success');
-                }
-            });
+            if($('#email').length){
+                openModal('#email');
+            } else {
+                $.ajax({
+                    url: amData.ajaxurl,
+                    dataType: "json",
+                    data: addFilterData({
+                        action: 'saveSearch'
+                    }),
+                    success: function (data) {
+                        closeModal();
+                    }
+                });
+            }
+            return false;
+        });
+        $('#email').find('form').submit(function () {
+            var email = $(this).find('[name="your-email"]');
+            if(email.val()){
+                email.removeClass('error');
+            } else {
+                email.addClass('error');
+            }
+            var cr = $(this).find('[name="g-recaptcha-response"]');
+            if(cr.val()){
+                cr.parent().removeClass('error').css('border-width','0');
+            } else {
+                cr.parent().addClass('error').css('border-width','1px').css('border-style','solid');
+            }
+            if(email.val() && cr.val()){
+                $.ajax({
+                    url: amData.ajaxurl,
+                    dataType: "json",
+                    data: addFilterData({
+                        email: email.val(),
+                        send: $(this).find('[name="send-email"]').attr('checked')?1:0,
+                        captcha: cr.val(),
+                        action: 'saveSearchEmail'
+                    }),
+                    success: function (data) {
+                        closeModal();
+                    }
+                });
+            }
             return false;
         });
         function search_listings() {
@@ -681,50 +710,10 @@
                     }
                 });
             } else {
-                var filtered = $('.applied-filters ul');
-                filtered.empty();
-                if($('#hidden_price_min').val() && $('#hidden_price_max').val()){
-                    filtered.append('<li><a href="#" class="clear_price"><i class="fa fa-times" aria-hidden="true"></i></a>'+$('#hidden_price_min').val()+' - '+$('#hidden_price_max').val()+'</li>');
-                }
-                if($('#hidden_beds').val()){
-                    filtered.append('<li><a href="#" class="clear_beds"><i class="fa fa-times" aria-hidden="true"></i></a>'+$('#hidden_beds').val()+'+ Beds</li>');
-                }
-                var items = $('.checkbox[rel=hidden_propertytypee] input:checked');
-                if(items.length){
-                    items.each(function (key,item) {
-                        filtered.append('<li><a href="#" class="clear_propertytype" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).val()+'</li>');
-                    })
-                }
-                items = $('.show_only:checked');
-                if(items.length){
-                    items.each(function (key,item) {
-                        filtered.append('<li><a href="#" class="clear_show_only" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).next().text()+'</li>');
-                    })
-                }
-                items = $('.features_1:checked');
-                if(items.length){
-                    items.each(function (key,item) {
-                        filtered.append('<li><a href="#" class="clear_features_1" data-val="'+$(item).val()+'"><i class="fa fa-times" aria-hidden="true"></i></a>'+$(item).next().text()+'</li>');
-                    })
-                }
-                if($('#sqft-min').val()){
-                    filtered.append('<li><a href="#" class="clear_sqft-min"><i class="fa fa-times" aria-hidden="true"></i></a>Square Min '+$('#sqft-min').val()+' Feet</li>');
-                }
-                if($('#sqft-max').val()){
-                    filtered.append('<li><a href="#" class="clear_sqft-max"><i class="fa fa-times" aria-hidden="true"></i></a>Square Max '+$('#sqft-max').val()+' Feet</li>');
-                }
-                if($('#year-built-min').val()){
-                    filtered.append('<li><a href="#" class="clear_year-built-min"><i class="fa fa-times" aria-hidden="true"></i></a>Year Built Min '+$('#year-built-min').val()+'</li>');
-                }
-                if($('#year-built-max').val()){
-                    filtered.append('<li><a href="#" class="clear_year-built-max"><i class="fa fa-times" aria-hidden="true"></i></a>Year Built Max '+$('#year-built-max').val()+'</li>');
+                if(!$('.ad-listing').length){
+                    return false;
                 }
 
-                if(filtered.find('li').length){
-                    $('.applied-filters').show();
-                } else {
-                    $('.applied-filters').hide();
-                }
                 $.ajax({
                     url: amData.ajaxurl,
                     dataType: "json",
@@ -746,7 +735,14 @@
                         list.empty();
                         var pagination = $('.pagination');
                         pagination.empty();
-
+                        var filtered = $('.applied-filters ul');
+                        filtered.empty();
+                        if (data.filtered) {
+                            filtered.append(data.filtered);
+                            $('.applied-filters').show();
+                        } else {
+                            $('.applied-filters').hide();
+                        }
                         if(data.featured || data.items.length) {
                             var index = 0;
                             if (data.featured) {
@@ -761,7 +757,7 @@
                                 }
                             }
 
-                            $('.found-line p .result_num').text(data.count);
+                            $('.found-line p .result_num').text(data.count + (data.featured?1:0));
                             if($('#search_city').val()) {
                                 $('.found-line p .result_city_in').show();
                                 $('.found-line p .result_city').text($('#search_city').val());
@@ -773,32 +769,8 @@
 
                             $('.found-line p').removeClass('hidden');
 
-                            if(data.pages > 1) {
-                                if (data.page == 1) {
-                                    pagination.append('<span class="page-numbers">Previous</span>');
-                                } else {
-                                    pagination.append('<a class="prev page-numbers" data-page="' + (data.page - 1) + '" href="#">Previous</a>');
-                                }
-                                var p_start = data.page - 5;
-                                if (p_start < 1) {
-                                    p_start = 1;
-                                }
-                                var p_end = data.page + 5;
-                                if (p_end > data.pages) {
-                                    p_end = data.pages;
-                                }
-                                for (var p = p_start; p <= p_end; p++) {
-                                    if (p == data.page) {
-                                        pagination.append('<span class="page-numbers current">' + p + '</span>');
-                                    } else {
-                                        pagination.append('<a class="page-numbers" data-page="' + p + '" href="#">' + p + '</a>');
-                                    }
-                                }
-                                if (data.page == data.pages) {
-                                    pagination.append('<span class="page-numbers">Next</span>');
-                                } else {
-                                    pagination.append('<a class="prev page-numbers" data-page="' + (data.page + 1) + '" href="#">Next</a>');
-                                }
+                            if(data.pagination) {
+                                pagination.append(data.pagination);
                                 $(".pagination-holder").show();
                             } else {
                                 $(".pagination-holder").hide();
@@ -1165,10 +1137,17 @@
         for(var i in requiredFields) {
             $cur = $("#"+requiredFields[i]);
 
-            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password" || $cur[0].tagName === "SELECT") {
+            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "email" || $cur[0].type === "password" || $cur[0].tagName === "SELECT" || $cur[0].tagName === "TEXTAREA") {
                 $cur.removeClass("error");
-                if(!$cur.val()) {
-                    $cur.addClass("error");
+                if($cur.hasClass('g-recaptcha-response')){
+                    $cur.parent().removeClass("error").css('border-width','0');
+                }
+                if($cur.hasClass('g-recaptcha-response') && !$cur.val()){
+                    $cur.parent().addClass("error").css('border-width','1px').css('border-style','solid');
+                } else {
+                    if(!$cur.val()) {
+                        $cur.addClass("error");
+                    }
                 }
             } else if($cur[0].type === "checkbox") {
                 $cur.parent().removeClass("error");
@@ -1176,7 +1155,6 @@
                     $cur.parent().addClass("error");
                 }
             }
-
             data[requiredFields[i]] = $cur.val();
         }
 
@@ -1186,7 +1164,12 @@
 
         if(additionalFiels) {
             for(var i in additionalFiels) {
-                data[additionalFiels[i]] = $("#"+additionalFiels[i]).val();
+                $cur = $("#"+additionalFiels[i])
+                if($cur[0].type !== "checkbox" || $cur.prop('checked')){
+                    data[additionalFiels[i]] = $cur.val();
+                } else {
+                    data[additionalFiels[i]] = '';
+                }
             }
         }
 
@@ -1213,5 +1196,17 @@
         });
     }
 
-
+    $('#reportListing').submit(function (e) {
+        e.preventDefault();
+        processAjaxForm(
+            ['report_full_name','report_email','report_reason','report_text','g-recaptcha-response'],
+            $(this),
+            function (data){
+                if(data['ok']){
+                    $('#report .close').trigger('click');
+                }
+            },
+            ['report_phone','report_send_copy']
+        );
+    });
 })(jQuery);

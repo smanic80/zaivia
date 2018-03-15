@@ -1,5 +1,5 @@
 <?php
-
+    define('RECAPTCHA','6Le5j0sUAAAAAAdb5rywayv-8rFFESAwgCY60rXt');
 	if($_SERVER['HTTP_HOST'] === 'localhost') {
 		add_action('phpmailer_init', 'mailtrap');
 		function mailtrap($phpmailer) {
@@ -542,6 +542,46 @@
 		die;
 	}
 
+	add_action( 'wp_ajax_saveSearchEmail', 'saveSearchEmail' );
+	add_action( 'wp_ajax_nopriv_saveSearchEmail', 'saveSearchEmail' );
+	function saveSearchEmail() {
+        $post_data = http_build_query(
+            array(
+                'secret' => RECAPTCHA,
+                'response' => $_REQUEST['captcha'],
+                'remoteip' => $_SERVER['REMOTE_ADDR']
+            )
+        );
+        $opts = array('http' =>
+            array(
+                'method'  => 'POST',
+                'header'  => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $post_data
+            )
+        );
+        $context  = stream_context_create($opts);
+        $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+        $result = json_decode($response);
+        if ($result->success) {
+            $email = $_REQUEST['email'];
+            $user = get_user_by('email', $email);
+            if(!$user){
+                $user = wp_create_user($email,wp_generate_password(),$email);
+            }
+            if($_REQUEST['send']){
+                update_user_meta($user->ID,'spam','1');
+            }
+            $request = $_REQUEST;
+            unset($request['action']);
+            unset($request['captcha']);
+            unset($request['email']);
+            unset($request['send']);
+            update_user_meta($user,'saved_search',$request);
+            echo json_encode('ok');
+        }
+		die;
+	}
+
 	add_action( 'wp_ajax_getMarket', 'getMarket' );
 	add_action( 'wp_ajax_nopriv_getMarket', 'getMarket' );
 	function getMarket() {
@@ -605,18 +645,69 @@
 		return null;
 	}
 
-	function am_renderOtherControl($listing, $key, $additionalClass="") {
-            $items = get_field($key, 'option');
-            $itemsNames = array_map(function($i){ return $i['name'];}, $items);
+	function am_renderOtherControl($listing, $key, $additionalClass="")
+    {
+        $items = get_field($key, 'option');
+        if($items){
+            $itemsNames = array_map(function ($i) { return $i['name']; }, $items);
             $other = ($listing && $listing[$key] && !in_array($listing[$key], $itemsNames)) ? true : false;
         ?>
-        <select name="<?php echo $key?>" id="<?php echo $key?>" class="tosave have_other <?php echo $additionalClass?>">
+        <select name="<?php echo $key ?>" id="<?php echo $key ?>"
+                class="tosave have_other <?php echo $additionalClass ?>" title="">
             <option value=""><?php _e('-select-', 'am') ?></option>
-            <?php foreach($items as $item):?>
-            <option value="<?php echo $item['name']?>" <?php echo ($listing && $listing[$key] === $item['name'])?'selected':''; ?>><?php echo $item['name']?></option>
+            <?php foreach ($items as $item): ?>
+                <option value="<?php echo $item['name'] ?>" <?php echo ($listing && $listing[$key] === $item['name']) ? 'selected' : ''; ?>><?php echo $item['name'] ?></option>
             <?php endforeach; ?>
             <option value="other" <?php echo $other ? 'selected' : ''; ?>><?php _e('Other', 'am') ?></option>
         </select>
-        <input name="<?php echo $key?>_other" id="<?php echo $key?>_other" value="<?php echo $other ? $listing[$key] : "" ?>" type="text" class="value_other<?php echo $other ? ' active' : ''; ?>">
-		<?php
+        <input name="<?php echo $key ?>_other" id="<?php echo $key ?>_other"
+               value="<?php echo $other ? $listing[$key] : "" ?>" type="text"
+               class="value_other<?php echo $other ? ' active' : ''; ?>" title="">
+        <?php
+        }
 	}
+
+    add_action( 'wp_ajax_reportListing', 'reportListing' );
+    add_action( 'wp_ajax_nopriv_reportListing', 'reportListing' );
+    function reportListing() {
+        $post_data = http_build_query(
+            array(
+                'secret' => RECAPTCHA,
+                'response' => $_POST['g-recaptcha-response'],
+                'remoteip' => $_SERVER['REMOTE_ADDR']
+            )
+        );
+        $opts = array('http' =>
+            array(
+                'method'  => 'POST',
+                'header'  => 'Content-type: application/x-www-form-urlencoded',
+                'content' => $post_data
+            )
+        );
+        $context  = stream_context_create($opts);
+        $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+        $result = json_decode($response);
+        if ($result->success) {
+            $message = __('From:', 'am').' '. $_REQUEST["report_full_name"];
+            $message .= '<br>'. __('Email:', 'am') .' '. $_REQUEST["report_email"];
+            if($_REQUEST["report_phone"]){
+                $message .= '<br>'. __('Phone:', 'am') .' '. $_REQUEST["report_phone"];
+            }
+            $message .= '<br>'.__('Reason:', 'am').' ' . $_REQUEST["report_reason"];
+            $message .= '<br>'.__('Message:', 'am').' ' . $_REQUEST["report_text"];
+
+            add_filter('wp_mail_content_type', 'am_html_email');
+            wp_mail('zaivia@mailinator.com', 'Report Listing', $message);
+            if($_REQUEST["report_send_copy"]){
+                $user_info = get_userdata(get_current_user_id());
+                if($user_info) {
+                    wp_mail($user_info->user_email, 'Report Listing', $message);
+                }
+            }
+            remove_filter('wp_mail_content_type', 'am_html_email');
+            echo json_encode(array('ok' => true));
+        } else {
+            echo json_encode(array('error' => 'Captcha fail'));
+        }
+        die;
+    }

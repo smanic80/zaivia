@@ -821,29 +821,39 @@ class ZaiviaListings {
                 }
             }
         }
+        $filtered = '';
         if($request['price_min']){
             $sql .= ' and ( price >= '.intval($request['price_min']).')';
         }
         if($request['price_max']){
             $sql .= ' and ( price <= '.intval($request['price_max']).')';
         }
+        if($request['price_min']!='' && $request['price_max']){
+            $filtered .= '<li><a href="#" class="clear_price"><i class="fa fa-times" aria-hidden="true"></i></a>'.$request['price_min'].' - '.$request['price_max'].'</li>';
+        }
         if($request['sqft_min']){
             $sql .= ' and ( square_footage >= '.intval($request['sqft_min']).')';
+            $filtered .= '<li><a href="#" class="clear_sqft-min"><i class="fa fa-times" aria-hidden="true"></i></a>'.__('Square Min','am').' '.intval($request['sqft_min']).' '. __('Feet','am') .'</li>';
         }
         if($request['sqft_max']){
             $sql .= ' and ( square_footage <= '.intval($request['sqft_max']).')';
+            $filtered .= '<li><a href="#" class="clear_sqft-max"><i class="fa fa-times" aria-hidden="true"></i></a>'.__('Square Max','am').' '.intval($request['sqft_max']).' '. __('Feet','am') .'</li>';
         }
         if($request['year_min']){
             $sql .= ' and ( year_built >= '.intval($request['year_min']).')';
+            $filtered .= '<li><a href="#" class="clear_year-built-min"><i class="fa fa-times" aria-hidden="true"></i></a>'.__('Year Built Min','am').' '.intval($request['year_min']). '</li>';
         }
         if($request['year_max']){
             $sql .= ' and ( year_built <= '.intval($request['year_max']).')';
+            $filtered .= '<li><a href="#" class="clear_year-built-max"><i class="fa fa-times" aria-hidden="true"></i></a>'.__('Year Built Max','am').' '.intval($request['year_max']). '</li>';
         }
         if($request['beds']){
             $sql .= ' and ( bedrooms >= '.intval($request['beds']).')';
+            $filtered .= '<li><a href="#" class="clear_beds"><i class="fa fa-times" aria-hidden="true"></i></a>'. intval($request['beds']) .' '. __('Beds','am') . '</li>';
         }
         if($request['baths']){
             $sql .= ' and ( bathrooms >= '.intval($request['baths']).')';
+            $filtered .= '<li><a href="#" class="clear_baths"><i class="fa fa-times" aria-hidden="true"></i></a>'. intval($request['baths']) .' '. __('Bath','am') . '</li>';
         }
         if($request['days_on']){
             $sql .= ' and ( TO_DAYS(NOW()) - TO_DAYS(date_published) <= '.intval($request['days_on']).')';
@@ -853,22 +863,40 @@ class ZaiviaListings {
             $sql .= ' and ( ';
             foreach ($items as $item){
                 $sql .= '(property_type like "%'.$item.'%") or ';
+                $filtered .= '<li><a href="#" class="clear_propertytype" data-val="'.$item.'"><i class="fa fa-times" aria-hidden="true"></i></a>'.$item.'</li>';
             }
             $sql .= '0)';
         }
-        if($request['sale_by']){
+        if($request['sale_by']!=''){
             $items = explode(',',$request['sale_by']);
             $sql .= ' and ( ';
             foreach ($items as $item){
                 $sql .= '(sale_by = '.intval($item).') or ';
+                if ($item == '0'){
+                    $item_name = __('by agent','am');
+                } else if ($item == '1'){
+                    $item_name = __('by owner','am');
+                } else {
+                    $item_name = __('by property management','am');
+                }
+                $filtered .= '<li><a href="#" class="clear_show_only" data-val="'.$item.'"><i class="fa fa-times" aria-hidden="true"></i></a>'.$item_name.'</li>';
             }
             $sql .= '0)';
         }
         if($request['features_1']){
+            $features_1 = get_field('features_1', 'option');
             $items = explode(',',$request['features_1']);
             $sql .= ' and ( ';
             foreach ($items as $item){
                 $sql .= '(feature = "'.$item.'") or ';
+                $item_name = $item;
+                foreach ($features_1 as $feature){
+                    if($feature['key'] == $item){
+                        $item_name = $feature['name'];
+                        break;
+                    }
+                }
+                $filtered .= '<li><a href="#" class="clear_features_1" data-val="'.$item.'"><i class="fa fa-times" aria-hidden="true"></i></a>'.$item_name.'</li>';
             }
             $sql .= '0)';
         }
@@ -905,7 +933,7 @@ class ZaiviaListings {
 	        $page = ($page < 1) ? 1 : $page;
 
 
-            $page_max = ceil($cnt / $per_page) + 1;
+            $page_max = ceil($cnt / $per_page);
 
             if ($page > $page_max) {
                 $page = $page_max;
@@ -929,7 +957,35 @@ class ZaiviaListings {
                 'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
                 'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
             ];
-            return array('items'=>$results,'count'=>count($results), 'page'=>$page, 'pages'=>($page_max-1), 'ads'=>$ads, 'featured'=>$featured);
+            $pagination = '';
+            if($page_max > 1){
+                if ($page == 1) {
+                    $pagination .= '<span class="page-numbers">'.__('Previous','am').'</span>';
+                } else {
+                    $pagination .= '<a class="prev page-numbers" data-page="' . ($page - 1) . '" href="#">'.__('Previous','am').'</a>';
+                }
+                $p_start = $page - 5;
+                if ($p_start < 1) {
+                    $p_start = 1;
+                }
+                $p_end = $page + 5;
+                if ($p_end > $page_max-1) {
+                    $p_end = $page_max-1;
+                }
+                for ($p = $p_start; $p <= $p_end; $p++) {
+                    if ($p == $page) {
+                        $pagination .= '<span class="page-numbers current">' . $p . '</span>';
+                    } else {
+                        $pagination .= '<a class="page-numbers" data-page="' . $p . '" href="#">' . $p . '</a>';
+                    }
+                }
+                if ($page == $page_max-1) {
+                    $pagination .= '<span class="page-numbers">'.__('Next','am').'</span>';
+                } else {
+                    $pagination .= '<a class="prev page-numbers" data-page="' . ($page + 1) . '" href="#">'.__('Next','am').'</a>';
+                }
+            }
+            return array('items'=>$results,'count'=>count($results), 'ads'=>$ads, 'featured'=>$featured, 'pagination'=>$pagination, 'filtered'=>$filtered);
         }
 	}
 

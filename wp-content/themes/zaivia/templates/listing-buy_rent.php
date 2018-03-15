@@ -128,3 +128,36 @@
     </div>
     <div class="map-holder" id="map2"></div>
 </div>
+<?php if(!is_user_logged_in()):?>
+<div class="modal-overlay" id="email">
+    <div class="table">
+        <div class="center">
+            <div class="box">
+                <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
+                <h3><?php _e('Email me listings that match this search criteriea','am'); ?></h3>
+                <div class="styled-form">
+                    <form action="#">
+                        <input type="email" name="your-email" value="" size="40" class="wpcf7-form-control wpcf7-text wpcf7-email wpcf7-validates-as-required wpcf7-validates-as-email" placeholder="Email" aria-required="true" aria-invalid="false">
+                        <div class="space"></div>
+                        <p>
+                            <span class="wpcf7-form-control-wrap checkbox-399">
+                                <span class="wpcf7-form-control wpcf7-checkbox">
+                                    <span class="wpcf7-list-item first">
+                                        <label>
+                                            <input type="checkbox" name="send-email" value="1">&nbsp;
+                                            <span class="wpcf7-list-item-label"><?php _e('By checking this box, I consent to receive emails from Zaivia','am'); ?></span>
+                                        </label>
+                                    </span>
+                                </span>
+                            </span>
+                        </p>
+                        <div class="g-recaptcha" id="recaptcha2" data-sitekey="6Le5j0sUAAAAABC0PwDA8hjfUWT-Te_nhf-fYluN"></div>
+                        <input type="submit" value="Save Search" class="wpcf7-form-control wpcf7-submit">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src='https://www.google.com/recaptcha/api.js'></script>
+<?php endif; ?>
