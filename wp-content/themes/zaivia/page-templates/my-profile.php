@@ -28,6 +28,7 @@ get_header(); ?>
 			<?php endif; ?>
 		</div>
 	</div>
+
 	<div class="category-head">
 		<div class="container xs">
 			<div class="left">
@@ -120,7 +121,7 @@ get_header(); ?>
 													</div>
 												</div>
 											</fieldset>
-											<p class="intro"><?php echo get_field('profile_information_label', 'option');?></p>
+											<p class="intro"><?php the_field('profile_information_label', 'option');?></p>
 										</div>
 									</div>
 								</div>

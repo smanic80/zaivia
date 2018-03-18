@@ -4,6 +4,16 @@ Template Name: My Listings
 Template Post Type: page
 */
 
+if(get_current_user_id() && isset($_REQUEST['delete']) && $_REQUEST['delete']){
+	$request = $_REQUEST;
+	$listing_id = $_REQUEST['listing_id'];
+	unset($request['listing_id']);
+	unset($request['delete']);
+	ZaiviaListings::deleteListing($listing_id, json_encode($request));
+	wp_redirect($_SERVER['HTTP_REFERER']);
+	die;
+}
+
 get_header(); ?>
 <?php if(!get_current_user_id()):?>
     <div class="container sm mb-35">
@@ -18,15 +28,7 @@ get_header(); ?>
         </div>
     </div>
 <?php else: ?>
-<?php
-if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
-    $request = $_REQUEST;
-    $listing_id = $_REQUEST['listing_id'];
-    unset($request['listing_id']);
-    unset($request['delete']);
-    ZaiviaListings::deleteListing($listing_id,json_encode($request));
-}
-?>
+
 <div class="sub-nav">
     <div class="container xs">
         <?php if ( has_nav_menu( 'accountmenu' ) ) : ?>
@@ -50,11 +52,11 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
     <div class="my-ad">
         <div class="styled-form">
             <div class="entry text-center mb-30">
-                <h2><?php echo get_field("button_title")?></h2>
-                <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary"><?php echo get_field("button_text")?></a>
+                <h2><?php the_field("button_title")?></h2>
+                <a href="<?php the_field("page_postlisting", "option")?>" class="btn btn-primary"><?php the_field("button_text")?></a>
             </div>
             <div class="acc-item bb">
-                <h3><?php echo get_field("table_title")?></h3>
+                <h3><?php the_field("table_title")?></h3>
                 <?php $listings = ZaiviaListings::getUserListings(get_current_user_id());?>
 
                 <?php if($listings) :?>
@@ -64,7 +66,7 @@ if(isset($_REQUEST['delete']) && $_REQUEST['delete']){
                         <tr>
                             <th><?php _e('Address', 'am') ?></th>
                             <th><?php _e('Type', 'am') ?></th>
-                            <th><?php _e('Date Listing', 'am') ?></th>
+                            <th><?php _e('Date Listed', 'am') ?></th>
                             <th><?php _e('Renewal Date', 'am') ?></th>
                             <th><?php _e('Status', 'am') ?></th>
                             <th><?php _e('Activated', 'am') ?></th>

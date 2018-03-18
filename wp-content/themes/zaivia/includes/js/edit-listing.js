@@ -703,10 +703,10 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             $("#listing_id").val(listingData.listing_id);
 
             $("#contact_profile").val(listingData.contact_profile ? listingData.contact_profile['file_id']: '');
-            $("#contact_profile_file_name").val(listingData.contact_profile ? listingData.contact_profile['file_name']: '');
+            $("#contact_profile_file_name").text(listingData.contact_profile ? listingData.contact_profile['file_name']: '');
 
             $("#contact_logo").val(listingData.contact_logo ? listingData.contact_logo['file_id']: '');
-            $("#contact_logo_file_name").val(listingData.contact_logo ? listingData.contact_logo['file_name']: '');
+            $("#contact_logo_file_name").text(listingData.contact_logo ? listingData.contact_logo['file_name']: '');
 
             if(!error && !$(".error:visible").length) {
                 callback()

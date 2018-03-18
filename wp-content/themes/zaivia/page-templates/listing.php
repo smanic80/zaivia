@@ -568,7 +568,7 @@ if($listing): ?>
                 </div>
                 <?php if(get_field('sidebar_banner_url')): ?>
                 <div class="widget widget-ad">
-                    <a href="<?php echo get_field('sidebar_banner_url'); ?>"><img src="<?php echo get_field('sidebar_banner_image'); ?>" alt=""></a>
+                    <a href="<?php the_field('sidebar_banner_url'); ?>"><img src="<?php the_field('sidebar_banner_image'); ?>" alt=""></a>
                 </div>
                 <?php endif; ?>
             </div>

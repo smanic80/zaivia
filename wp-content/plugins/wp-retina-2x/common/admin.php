@@ -245,9 +245,9 @@ if ( !class_exists( 'MeowApps_Admin' ) ) {
 
 		function check_install( $plugin ) {
 			$pro = false;
-			$pluginpath = get_home_path() . 'wp-content/plugins/' . $plugin . '-pro';
+			$pluginpath = trailingslashit( dirname( __FILE__ ) ) . '../../' . $plugin . '-pro';
 			if ( !file_exists( $pluginpath ) ) {
-				$pluginpath = get_home_path() . 'wp-content/plugins/' . $plugin;
+				$pluginpath = trailingslashit( dirname( __FILE__ ) ) . '../../' . $plugin;
 				if ( !file_exists( $pluginpath ) ) {
 					$url = wp_nonce_url( "update.php?action=install-plugin&plugin=$plugin", "install-plugin_$plugin" );
 					return "<a href='$url'><small><span class='' style='float: right;'>install</span></small></a>";

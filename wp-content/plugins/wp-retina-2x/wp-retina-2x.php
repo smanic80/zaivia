@@ -3,7 +3,7 @@
 Plugin Name: WP Retina 2x
 Plugin URI: http://meowapps.com
 Description: Make your website look beautiful and crisp on modern displays by creating + displaying retina images.
-Version: 5.2.0
+Version: 5.2.3
 Author: Jordy Meow
 Author URI: http://meowapps.com
 Text Domain: wp-retina-2x
@@ -29,7 +29,7 @@ if ( class_exists( 'Meow_WR2X_Core' ) ) {
 global $wr2x_picturefill, $wr2x_retinajs, $wr2x_lazysizes,
 	$wr2x_retina_image, $wr2x_core;
 
-$wr2x_version = '5.2.0';
+$wr2x_version = '5.2.3';
 $wr2x_retinajs = '2.0.0';
 $wr2x_picturefill = '3.0.2';
 $wr2x_lazysizes = '4.0.1';
@@ -51,14 +51,19 @@ $wr2x_admin->core = $wr2x_core;
 add_action( 'admin_notices', 'wr2x_meow_old_version_admin_notices' );
 
 function wr2x_meow_old_version_admin_notices() {
+  if ( !current_user_can( 'install_plugins' ) )
+    return;
 	if ( isset( $_POST['wr2x_reset_sub'] ) ) {
-		delete_transient( 'wr2x_validated' );
-		delete_option( 'wr2x_pro_serial' );
-		delete_option( 'wr2x_pro_status' );
+    if ( check_admin_referer( 'wr2x_remove_expired_data' ) ) {
+  		delete_transient( 'wr2x_validated' );
+  		delete_option( 'wr2x_pro_serial' );
+  		delete_option( 'wr2x_pro_status' );
+    }
 	}
 	$subscr_id = get_option( 'wr2x_pro_serial', "" );
 	if ( empty( $subscr_id ) )
 		return;
+
 	$forever = strpos( $subscr_id, 'F-' ) !== false;
 	$yearly = strpos( $subscr_id, 'I-' ) !== false;
 	if ( !$forever && !$yearly )
@@ -72,6 +77,7 @@ function wr2x_meow_old_version_admin_notices() {
 		<p>
 		<form method="post" action="">
 			<input type="hidden" name="wr2x_reset_sub" value="true">
+      <?php wp_nonce_field( 'wr2x_remove_expired_data' ); ?>
 			<input type="submit" name="submit" id="submit" class="button" value="Got it. Clear this!">
 			<br /><small><b>Make sure you followed the instruction before clicking this button.</b></small>
 		</form>

@@ -23,9 +23,9 @@ class Meow_WR2X_Dashboard {
 	}
 
 	function dashboard() {
-		$refresh = isset ( $_GET[ 'refresh' ] ) ? $_GET[ 'refresh' ] : 0;
-		$clearlogs = isset ( $_GET[ 'clearlogs' ] ) ? $_GET[ 'clearlogs' ] : 0;
-		$ignore = isset ( $_GET[ 'ignore' ] ) ? $_GET[ 'ignore' ] : false;
+		$refresh = isset ( $_GET[ 'refresh' ] ) ? sanitize_text_field( $_GET[ 'refresh' ] ) : 0;
+		$clearlogs = isset ( $_GET[ 'clearlogs' ] ) ? sanitize_text_field( $_GET[ 'clearlogs' ] ) : 0;
+		$ignore = isset ( $_GET[ 'ignore' ] ) ? sanitize_text_field( $_GET[ 'ignore' ] ) : false;
 		if ( $ignore ) {
 			if ( !$this->core->admin->is_registered() ) {
 				echo "<div class='error' style='margin-top: 20px;'><p>";
@@ -45,11 +45,14 @@ class Meow_WR2X_Dashboard {
 		}
 
 		$hide_ads = get_option( 'meowapps_hide_ads', false );
-		$view = isset ( $_GET[ 'view' ] ) ? $_GET[ 'view' ] : 'issues';
-		$paged = isset ( $_GET[ 'paged' ] ) ? $_GET[ 'paged' ] : 1;
+		$view = isset( $_GET[ 'view' ] ) ? sanitize_text_field( $_GET[ 'view' ] ) : 'issues';
+		$paged = isset( $_GET[ 'paged' ] ) ? sanitize_text_field( $_GET[ 'paged' ] ) : 1;
 		$s = isset( $_GET[ 's' ] ) && !empty( $_GET[ 's' ] ) ? sanitize_text_field( $_GET[ 's' ] ) : null;
 		$issues = $count = 0;
-		$posts_per_page = 15; // TODO: HOW TO GET THE NUMBER OF MEDIA PER PAGES? IT IS NOT get_option('posts_per_page');
+
+		$posts_per_page = get_user_meta( get_current_user_id(), 'upload_per_page', true );
+		if ( empty( $posts_per_page ) )
+			$posts_per_page = 20;
 		$issues = $this->core->get_issues();
 		$ignored = $this->core->get_ignores();
 

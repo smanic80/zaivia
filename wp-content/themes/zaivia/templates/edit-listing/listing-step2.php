@@ -191,7 +191,7 @@
 <div class="acc-item">
 	<h3 class="toggle"><?php _e('Other Features', 'am') ?></h3>
 	<div class="acc-cc">
-		<p class="intro"><?php echo get_field("click_to_select")?></p>
+		<p class="intro"><?php the_field("click_to_select")?></p>
 		<div class="row">
 			<div class="col-sm-6 col-lg-8">
 				<div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -237,7 +237,7 @@
 <div class="acc-item">
     <h3 class="toggle"><?php _e('Appliances Included', 'am') ?></h3>
     <div class="acc-cc">
-        <p class="intro"><?php echo get_field("click_to_select")?></p>
+        <p class="intro"><?php the_field("click_to_select")?></p>
         <div class="row">
             <div class="col-sm-6 col-lg-8">
                 <div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -277,7 +277,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 <div class="acc-item">
     <h3 class="toggle"><?php _e('Outdoor Amenities', 'am') ?></h3>
     <div class="acc-cc">
-        <p class="intro"><?php echo get_field("click_to_select")?></p>
+        <p class="intro"><?php the_field("click_to_select")?></p>
         <div class="row">
             <div class="col-sm-6 col-lg-8">
                 <div class="row tosave group" data-key="features_<?php echo $type?>" >
@@ -323,7 +323,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 <div class="acc-item">
 	<h3 class="toggle"><?php _e('Room Features', 'am') ?></h3>
 	<div class="acc-cc">
-		<p class="intro2"><?php echo get_field("list_up_to_three")?></p>
+		<p class="intro2"><?php the_field("list_up_to_three")?></p>
         <?php foreach($items as $item): ?>
 		<fieldset>
 			<div class="row tosave group" data-key="room_features" data-subkey="<?php echo $item['key']?>" >
@@ -347,7 +347,7 @@ $features_custom = $listingId ? ZaiviaListings::getListingFeatures($listingId, $
 		<fieldset>
 			<div class="row ">
 				<div class="col-12">
-					<label><?php echo get_field("description")?></label>
+					<label><?php the_field("description")?></label>
 				</div>
 				<div class="col-sm-12 col-lg-8">
 					<textarea class="big tosave" name="description" id="description"><?php echo $listing?$listing['description']:''; ?></textarea>
@@ -496,7 +496,7 @@ $rent = $listingId ? ZaiviaListings::getListingRent($listingId) : [];
 <div class="acc-item salerent_<?php echo ZaiviaListings::$for_sale?> tosave array" id="openhouse">
 	<h3 class="toggle"><?php _e('Open Houses', 'am') ?></h3>
 	<div class="acc-cc">
-		<p class="intro3"><?php echo get_field("openhouse")?></p>
+		<p class="intro3"><?php the_field("openhouse")?></p>
 
         <?php $open_houses = $listingId ? ZaiviaListings::getListingOpenhouse($listingId) : []; ?>
         <?php foreach($open_houses as $open_house):?>

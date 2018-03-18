@@ -388,9 +388,11 @@ function am_add_javascript( ) {
 	        "cluster_js"=>['path' => 'includes/js/markerclusterer.js', 'req' => []],
 	        "general_js"=>['path' => 'includes/js/general.js', 'req' => ['jquery','wp-util']],
 	        "edit-listing_js"=>['path' => 'includes/js/edit-listing.js', 'req' => ['jquery']],
+	        "edit-business_js"=>['path' => 'includes/js/edit-business.js', 'req' => ['jquery']],
 	        "map_js"=>['path' => 'includes/js/map.js', 'req' => ['jquery']],
 	        "orakuploader"=>['path' => 'includes/js/orakuploader/orakuploader.js', 'req' => ['jquery','jquery-ui-core','jquery-ui-sortable','jquery-ui-draggable','jquery-ui-droppable']],
         );
+
         foreach($am_files as $key=>$am_file){
             wp_enqueue_script($key, get_theme_file_uri($am_file['path']), $am_file['req'], filemtime( get_theme_file_path($am_file['path'])),true );
         }

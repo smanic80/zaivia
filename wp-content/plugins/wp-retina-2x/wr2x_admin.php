@@ -18,9 +18,11 @@ class Meow_WR2X_Admin extends MeowApps_Admin {
 	}
 
 	function admin_notices() {
-		if ( delete_transient( 'wr2x_flush_rules' ) ) {
-			global $wp_rewrite;
-			Meow_WR2X_Admin::generate_rewrite_rules( $wp_rewrite, true );
+		if ( current_user_can( 'activate_plugins' ) ) {
+			if ( delete_transient( 'wr2x_flush_rules' ) ) {
+				global $wp_rewrite;
+				Meow_WR2X_Admin::generate_rewrite_rules( $wp_rewrite, true );
+			}
 		}
 		if ( class_exists( 'Jetpack' ) && Jetpack::is_module_active( 'photon' ) ) {
 			echo "<div class='error' style='margin-top: 20px;'><p>";
@@ -207,7 +209,7 @@ class Meow_WR2X_Admin extends MeowApps_Admin {
 				<div class="meow-box meow-col meow-span_2_of_2">
 					<h3>How to use</h3>
 					<div class="inside">
-						<?php echo _e( 'This plugin works out of the box, the default settings are the best for most installs. However, you should have a look at the <a target="_blank" href="https://meowapps.com/wp-retina-2x/tutorial/">tutorial</a>.', 'meow-gallery' ) ?>
+						<?php echo _e( 'This plugin works out of the box, the default settings are the best for most installs. However, you should have a look at the <a target="_blank" href="https://meowapps.com/wp-retina-2x/tutorial/">tutorial</a>.', 'wp-retina-2x' ) ?>
 					</div>
 				</div>
 			</div>

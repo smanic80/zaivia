@@ -14,21 +14,21 @@ class Meow_WR2X_Core {
     add_filter( 'retina_validate_src', array( $this, 'validate_src' ) );
     add_filter( 'wp_calculate_image_srcset', array( $this, 'calculate_image_srcset' ), 1000, 3 );
     add_action( 'init', array( $this, 'init' ) );
-		require( 'api.php' );
+		include( 'api.php' );
 
     if ( is_admin() ) {
-    	require( 'ajax.php' );
+    	include( 'ajax.php' );
       new Meow_WR2X_Ajax( $this );
     	if ( !get_option( "wr2x_hide_retina_dashboard" ) ) {
-        require( 'dashboard.php' );
+        include( 'dashboard.php' );
         new Meow_WR2X_Dashboard( $this );
       }
     	if ( !get_option( "wr2x_hide_retina_column" ) ) {
-        require( 'media-library.php' );
+        include( 'media-library.php' );
         new Meow_WR2X_MediaLibrary( $this );
 			}
       //if ( !get_option( "wr2x_hide_retina_column" ) )
-      //require( 'wr2x_retina_uploader.php' );
+      //include( 'wr2x_retina_uploader.php' );
     }
   }
 
@@ -101,7 +101,7 @@ class Meow_WR2X_Core {
   	if ( !isset( $buffer ) || trim( $buffer ) === '' )
   		return $buffer;
   	if ( !function_exists( "str_get_html" ) )
-  		require( 'inc/simple_html_dom.php' );
+  		include( 'inc/simple_html_dom.php' );
 
   	$lazysize = get_option( "wr2x_picturefill_lazysizes" ) && $this->admin->is_registered();
   	$killsrc = !get_option( "wr2x_picturefill_keep_src" );

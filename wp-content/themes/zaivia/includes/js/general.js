@@ -734,7 +734,12 @@
                     success: function (data) {
                         var type = $('.sub-filter li.current a').data('type');
                         var list = $('.ad-listing');
+                        var pagination = $('.pagination');
+                        var listing_ad = wp.template( "listing-ad" );
                         var listing_item;
+
+
+
                         if(type === 'grid'){
                             listing_item = wp.template( "grid-item" );
                             list.addClass('gallery');
@@ -742,14 +747,13 @@
                             listing_item = wp.template( "listing-item" );
                             list.removeClass('gallery');
                         }
-                        var listing_ad = wp.template( "listing-ad" );
-                        list.empty();
-                        var pagination = $('.pagination');
-                        pagination.empty();
 
-                        if(data.featured || data.items.length) {
+                        list.empty();
+                        pagination.empty();
+                        if(data.featured.listing_id || data.items.length) {
+
                             var index = 0;
-                            if (data.featured) {
+                            if (data.featured.listing_id) {
                                 list.append(listing_item(data.featured));
                                 index++;
                             }
@@ -943,6 +947,10 @@
 
             return false;
         });
+        if(window.location.hash) {
+            $('.tab-control a[href$="'+window.location.hash+'"]').trigger("click");
+        }
+
 
         // $(".trigger").click(function() {
         //   $(this).parent().toggleClass("active");
@@ -1154,64 +1162,62 @@
             });
         });
     });
+})(jQuery);
 
 
-    function processAjaxForm(requiredFields, $form, callback, additionalFiels) {
-        var data = {},
-            cur;
+function processAjaxForm(requiredFields, $form, callback, additionalFiels) {
+    var data = {},
+        cur;
 
-        $form.find(".error_placeholder").removeClass('error').hide();
+    $form.find(".error_placeholder").removeClass('error').hide();
 
-        for(var i in requiredFields) {
-            $cur = $("#"+requiredFields[i]);
+    for(var i in requiredFields) {
+        $cur = jQuery("#"+requiredFields[i]);
 
-            if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password" || $cur[0].tagName === "SELECT") {
-                $cur.removeClass("error");
-                if(!$cur.val()) {
-                    $cur.addClass("error");
-                }
-            } else if($cur[0].type === "checkbox") {
-                $cur.parent().removeClass("error");
-                if(!$cur.prop('checked')) {
-                    $cur.parent().addClass("error");
-                }
+        if($cur[0].type === "hidden" || $cur[0].type === "text" || $cur[0].type === "password" || $cur[0].tagName === "SELECT") {
+            $cur.removeClass("error");
+            if(!$cur.val()) {
+                $cur.addClass("error");
             }
-
-            data[requiredFields[i]] = $cur.val();
-        }
-
-        if($form.find(".error").length ){
-            return false;
-        }
-
-        if(additionalFiels) {
-            for(var i in additionalFiels) {
-                data[additionalFiels[i]] = $("#"+additionalFiels[i]).val();
+        } else if($cur[0].type === "checkbox") {
+            $cur.parent().removeClass("error");
+            if(!$cur.prop('checked')) {
+                $cur.parent().addClass("error");
             }
         }
 
-        data['action'] = $form.attr("id");
-
-        $.post({
-            url: amData.ajaxurl,
-            dataType: "json",
-            data: data,
-            success: function (data) {
-                if(typeof data['error'] === 'undefined') {
-                    if(callback) {
-                        callback(data);
-                    } else {
-                        location.reload();
-                    }
-                } else {
-                    $form.find(".error_placeholder").text(data['error']).addClass('error').show();
-                }
-            },
-            error: function(jqXHR, textStatus, errorThrown) {
-                $form.find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
-            }
-        });
+        data[requiredFields[i]] = $cur.val();
     }
 
+    if($form.find(".error").length ){
+        return false;
+    }
 
-})(jQuery);
+    if(additionalFiels) {
+        for(var i in additionalFiels) {
+            data[additionalFiels[i]] = $("#"+additionalFiels[i]).val();
+        }
+    }
+
+    data['action'] = $form.attr("id");
+
+    $.post({
+        url: amData.ajaxurl,
+        dataType: "json",
+        data: data,
+        success: function (data) {
+            if(typeof data['error'] === 'undefined') {
+                if(callback) {
+                    callback(data);
+                } else {
+                    location.reload();
+                }
+            } else {
+                $form.find(".error_placeholder").text(data['error']).addClass('error').show();
+            }
+        },
+        error: function(jqXHR, textStatus, errorThrown) {
+            $form.find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
+        }
+    });
+}

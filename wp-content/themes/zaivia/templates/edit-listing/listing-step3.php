@@ -4,8 +4,8 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
 ?>
 <div class="acc-item bb">
     <h3><?php _e('Property Images', 'am') ?></h3>
-    <p class="intro"><?php echo get_field("upload_title")?></p>
-    <p class="intro"><?php echo get_field("image_title")?></p>
+    <p class="intro"><?php the_field("upload_title")?></p>
+    <p class="intro"><?php the_field("image_title")?></p>
     <fieldset>
         <div id="prop_img_to_clone" class="clone_item"><div class="multibox file"><div class="loading"><img src="<?php echo get_theme_file_uri(); ?>/includes/js/orakuploader/images/loader.gif" alt="loader"/></div></div></div>
         <div class="upload-area" id="prop_imgDDArea">
@@ -24,7 +24,7 @@ $blueprint_files = $listingId ? ZaiviaListings::getListingFiles($listingId, Zaiv
 </div>
 <div class="acc-item bb">
     <h3><?php _e('Property Blueprints', 'am') ?></h3>
-    <p class="intro"><?php echo get_field("blueprint_title")?></p>
+    <p class="intro"><?php the_field("blueprint_title")?></p>
     <fieldset>
         <div id="prop_blue_to_clone" class="clone_item"><div class="multibox file"><div class="loading"><img src="<?php echo get_theme_file_uri(); ?>/includes/js/orakuploader/images/loader.gif" alt="loader"/></div></div></div>
         <div class="upload-area" id="prop_blueDDArea">

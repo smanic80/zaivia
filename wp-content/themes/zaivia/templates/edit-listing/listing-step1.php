@@ -3,7 +3,7 @@
     <?php if($storedListings) :?>
         <div class="acc-item bb">
             <h3><?php _e('Draft', 'am') ?></h3>
-            <p class="intro3"><?php echo get_field("select_draft")?></p>
+            <p class="intro3"><?php the_field("select_draft")?></p>
             <div class="row">
                 <div class="col-md-12 col-lg-5">
                     <select id="set-draft" title="">
@@ -144,7 +144,7 @@
 			</fieldset>
 		</div>
 		<div class="col-md-12 col-lg-7" id="map-wrap">
-			<p class="intro3"><?php echo get_field("map_click")?></p>
+			<p class="intro3"><?php the_field("map_click")?></p>
 			<div class="map-h">
 				<input type="hidden" name="lat" id="lat" value="<?php echo $listing?$listing['lat']:''; ?>" class="tosave">
 				<input type="hidden" name="lng" id="lng" value="<?php echo $listing?$listing['lng']:''; ?>" class="tosave">

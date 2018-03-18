@@ -12,16 +12,126 @@
 		}
 	}
 
-
-
-
 	add_filter('show_admin_bar', '__return_false');
 
 	add_action( 'after_setup_theme', function() {
 		add_image_size( 'listing-big', 801, 534 );
 		add_image_size( 'listing-card', 321, 214 );
 		add_image_size( 'listing-th', 118, 92 );
+		add_image_size( 'banner', 728, 90, true );
 	});
+
+
+
+    add_action( 'init', function() {
+        $args = [
+            'labels'             => [
+	            'name'               => __('Contact Cards', 'am'),
+	            'singular_name'      => __('Contact Card', 'am'),
+	            'menu_name'          => __('Contact Cards', 'am'),
+	            'name_admin_bar'     => __('Contact Card', 'am'),
+	            'add_new'            => __('Add New Contact Card', 'am'),
+	            'add_new_item'       => __('Add New Contact Card', 'am' ),
+	            'new_item'           => __( 'New Contact Card', 'am' ),
+	            'edit_item'          => __( 'Edit Contact Card', 'am' ),
+	            'view_item'          => __( 'View Contact Card', 'am' ),
+	            'all_items'          => __( 'All Contact Cards', 'am' ),
+	            'search_items'       => __( 'Search Contact Cards', 'am' ),
+	            'parent_item_colon'  => __( 'Parent Contact Cards:', 'am' ),
+	            'not_found'          => __( 'No Contact Cards found.', 'am' ),
+	            'not_found_in_trash' => __( 'No Contact Cards found in Trash.', 'am' )
+            ],
+            'description'        => __( 'Description.', 'am' ),
+            'public'             => true,
+            'publicly_queryable' => true,
+            'show_ui'            => true,
+            'show_in_menu'       => true,
+            'query_var'          => true,
+            'rewrite'            => ['slug' => 'contact-card'],
+            'capability_type'    => 'post',
+            'has_archive'        => true,
+            'hierarchical'       => false,
+            'menu_position'      => 5,
+            'supports'           => ['title', 'editor', 'author', 'thumbnail']
+        ];
+        register_post_type( ZaiviaBusiness::$posttype_card, $args );
+
+	    $args = [
+		    'labels'             => [
+			    'name'               => __('Banners', 'am'),
+			    'singular_name'      => __('Banner', 'am'),
+			    'menu_name'          => __('Banners', 'am'),
+			    'name_admin_bar'     => __('Banner', 'am'),
+			    'add_new'            => __('Add New Banner', 'am'),
+			    'add_new_item'       => __('Add New Banner', 'am' ),
+			    'new_item'           => __( 'New Banner', 'am' ),
+			    'edit_item'          => __( 'Edit Banner', 'am' ),
+			    'view_item'          => __( 'View Banner', 'am' ),
+			    'all_items'          => __( 'All Banners', 'am' ),
+			    'search_items'       => __( 'Search Banners', 'am' ),
+			    'parent_item_colon'  => __( 'Parent Banners:', 'am' ),
+			    'not_found'          => __( 'No Banners found.', 'am' ),
+			    'not_found_in_trash' => __( 'No Banners found in Trash.', 'am' )
+		    ],
+		    'description'        => __( 'Description.', 'am' ),
+		    'public'             => true,
+		    'publicly_queryable' => true,
+		    'show_ui'            => true,
+		    'show_in_menu'       => true,
+		    'query_var'          => true,
+		    'rewrite'            => ['slug' => 'banner'],
+		    'capability_type'    => 'post',
+		    'has_archive'        => true,
+		    'hierarchical'       => false,
+		    'menu_position'      => 5,
+		    'supports'           => ['title', 'author', 'thumbnail']
+	    ];
+	    register_post_type( ZaiviaBusiness::$posttype_banner, $args );
+
+	    $tx_args = array(
+		    'hierarchical' => false,
+		    'labels' => [
+			    'name' => __('Industry', 'am'),
+			    'singular_name' => __('Industry', 'am'),
+			    'search_items' => __('Search Industry', 'am'),
+			    'all_items' => __('All Industries', 'am'),
+			    'edit_item' => __('Edit Industry', 'am'),
+			    'update_item' => __('Update Industry', 'am'),
+			    'add_new_item' => __('Add New Industry', 'am'),
+			    'new_item_name' => __('New Industry Name', 'am'),
+			    'menu_name' => __('Industry', 'am'),
+		    ],
+		    'show_ui' => true,
+		    'show_admin_column' => true,
+		    'query_var' => true,
+		    'rewrite' => array('slug' => 'industry-category'),
+	    );
+	    register_taxonomy('industry-category', ['contact-card'], $tx_args);
+
+	    $tx_args = array(
+		    'hierarchical' => false,
+		    'labels' => [
+			    'name' => __('Section', 'am'),
+			    'singular_name' => __('Section', 'am'),
+			    'search_items' => __('Search Section', 'am'),
+			    'all_items' => __('All Sections', 'am'),
+			    'edit_item' => __('Edit Section', 'am'),
+			    'update_item' => __('Update Section', 'am'),
+			    'add_new_item' => __('Add New Section', 'am'),
+			    'new_item_name' => __('New Section Name', 'am'),
+			    'menu_name' => __('Section', 'am'),
+		    ],
+		    'show_ui' => true,
+		    'show_admin_column' => true,
+		    'query_var' => true,
+		    'rewrite' => array('slug' => 'section-category'),
+	    );
+	    register_taxonomy('section-category', ['banner'], $tx_args);
+    });
+
+
+
+
 
 	add_action( 'wp_ajax_uploadImageFile', 'uploadImageFile' );
 	add_action( 'wp_ajax_nopriv_uploadImageFile', 'uploadImageFile' );
@@ -151,8 +261,6 @@
 		echo json_encode($res);
 		die;
 	}
-
-
 
 
 
@@ -515,7 +623,7 @@
 	add_action( 'wp_ajax_getListings', 'getListings' );
 	add_action( 'wp_ajax_nopriv_getListings', 'getListings' );
 	function getListings() {
-	    echo json_encode(ZaiviaListings::search($_REQUEST));
+	    echo json_encode(ZaiviaListings::searchListings($_REQUEST));
 	    die;
 	}
 
@@ -550,6 +658,34 @@
 	}
 
 
+    add_action( 'wp_ajax_uploadBannerFile', 'uploadBannerFile' );
+    add_action( 'wp_ajax_nopriv_uploadBannerFile', 'uploadBannerFile' );
+    function uploadBannerFile() {
+        $list = [];
+        $user_id = get_current_user_id();
+
+        if($_FILES && $user_id) {
+            $list = ZaiviaBusiness::addBusinessFile($user_id);
+        }
+
+        echo json_encode($list);
+        die;
+    }
+
+    add_action( 'wp_ajax_add_banner_form', 'add_banner_formProcess' );
+    add_action( 'wp_ajax_nopriv_add_banner_form', 'add_banner_formProcess' );
+    function add_banner_formProcess() {
+	    $nonce = $_POST['edit_user_nonce'];
+	    if ( ! wp_verify_nonce( $nonce, 'zai_add_banner' ) ) {
+		    echo json_encode(['error'=>'Security checked!']);
+		    die;
+	    }
+
+	    $res = ZaiviaBusiness::addBanner($_POST);
+
+	    echo json_encode($res);
+	    die;
+    }
 
 	function am_getCurrentUserCCs(){
 		$res = get_user_meta(get_current_user_id(), "ccs", true);

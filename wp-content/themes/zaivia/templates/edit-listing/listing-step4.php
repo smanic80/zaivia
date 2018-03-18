@@ -2,7 +2,7 @@
 
 <div class="acc-item bb">
     <h3><?php _e('Contact Information', 'am') ?></h3>
-    <p class="intro"><?php echo get_field("who_can_be_contacted")?></p>
+    <p class="intro"><?php the_field("who_can_be_contacted")?></p>
     <div class="row">
         <div class="col-lg-8">
             <fieldset class="saleby_0">
@@ -180,7 +180,7 @@
             </fieldset>
 
             <div class="mb-30">
-                <p class="intro"><?php echo get_field("contact_note")?></p>
+                <p class="intro"><?php the_field("contact_note")?></p>
             </div>
         </div>
     </div>
