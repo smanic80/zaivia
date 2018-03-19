@@ -851,3 +851,31 @@
         }
         die;
     }
+
+    add_action( 'wp_ajax_getPayment', 'getPayment' );
+    add_action( 'wp_ajax_nopriv_getPayment', 'getPayment' );
+    function getPayment() {
+        if($_POST['type'] == 'listing'){
+            $listing = ZaiviaListings::getListing(intval($_REQUEST['id']));
+            $items = array();
+            $sum = 0;
+            if($listing['featured']){
+                $items[] = array('label' => __('Featured Listing', 'am'), 'price' => '$10.00');
+                $sum += 10;
+            }
+            if($listing['premium']) {
+                $items[] = array('label' => __('Premium Listing', 'am'), 'price' => '$5.00');
+                $sum += 5;
+            }
+            if($listing['url']) {
+                $items[] = array('label' => __('Website URL', 'am'), 'price' => '$3.00');
+                $sum += 3;
+            }
+            if($listing['bump_up']) {
+                $items[] = array('label' => __('Bump Up', 'am'), 'price' => '$5.00');
+                $sum += 5;
+            }
+            echo json_encode(array('total'=>$sum, 'subtotal'=>$sum, 'discounts'=>0, 'items'=>$items));
+        }
+        die;
+    }

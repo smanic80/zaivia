@@ -124,12 +124,11 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                 $("#post-listing-form #url").val('').attr("disabled", "disabled");
             }
         });
-        $("#saved_card").change(function(){
+        $(document).on('change', '#saved_card', function(){
             if($(this).val()) {
-                $("#cardholder_name,#card_number,#card_cvv").val('').attr("disabled", "disabled");
-                $("#card_type,#exp_month,#exp_year").attr("disabled", "disabled");
+                $("#card_info").hide();
             } else {
-                $("#cardholder_name,#card_number,#card_cvv,#card_type,#exp_month,#exp_year").removeAttr("disabled");
+                $("#card_info").show();
             }
         }).trigger('change');
 
@@ -555,34 +554,20 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
 
     });
 
-
+    function initPaymentForm(type,id) {
+        var payment_form = wp.template( "payment" );
+        $.post(amData.ajaxurl, {
+            'action':'getPayment',
+            'type':type,
+            'id':id
+        }, function(ret){
+            $('#payment').empty().append(payment_form(ret));
+        }, 'json');
+    }
 
     function gotoStep(stepN, isDone){
         if(stepN === '6'){
-            if(listingData['premium'] || listingData['featured'] || listingData['url'] || listingData['bump_up']){
-                var sum = 0;
-                $('#summary_1,#summary_2,#summary_3,#summary_4').hide();
-                if(listingData['premium']){
-                    sum += parseFloat($('#summary_1').show().find('th:last-child').text().replace('$',''));
-                }
-                if(listingData['featured']){
-                    sum += parseFloat($('#summary_2').show().find('th:last-child').text().replace('$',''));
-                }
-                if(listingData['url']){
-                    sum += parseFloat($('#summary_3').show().find('th:last-child').text().replace('$',''));
-                }
-                if(listingData['bump_up']){
-                    sum += parseFloat($('#summary_4').show().find('th:last-child').text().replace('$',''));
-                }
-
-                $('#sub_total').text(moneyFormat.format(sum));
-                $('#total').text(moneyFormat.format(sum));
-                $('#payment_1').hide();
-                $('#payment_2').show();
-            } else {
-                $('#payment_1').show();
-                $('#payment_2').hide();
-            }
+            initPaymentForm('listing',listingData.listing_id);
         }
         $("#post-listing-form  .listing-steps").hide();
         $("#step"+stepN).show();
