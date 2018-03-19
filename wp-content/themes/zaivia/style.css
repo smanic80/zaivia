@@ -9453,6 +9453,10 @@ div.entry form p label + br {
   color: #d93c3c !important;
   border-color: #d93c3c !important;
 }
+.g-recaptcha .error {
+  border-width: 1px;
+  border-style: solid;
+}
 
 .tabbed-content {
   display: none;

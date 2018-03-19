@@ -55,7 +55,7 @@ get_header(); ?>
                 <div class="btns-start">
 		            <?php if($listing) :?>
                         <a href="#" class="btn btn-secondary btn-sm save-draft"><?php _e('Save', 'am') ?></a>
-                        <a href="#" class="btn btn-secondary btn-sm"><?php _e('Preview', 'am') ?></a>
+                        <a href="<?php echo esc_url( home_url( '/listing/?id=' . $listingId ) ); ?>" target="_blank" class="btn btn-secondary btn-sm"><?php _e('Preview', 'am') ?></a>
 		            <?php else:?>
                         <a href="#" class="btn btn-secondary btn-sm save-draft"><?php _e('Save Draft', 'am') ?></a>
 		            <?php endif; ?>

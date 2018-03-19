@@ -7,13 +7,16 @@
  */
 
 class listing_base {
+	public static $posttype_card = "contact-card";
+	public static $posttype_banner = "banner";
+
 	public static $listing_tablename    = "listings";
 	public static $features_tablename   = "listing_features";
 	public static $files_tablename      = "listing_file";   /* type 1-image, 2-blueprint, 3-rent, 4-profile    */
 	public static $openhouse_tablename  = "listing_openhouse";
 	public static $rent_tablename       = "listing_rent";
 	public static $contact_tablename    = "listing_contact";
-	public static $geo_tablename        = "listings_geo";
+	public static $geo_tablename        = "listing_geo";
 
 
 	public static $provinces = [
@@ -68,8 +71,11 @@ class listing_base {
 		return "$" . number_format((float)$var, 2);
 	}
 
-	protected static function getGeoRadiusSql($centerLat, $centerLng, $radius){
-		return '( ( 6971 * acos( cos( radians(' . $centerLat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $centerLng . ') ) + sin( radians(' . $centerLat . ') ) * sin(radians(lat)) ) ) < ' . intval($radius) . ')';
+	protected static function getGeoRadiusSql($centerLat, $centerLng, $radius=0){
+		$sql = '( ( 6971 * acos( cos( radians(' . $centerLat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $centerLng . ') ) + sin( radians(' . $centerLat . ') ) * sin(radians(lat)) ) )';
+		if($radius)  $sql .= ' < ' . intval($radius);
+		$sql .= ')';
+		return $sql;
 	}
 
 	protected static function getCityCoords($city, $rad=10){
@@ -83,6 +89,24 @@ class listing_base {
 		}
 
 		return false;
+	}
+
+	public function maintenance(){
+		//unpublish expired banners
+		$args = [
+			'post_type' => self::$posttype_banner,
+			'post_status' => 'publish',
+			'nopaging' => true,
+		];
+		$items = get_posts($args);
+		foreach($items as $item) {
+
+		}
+
+
+		//unpromote expired card and listing items
+
+		//send email with serach results
 	}
 
 }

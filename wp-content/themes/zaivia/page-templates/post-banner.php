@@ -55,7 +55,7 @@ get_header(); ?>
 					<div class="styled-form">
 						<form action="#" id="add_banner_form" enctype="multipart/form-data">
 							<span class="saved-confirmation"><?php _e('Banner added', 'am') ?></span>
-							<div class="error_placeholder"></div>
+
 
 							<?php wp_nonce_field('zai_add_banner','add_banner_nonce', true, true ); ?>
 
@@ -74,6 +74,8 @@ get_header(); ?>
 							</div>
 
 							<hr class="mb-30">
+
+                            <div class="error_placeholder"></div>
 
 							<div class="acc-item mb-15">
 								<h3><?php _e('Ad Options', 'am') ?></h3>
@@ -127,8 +129,8 @@ get_header(); ?>
 
 							<div class="acc-item mb-30">
 								<h3><?php _e('Duration', 'am') ?></h3>
-								<p class="intro"><?php _e('Post My Advertismant For*', 'am') ?></p>
-                                <input type="hidden" name="duration_checked" id="duration_checked" value="">
+								<p class="intro duration_checked_error"><?php _e('Post My Advertismant For*', 'am') ?></p>
+                                <input type="hidden" name="duration_checked" id="duration_checked" value="" rel="duration_checked_error">
 								<?php $durations = get_field("banner_duration", "option")?>
 								<?php if($durations) :?>
 								<fieldset class="checkbox checked-one_holder">
@@ -137,7 +139,7 @@ get_header(); ?>
 				                      <span class="wpcf7-form-control-wrap">
 				                        <span class="wpcf7-form-control wpcf7-checkbox">
 				                          <span class="wpcf7-list-item">
-				                            <label><input type="checkbox" class="checked-one" rel="duration" name="duration[]" id="duration-<?php echo $duration['months']?>" value="<?php echo $duration['months']?>">&nbsp;<span class="wpcf7-list-item-label"><?php echo $duration['label']?></span></label>
+				                            <label><input type="checkbox" class="checked-one" rel="duration_checked" name="duration[]" id="duration-<?php echo $duration['months']?>" value="<?php echo $duration['months']?>">&nbsp;<span class="wpcf7-list-item-label"><?php echo $duration['label']?></span></label>
 				                          </span>
 				                        </span>
 				                      </span>

@@ -87,6 +87,7 @@ get_header(); ?>
                                         <td><?php echo ZaiviaBusiness::formatDate($listing['date_created']); ?></td>
                                         <td><?php echo $listing['date_published'] ? ZaiviaBusiness::formatDate($listing['date_renewal']) : ''; ?></td>
                                         <td class="text-right">
+                                            <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
                                             <a href="#delete" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $banner['listing_id']?>"><?php _e('Delete', 'am') ?></a>
                                         </td>
                                     </tr>
@@ -126,8 +127,9 @@ get_header(); ?>
                                                 <td><?php echo ZaiviaBusiness::formatDate($listing['date_created']); ?></td>
                                                 <td><?php echo $listing['date_published'] ? ZaiviaBusiness::formatDate($listing['date_renewal']) : ''; ?></td>
                                                 <td><?php echo $banner['status']?></td>
-                                                <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                                    <a href="#delete<?php echo $listing['sale_rent'] == ZaiviaListings::$for_rent ? '2' : '' ?>" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $listing['listing_id']?>"><?php _e('Delete', 'am') ?></a>
+                                                <td>
+                                                    <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
+                                                    <a href="#delete" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $listing['listing_id']?>"><?php _e('Delete', 'am') ?></a>
                                                     <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step5" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
                                                     <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step6" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
                                                 </td>
