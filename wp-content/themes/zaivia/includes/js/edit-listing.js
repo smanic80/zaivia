@@ -639,7 +639,15 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                 'listing-data': JSON.stringify(listingData)
             };
         $.post(amData.ajaxurl, data, function(ret){
-            if(data) {
+            if(ret.length) {
+                $('.error').removeClass('error');
+                for(var i in ret) if(ret.hasOwnProperty(i)){
+                   $('#'+ret[i]).addClass('error');
+                }
+                if(ret.indexOf('payment_error')>=0){
+                    alert('payment failed')
+                }
+            } else {
                 gotoStep(7, true);
                 $(".steps-all, .btns-start").hide();
             }

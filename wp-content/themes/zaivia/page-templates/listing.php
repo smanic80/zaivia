@@ -22,7 +22,15 @@ if($listing): ?>
                 <h1><?php echo $listing['unit_number'].' '.$listing['address']; ?></h1>
                 <p><?php echo $listing['city'].', '.$listing['province']; ?></p>
             </div>
-            <div class="price"><?php echo $listing['price']; ?><div class="time"><?php echo $listing['price_per_month'] ?></div></div>
+            <div class="price"><?php echo $listing['price']; ?><div class="time">
+                <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent){
+                    echo $listing['price_per_month'];
+                } else {
+                    _e('Est. Mortage','am');
+                    echo ': <span class="calc_payment">-</span>/mth';
+                } ?>
+                </div>
+            </div>
         </div>
     </div>
     <div class="back-line">
@@ -56,6 +64,9 @@ if($listing): ?>
                                 <li class="current"><a href="#details"><?php _e('DETAILS','am') ?></a></li>
                                 <li><a href="#map-t"><?php _e('MAP','am') ?></a></li>
                                 <li><a href="#floor"><?php _e('FLOORPLAN','am') ?></a></li>
+                                <?php if($listing['sale_rent'] == ZaiviaListings::$for_sale): ?>
+                                <li><a href="#mort"><?php _e('MORTGAGE','am') ?></a></li>
+                                <?php endif; ?>
                                 <li><a href="#market"><?php _e('MARKET INFO','am') ?></a></li>
                             </ul>
                         </div>
@@ -366,6 +377,146 @@ if($listing): ?>
                                 </div>
                             </div>
                         </div>
+                        <?php if($listing['sale_rent'] == ZaiviaListings::$for_sale): ?>
+                        <div class="tab-c" id="mort">
+                            <div class="post-mort post-detail">
+                                <div class="entry">
+                                    <h3><?php _e('Mortgage Payment Calculator','am') ?></h3>
+                                </div>
+                                <div class="row gutters-50">
+                                    <div class="col-sm-75">
+                                        <p><?php _e('Quickly estimate your mortgage payments with our handy calculator.','am') ?></p>
+                                        <div class="styled-form">
+                                            <form action="#">
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-sm-6 col-xl-5">
+                                                            <label><?php _e('Property Price','am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xl-7">
+                                                            <input type="text" id="calc_price" title="" value="<?php echo str_replace(array('$',','),'', $listing['price']); ?>">
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-sm-6 col-xl-5">
+                                                            <label><?php _e('Deposit','am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xl-7">
+                                                            <input type="text" id="calc_deposit" title="">
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-sm-6 col-xl-5">
+                                                            <label><?php _e('Annual interest','am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xl-7">
+                                                            <input type="text" id="calc_annual" title="">
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset>
+                                                    <div class="row">
+                                                        <div class="col-sm-6 col-xl-5">
+                                                            <label><?php _e('Repayment Period','am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xl-7">
+                                                            <input type="text" id="calc_period" title="">
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                                <fieldset class="total">
+                                                    <div class="row">
+                                                        <div class="col-sm-6 col-xl-5">
+                                                            <label><?php _e('Monthly Payment','am') ?></label>
+                                                        </div>
+                                                        <div class="col-sm-6 col-xl-7 text-right">
+                                                            <strong class="calc_payment">-</strong>
+                                                        </div>
+                                                    </div>
+                                                </fieldset>
+                                            </form>
+                                            <p class="note"><?php _e('These results are only intended as a guide. Make sure you obtain accurate figures from a mortgage broker or lender before committing to any mortgage.','am') ?></p>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-45">
+                                        <div class="pl">
+                                            <p><?php _e('Mortgage Calculator sponsored by the following Featured Community Partner','am') ?></p>
+                                        </div>
+
+                                        <div class="agent-item">
+                                            <div class="image">
+                                                <a href="#"><img src="images/p1.jpg" alt=""></a>
+                                            </div>
+                                            <div class="text">
+                                                <div class="center">
+                                                    <h4><a href="#">John Smith</a></h4>
+                                                    <div class="role">
+                                                        Web Designer
+                                                    </div>
+                                                    <div class="by">
+                                                        <h6>Business</h6>
+                                                        <p>YasTech Developments</p>
+                                                        <a href="#"><img src="images/a1.png" alt=""></a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="bottom">
+                                                <ul>
+                                                    <li>
+                                                        <a href="tel:3061234567">
+                                                            <i class="fa fa-phone" aria-hidden="true"></i>
+                                                            <span class="tooltip">
+                                                                <i class="fa fa-phone" aria-hidden="true"></i>
+                                                                <strong>Phone</strong><br>Office: 306-123-4567
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="mailto:">
+                                                            <i class="fa fa-envelope" aria-hidden="true"></i>
+                                                            <span class="tooltip">
+                                                                <i class="fa fa-envelope" aria-hidden="true"></i>
+                                                                <strong>Mail</strong><br>email.com
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#">
+                                                            <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                                            <span class="tooltip">
+                                                                <i class="fa fa-map-marker" aria-hidden="true"></i>
+                                                                <strong>Address</strong><br>Street
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#">
+                                                            <i class="fa fa-chain" aria-hidden="true"></i>
+                                                            <span class="tooltip">
+                                                                <i class="fa fa-chain" aria-hidden="true"></i>
+                                                                <strong>Link</strong><br>www.com
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                                <div class="profile">
+                                                    <a href="#">View Profile</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="widget widget-promo">
+                                            <h3>WOULD YOU LIKE TO BE A <br>FEATURED COMMUNITY <br>PARTNER</h3>
+                                            <a href="#report" class="open-modal btn btn-secondary">Sign Up Today!</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <?php endif; ?>
                         <div class="tab-c" id="floor">
                             <div class="post-floor post-detail">
                                 <div class="slides">
