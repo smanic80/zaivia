@@ -630,7 +630,7 @@
 	add_action( 'wp_ajax_getListingItem', 'getListingItem' );
 	add_action( 'wp_ajax_nopriv_getListingItem', 'getListingItem' );
 	function getListingItem() {
-	    echo json_encode(ZaiviaListings::getListing($_REQUEST['listing_id']));
+	    echo json_encode(ZaiviaListings::getListings($_REQUEST['listing_id']));
 	    die;
 	}
 
@@ -701,6 +701,51 @@
 		die;
 	}
 
+    add_action( 'wp_ajax_reportListing', 'reportListing' );
+    add_action( 'wp_ajax_nopriv_reportListing', 'reportListing' );
+    function reportListing() {
+        $post_data = http_build_query([
+            'secret' => RECAPTCHA,
+            'response' => $_POST['g-recaptcha-response'],
+            'remoteip' => $_SERVER['REMOTE_ADDR']
+        ]);
+        $opts = ['http' =>[
+            'method'  => 'POST',
+            'header'  => 'Content-type: application/x-www-form-urlencoded',
+            'content' => $post_data
+        ] ];
+
+        $context  = stream_context_create($opts);
+        $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
+        $result = json_decode($response);
+
+        if ($result->success) {
+            $message = __('From:', 'am').' '. $_REQUEST["report_full_name"];
+            $message .= '<br>'. __('Email:', 'am') .' '. $_REQUEST["report_email"];
+            if($_REQUEST["report_phone"]){
+                $message .= '<br>'. __('Phone:', 'am') .' '. $_REQUEST["report_phone"];
+            }
+            $message .= '<br>'.__('Reason:', 'am').' ' . $_REQUEST["report_reason"];
+            $message .= '<br>'.__('Message:', 'am').' ' . $_REQUEST["report_text"];
+
+            add_filter('wp_mail_content_type', 'am_html_email');
+            wp_mail(get_field("report_email", "option"), 'Report Listing', $message);
+
+            if($_REQUEST["report_send_copy"]){
+                $user_info = get_userdata(get_current_user_id());
+                if($user_info) {
+                    wp_mail($user_info->user_email, 'Report Listing', $message);
+                }
+            }
+            remove_filter('wp_mail_content_type', 'am_html_email');
+            echo json_encode(['ok' => true]);
+        } else {
+            echo json_encode(['error' => 'Captcha fail']);
+        }
+        die;
+    }
+
+
 
     add_action( 'wp_ajax_uploadBannerFile', 'uploadBannerFile' );
     add_action( 'wp_ajax_nopriv_uploadBannerFile', 'uploadBannerFile' );
@@ -729,6 +774,89 @@
 
 	    echo json_encode($res);
 	    die;
+    }
+
+
+
+
+
+    add_action( 'wp_ajax_getPayment', 'getPayment' );
+    add_action( 'wp_ajax_nopriv_getPayment', 'getPayment' );
+    function getPayment() {
+        $items = [];
+        $sum = 0;
+        $discounts = 0;
+
+        $userId = get_current_user_id();
+
+        if($_POST['type'] === 'listing'){
+            $listing = ZaiviaListings::getListings(intval($_REQUEST['id']), $userId);
+
+            if($listing) {
+                $featured_price = (int) get_field( "featured_price", "option" );
+                $premium_price  = (int) get_field( "premium_price", "option" );
+                $url_price      = (int) get_field( "url_price", "option" );
+                $bump_price     = (int) get_field( "bump_price", "option" );
+
+                if ( $listing['featured'] ) {
+                    $items[] = [
+                        'label' => __( 'Featured Listing', 'am' ),
+                        'price' => ZaiviaListings::formatMoney( $featured_price )
+                    ];
+                    $sum     += $featured_price;
+                }
+                if ( $listing['premium'] ) {
+                    $items[] = [
+                        'label' => __( 'Premium Listing', 'am' ),
+                        'price' => ZaiviaListings::formatMoney( $premium_price )
+                    ];
+                    $sum     += $premium_price;
+                }
+                if ( $listing['url'] ) {
+                    $items[] = [
+                        'label' => __( 'Website URL', 'am' ),
+                        'price' => ZaiviaListings::formatMoney( $url_price )
+                    ];
+                    $sum     += $url_price;
+                }
+                if ( $listing['bump_up'] ) {
+                    $items[] = [
+                        'label' => __( 'Bump Up', 'am' ),
+                        'price' => ZaiviaListings::formatMoney( $bump_price )
+                    ];
+                    $sum     += $bump_price;
+                }
+            } else {
+                $items[] = [
+                    'label' => __( "That's not yours", 'am' ),
+                    'price' => ''
+                ];
+            }
+        }
+
+        if($_POST['type'] === 'banner'){
+            $entityId = intval($_REQUEST['id']);
+
+            $banner = ZaiviaBusiness::getEntities('banner', $entityId, $userId);
+            if($banner) {
+                $price = (int) get_field( "banner_price", "option" );
+                $duration = get_post_meta( $entityId, "duration" );
+
+                $items[] = [
+                    'label' => __( 'Banner Ad:', 'am' ) . ' ' . $duration . __( 'month(s):', 'am' ),
+                    'price' => ZaiviaListings::formatMoney( $price )
+                ];
+                $sum += $price;
+            } else {
+                $items[] = [
+                    'label' => __( "That's not yours", 'am' ),
+                    'price' => ''
+                ];
+            }
+        }
+
+        echo json_encode(['total'=>($sum-$discounts), 'subtotal'=>$sum, 'discounts'=>$discounts, 'items'=>$items]);
+        die;
     }
 
 	function am_getCurrentUserCCs(){
@@ -760,17 +888,18 @@
 		}
 	}
     function validatecard($cardnumber) {
-        $cardnumber=preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
-        $cardlength=strlen($cardnumber);
-        $parity=$cardlength % 2;
-        $sum=0;
-        for ($i=0; $i<$cardlength; $i++) {
-            $digit=$cardnumber[$i];
-            if ($i%2==$parity) $digit=$digit*2;
-            if ($digit>9) $digit=$digit-9;
-            $sum=$sum+$digit;
+        $cardnumber = preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
+        $cardlength = strlen($cardnumber);
+        $parity = $cardlength % 2;
+        $sum = 0;
+        for ($i = 0; $i < $cardlength; $i++) {
+            $digit = $cardnumber[$i];
+            if ($i%2 == $parity) $digit = $digit * 2;
+            if ($digit > 9) $digit = $digit - 9;
+            $sum = $sum + $digit;
         }
-        $valid=($sum%10==0);
+        $valid = ($sum % 10 == 0);
+
         return $valid;
     }
 
@@ -785,8 +914,7 @@
 		return null;
 	}
 
-	function am_renderOtherControl($listing, $key, $additionalClass="")
-    {
+	function am_renderOtherControl($listing, $key, $additionalClass="") {
         $items = get_field($key, 'option');
         if($items){
             $itemsNames = array_map(function ($i) { return $i['name']; }, $items);
@@ -807,75 +935,4 @@
         }
 	}
 
-    add_action( 'wp_ajax_reportListing', 'reportListing' );
-    add_action( 'wp_ajax_nopriv_reportListing', 'reportListing' );
-    function reportListing() {
-        $post_data = http_build_query(
-            array(
-                'secret' => RECAPTCHA,
-                'response' => $_POST['g-recaptcha-response'],
-                'remoteip' => $_SERVER['REMOTE_ADDR']
-            )
-        );
-        $opts = array('http' =>
-            array(
-                'method'  => 'POST',
-                'header'  => 'Content-type: application/x-www-form-urlencoded',
-                'content' => $post_data
-            )
-        );
-        $context  = stream_context_create($opts);
-        $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
-        $result = json_decode($response);
-        if ($result->success) {
-            $message = __('From:', 'am').' '. $_REQUEST["report_full_name"];
-            $message .= '<br>'. __('Email:', 'am') .' '. $_REQUEST["report_email"];
-            if($_REQUEST["report_phone"]){
-                $message .= '<br>'. __('Phone:', 'am') .' '. $_REQUEST["report_phone"];
-            }
-            $message .= '<br>'.__('Reason:', 'am').' ' . $_REQUEST["report_reason"];
-            $message .= '<br>'.__('Message:', 'am').' ' . $_REQUEST["report_text"];
 
-            add_filter('wp_mail_content_type', 'am_html_email');
-            wp_mail('zaivia@mailinator.com', 'Report Listing', $message);
-            if($_REQUEST["report_send_copy"]){
-                $user_info = get_userdata(get_current_user_id());
-                if($user_info) {
-                    wp_mail($user_info->user_email, 'Report Listing', $message);
-                }
-            }
-            remove_filter('wp_mail_content_type', 'am_html_email');
-            echo json_encode(array('ok' => true));
-        } else {
-            echo json_encode(array('error' => 'Captcha fail'));
-        }
-        die;
-    }
-
-    add_action( 'wp_ajax_getPayment', 'getPayment' );
-    add_action( 'wp_ajax_nopriv_getPayment', 'getPayment' );
-    function getPayment() {
-        if($_POST['type'] == 'listing'){
-            $listing = ZaiviaListings::getListing(intval($_REQUEST['id']));
-            $items = array();
-            $sum = 0;
-            if($listing['featured']){
-                $items[] = array('label' => __('Featured Listing', 'am'), 'price' => '$10.00');
-                $sum += 10;
-            }
-            if($listing['premium']) {
-                $items[] = array('label' => __('Premium Listing', 'am'), 'price' => '$5.00');
-                $sum += 5;
-            }
-            if($listing['url']) {
-                $items[] = array('label' => __('Website URL', 'am'), 'price' => '$3.00');
-                $sum += 3;
-            }
-            if($listing['bump_up']) {
-                $items[] = array('label' => __('Bump Up', 'am'), 'price' => '$5.00');
-                $sum += 5;
-            }
-            echo json_encode(array('total'=>$sum, 'subtotal'=>$sum, 'discounts'=>0, 'items'=>$items));
-        }
-        die;
-    }

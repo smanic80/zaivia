@@ -5,7 +5,7 @@ Template Post Type: page
 */
 
 $listing_id = isset($_GET['id'])?$_GET['id']:0;
-$listing = ZaiviaListings::getListing($listing_id, false);
+$listing = ZaiviaListings::getListings($listing_id, null, false);
 
 if($listing) {
     ZaiviaListings::updateLastViewed($listing_id);

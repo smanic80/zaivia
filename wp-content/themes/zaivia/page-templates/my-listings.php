@@ -57,7 +57,7 @@ get_header(); ?>
             </div>
             <div class="acc-item bb">
                 <h3><?php the_field("table_title")?></h3>
-                <?php $listings = ZaiviaListings::getUserListings(get_current_user_id());?>
+                <?php $listings = ZaiviaListings::getListings(null, get_current_user_id());?>
 
                 <?php if($listings) :?>
                 <div class="table mb-15 responsive full">

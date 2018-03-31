@@ -5,11 +5,10 @@ class ZaiviaBusiness extends listing_base{
 	public static $type_card = 1;
 
 
-
 	public static $banner_radius = 10;
 
 
-	public static function getUserEntities($userId, $entity, $entityId = null, $status='any'){
+	public static function getEntities($entity, $entityId = null, $userId = null, $status='any'){
 		$args = [
 			'author' => (int)$userId,
 			'post_type' => $entity,
@@ -19,22 +18,39 @@ class ZaiviaBusiness extends listing_base{
 		if($entityId) {
 			$args['p'] = [(int)$entityId];
 		}
-		$res = [];
 		$items = get_posts($args);
+
+		$results = [];
 		foreach($items as $item) {
-			$res[] = [
+			$tmp = [
 				'id' => $item->ID,
-				'banner_title' => $item->post_title,
+				'title' => $item->post_title,
 				'date_created' => $item->post_date,
-				'date_renewal' => get_post_meta($item->ID,"date_renewal"),
-				'url' => get_post_meta($item->ID,"url"),
-				'section' => get_post_meta($item->ID,"section"),
-				'community' => get_post_meta($item->ID,"community"),
-				'duration' => get_post_meta($item->ID,"duration"),
-				'geo' => get_post_meta($item->ID,"geo"),
+				'date_renewal' => get_post_meta($item->ID,"date_renewal", true),
 			];
+
+			if($entity === self::$posttype_banner) {
+				$imageId = get_post_thumbnail_id($item->ID);
+
+				$tmp['url'] = get_post_meta($item->ID,"url", true);
+				$tmp['section'] = get_post_meta($item->ID,"section", true);
+				$tmp['community'] = get_post_meta($item->ID,"community", true);
+				$tmp['duration'] = get_post_meta($item->ID,"duration", true);
+				$tmp['geo'] = get_post_meta($item->ID,"geo", true);
+				$tmp['image_id'] = $imageId;
+				$tmp['image_url'] = wp_get_attachment_url($imageId);
+			}
+
+			$results[] = $tmp;
 		}
-		return get_posts($args);
+
+		if($entityId) {
+			$res = isset( $results[0] ) ? $results[0] : null;
+		} else {
+			$res = $results;
+		}
+
+		return $res;
 	}
 
 
@@ -134,7 +150,7 @@ class ZaiviaBusiness extends listing_base{
 
 
 
-		$listing = self::getUserListings(get_current_user_id(), $listingId);
+		$listing = self::getListings($listingId, get_current_user_id());
 		$curDate = date('Y-m-d H:i:s', time());
 
 		$preparedData = [
@@ -187,7 +203,7 @@ class ZaiviaBusiness extends listing_base{
 
 	public static function isOwner($userId, $id, $entity) {
 		if(!$id) return true;
-		return (bool)count(self::getUserEntities($userId, $entity, $id));
+		return (bool)count(self::getEntities($entity, $id, $userId));
 	}
 }
 

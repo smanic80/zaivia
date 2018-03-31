@@ -1,5 +1,5 @@
 <?php if(!$listing) :?>
-    <?php $storedListings = ZaiviaListings::getUserListings(get_current_user_id());?>
+    <?php $storedListings = ZaiviaListings::getListings(null, get_current_user_id());?>
     <?php if($storedListings) :?>
         <div class="acc-item bb">
             <h3><?php _e('Draft', 'am') ?></h3>

@@ -56,7 +56,7 @@
                     </div>
                 </div>
             </fieldset>
-            <hr>
+            <!--<hr>
             <fieldset>
                 <p>
                   <span class="wpcf7-form-control-wrap checkbox-399">
@@ -71,7 +71,7 @@
                     </span>
                   </span>
                 </p>
-            </fieldset>
+            </fieldset>-->
 
         </div>
     </div>

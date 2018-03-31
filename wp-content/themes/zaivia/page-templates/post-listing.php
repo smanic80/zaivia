@@ -18,15 +18,6 @@ get_header(); ?>
     </div>
     </div>
 <?php else: ?>
-
-    <?php
-        $listing = $listingId = null;
-        if(isset($_GET['edit-listing'])) {
-            $listingId = (int)$_GET['edit-listing'];
-	        $listing = ZaiviaListings::getUserListings(get_current_user_id(), $listingId);
-        }
-    ?>
-
     <div class="sub-nav">
         <div class="container xs">
 	        <?php if ( has_nav_menu( 'mainmenu' ) ) : ?>
@@ -45,6 +36,13 @@ get_header(); ?>
         </div>
     </div>
 
+	<?php
+        $listing = $listingId = null;
+        if(isset($_GET['edit-listing'])) {
+            $listingId = (int)$_GET['edit-listing'];
+            $listing = ZaiviaListings::getListings($listingId, get_current_user_id());
+        }
+	?>
     <form action="#" id="post-listing-form">
         <input type="hidden" name="listing_id" id="listing_id" value="<?php echo $listingId?>">
         <div class="container xs">
@@ -64,19 +62,15 @@ get_header(); ?>
                 <div class="styled-form listing-steps" id="step1">
 	                <?php include(locate_template('templates/edit-listing/listing-step1.php')); ?>
                 </div>
-
                 <div class="styled-form listing-steps" id="step2" style="display:none;">
 	                <?php include(locate_template('templates/edit-listing/listing-step2.php')); ?>
                 </div>
-
                 <div class="styled-form listing-steps" id="step3" style="display:none;">
 	                <?php include(locate_template('templates/edit-listing/listing-step3.php')); ?>
                 </div>
-                
                 <div class="styled-form listing-steps" id="step4" style="display:none;">
 		            <?php include(locate_template('templates/edit-listing/listing-step4.php')); ?>
                 </div>
-
                 <div class="styled-form listing-steps" id="step5" style="display:none;">
 		            <?php include(locate_template('templates/edit-listing/listing-step5.php')); ?>
                 </div>

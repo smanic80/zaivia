@@ -69,26 +69,26 @@ get_header(); ?>
                         </div>
                         <div class="acc-item bb">
                             <h3><?php the_field("banner_table_title")?></h3>
-                            <?php $banners = ZaiviaBusiness::getUserEntities(get_current_user_id(), ZaiviaBusiness::$posttype_banner);?>
+                            <?php $banners = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, null, get_current_user_id());?>
 
                             <?php if($banners) :?>
-                            <div class="table mb-15 responsive full">
+                            <div class="table mb-15 responsive">
                                 <table>
                                     <tbody>
                                     <tr>
                                         <th><?php _e('Ad Name', 'am') ?></th>
                                         <th><?php _e('Date Listed', 'am') ?></th>
-                                        <th><?php _e('Renewal Date', 'am') ?></th>
+                                        <th width="50%"><?php _e('Renewal Date', 'am') ?></th>
                                         <th class="text-right"><?php _e('Action', 'am') ?></th>
                                     </tr>
                                     <?php foreach($banners as $banner):?>
                                     <tr>
                                         <td><?php echo $banner['title']?></td>
-                                        <td><?php echo ZaiviaBusiness::formatDate($listing['date_created']); ?></td>
-                                        <td><?php echo $listing['date_published'] ? ZaiviaBusiness::formatDate($listing['date_renewal']) : ''; ?></td>
+                                        <td><?php echo ZaiviaBusiness::formatDate($banner['date_created']); ?></td>
+                                        <td><?php echo $banner['date_renewal'] ? ZaiviaBusiness::formatDate($banner['date_renewal']) : ''; ?></td>
                                         <td class="text-right">
-                                            <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                            <a href="#delete" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $banner['listing_id']?>"><?php _e('Delete', 'am') ?></a>
+                                            <a href="<?php the_field("page_postbanner", "option")?>?edit=<?php echo $banner['id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
+                                            <a href="#delete" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $banner['id']?>"><?php _e('Delete', 'am') ?></a>
                                         </td>
                                     </tr>
                                     <?php endforeach;?>
@@ -108,7 +108,7 @@ get_header(); ?>
                         </div>
                         <div class="acc-item bb">
                             <h3><?php the_field("card_table_title")?></h3>
-                            <?php $banners = ZaiviaBusiness::getUserEntities(get_current_user_id(), ZaiviaBusiness::$posttype_card);?>
+                            <?php $banners = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, null, get_current_user_id());?>
 
                             <?php if($banners) :?>
                                 <div class="table mb-15 responsive full">

@@ -4,8 +4,10 @@
 
         $("#add_banner_form").submit(function(e){
             e.preventDefault();
-            processAjaxForm(['banner_title', 'banner_url', 'banner_section', 'banner_community', 'duration_checked', 'add_banner_nonce'], $(this), function(){
-alert("Banner Saved");
+            processAjaxForm(['banner_title', 'banner_url', 'banner_section', 'banner_community', 'duration_checked', 'add_banner_nonce'], $(this), function(id){
+                $(".form-step").hide();
+                initPaymentForm('banner', id);
+                $(".payment-step").show();
             }, ['banner_upload_input_media']);
         });
 

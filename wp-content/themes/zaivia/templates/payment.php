@@ -1,6 +1,8 @@
 <script type="text/html" id="tmpl-payment">
+    <div <# if(data.total > 0) { #>class="row"<# } #>>
+
     <# if(data.total > 0) { #>
-    <div class="row">
+
         <div class="col-lg-6">
             <div class="acc-item mb-15">
                 <h3><?php _e('Payment Details', 'am') ?></h3>
@@ -119,20 +121,13 @@
                     </div>
                 </fieldset>
             </div>
+	        <?php if(isset($business)) :?>
+                <div class="text-right">
+                    <a href="#" class="btn btn-primary btn-sm"><?php _e('Purchase', 'am') ?></a>
+                </div>
+	        <?php endif; ?>
         </div>
-        <div class="col-lg-6 ml-auto mr-auto">
-            <div class="acc-item mb-30">
-                <h3><?php _e('How did you hear about us?', 'am') ?></strong></h3>
-                <fieldset>
-                    <select id="source" title="" class="tosave">
-                        <option><?php _e('Friend', 'am') ?></strong></option>
-                    </select>
-                </fieldset>
-            </div>
-        </div>
-    </div>
     <# } else { #>
-    <div>
         <div class="acc-item mb-30">
             <h3><?php _e('Order Summary', 'am') ?></h3>
             <div class="table">
@@ -168,15 +163,18 @@
                 </table>
             </div>
         </div>
-        <div class="acc-item mb-30">
-            <h3><?php _e('How did you hear about us?', 'am') ?></strong></h3>
-            <fieldset>
-                <select id="source2" title="" class="tosave">
-                    <option><?php _e('Friend', 'am') ?></strong></option>
-                </select>
-            </fieldset>
-        </div>
-    </div>
     <# } #>
+    <?php if(!isset($business)) :?>
+        <div class="col-lg-6 ml-auto mr-auto">
+            <div class="acc-item mb-30">
+                <h3><?php _e('How did you hear about us?', 'am') ?></strong></h3>
+                <fieldset>
+                    <select id="source" title="" class="tosave">
+                        <option><?php _e('Friend', 'am') ?></strong></option>
+                    </select>
+                </fieldset>
+            </div>
+        </div>
+    <?php endif; ?>
 </script>
 <div id="payment"></div>

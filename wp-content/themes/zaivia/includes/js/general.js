@@ -1241,3 +1241,15 @@ function buildDataAjaxForm(requiredFields, $form, additionalFiels, data) {
 
     return data;
 }
+
+
+function initPaymentForm(type, id) {
+    var payment_form = wp.template( "payment" );
+    jQuery.post(amData.ajaxurl, {
+        'action':'getPayment',
+        'type':type,
+        'id':id
+    }, function(ret){
+        jQuery('#payment').empty().append(payment_form(ret));
+    }, 'json');
+}

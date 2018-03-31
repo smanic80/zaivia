@@ -104,7 +104,8 @@ class listing_base {
 		}
 
 
-		//unpromote expired card and listing items
+		//unpromote expired card and listing items - clear  flag and date field
+
 
 		//send email with serach results
 	}

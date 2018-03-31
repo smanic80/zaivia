@@ -9481,6 +9481,11 @@ div.entry form p label + br {
   background: none;
 }
 
+.payment-step {
+  display:none;
+}
+
+
 @media (min-width: 576px) {
   .col-sm {
     -ms-flex-preferred-size: 0;

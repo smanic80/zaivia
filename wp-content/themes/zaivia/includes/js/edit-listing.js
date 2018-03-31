@@ -554,20 +554,10 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
 
     });
 
-    function initPaymentForm(type,id) {
-        var payment_form = wp.template( "payment" );
-        $.post(amData.ajaxurl, {
-            'action':'getPayment',
-            'type':type,
-            'id':id
-        }, function(ret){
-            $('#payment').empty().append(payment_form(ret));
-        }, 'json');
-    }
 
     function gotoStep(stepN, isDone){
         if(stepN === '6'){
-            initPaymentForm('listing',listingData.listing_id);
+            initPaymentForm('listing', listingData.listing_id);
         }
         $("#post-listing-form  .listing-steps").hide();
         $("#step"+stepN).show();
