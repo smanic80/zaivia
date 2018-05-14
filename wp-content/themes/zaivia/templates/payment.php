@@ -37,15 +37,15 @@
                         <div class="row">
                             <div class="col-6">
                                 <select id="exp_month" title="" class="tosave">
-                                    <option value="1"><?php _e('January', 'am') ?></option>
-                                    <option value="2"><?php _e('February', 'am') ?></option>
-                                    <option value="3"><?php _e('March', 'am') ?></option>
-                                    <option value="4"><?php _e('April', 'am') ?></option>
-                                    <option value="5"><?php _e('May', 'am') ?></option>
-                                    <option value="6"><?php _e('June', 'am') ?></option>
-                                    <option value="7"><?php _e('July', 'am') ?></option>
-                                    <option value="8"><?php _e('August', 'am') ?></option>
-                                    <option value="9"><?php _e('September', 'am') ?></option>
+                                    <option value="01"><?php _e('January', 'am') ?></option>
+                                    <option value="02"><?php _e('February', 'am') ?></option>
+                                    <option value="03"><?php _e('March', 'am') ?></option>
+                                    <option value="04"><?php _e('April', 'am') ?></option>
+                                    <option value="05"><?php _e('May', 'am') ?></option>
+                                    <option value="06"><?php _e('June', 'am') ?></option>
+                                    <option value="07"><?php _e('July', 'am') ?></option>
+                                    <option value="08"><?php _e('August', 'am') ?></option>
+                                    <option value="09"><?php _e('September', 'am') ?></option>
                                     <option value="10"><?php _e('October', 'am') ?></option>
                                     <option value="11"><?php _e('November', 'am') ?></option>
                                     <option value="12"><?php _e('December', 'am') ?></option>

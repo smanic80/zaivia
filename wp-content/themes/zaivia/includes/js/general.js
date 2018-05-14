@@ -1140,6 +1140,18 @@
             $("#" + $(this).attr("rel")).val('');
         }
     });
+    $('#calc_price,#calc_deposit,#calc_annual,#calc_period').keyup(function () {
+        var price = parseFloat($('#calc_price').val());
+        var deposit = parseFloat($('#calc_deposit').val());
+        var annual = parseFloat($('#calc_annual').val())/12;
+        var period = parseInt($('#calc_period').val())*12;
+        if(!isNaN(price) && !isNaN(deposit) && !isNaN(annual) && !isNaN(period)) {
+            var res = Math.round(100*(price-deposit)*(annual*Math.pow(1+annual,period)/(Math.pow(1+annual,period)-1)))/100;
+            $('.calc_payment').text('$'+res);
+        } else {
+            $('.calc_payment').text('-');
+        }
+    });
 })(jQuery);
 
 
