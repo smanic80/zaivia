@@ -5,7 +5,7 @@
 			<fieldset>
 				<label class="salerent_<?php echo ZaiviaListings::$for_rent?>"><?php _e('Monthly Rent ($)', 'am') ?>*</label>
 				<label class="salerent_<?php echo ZaiviaListings::$for_sale?>"><?php _e('Asking Price ($)', 'am') ?>*</label>
-				<input type="text" placeholder="349000" name="price" id="price" value="<?php echo $listing?(int)$listing['price']:''; ?>" class="us-price tosave required">
+				<input type="text" placeholder="349000" name="price" id="price" value="<?php echo $listing?$listing['price']:''; ?>" class="us-price tosave required">
 			</fieldset>
 		</div>
 	</div>

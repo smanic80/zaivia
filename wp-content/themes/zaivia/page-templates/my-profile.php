@@ -201,10 +201,10 @@ get_header(); ?>
                                                     <div class="col-sm-12 col-md-6">
                                                         <select name="cc_type" id="cc_type" >
                                                             <option value=""></option>
-                                                            <option value="visa">Visa</option>
-                                                            <option value="mastercard">Master Card</option>
-                                                            <option value="amex">American Express</option>
-                                                            <option value="maestro">Maestro</option>
+                                                            <option value="visa"><?php _e('Visa', 'am') ?></option>
+                                                            <option value="mastercard"><?php _e('Master Card', 'am') ?></option>
+                                                            <option value="amex"><?php _e('American Express', 'am') ?></option>
+                                                            <option value="maestro"><?php _e('Maestro', 'am') ?></option>
                                                         </select>
                                                     </div>
                                                 </div>
@@ -228,7 +228,7 @@ get_header(); ?>
 	                                                            <?php $curYear = date("Y");?>
                                                                 <select name="cc_date_y" id="cc_date_y" >
                                                                     <option value=""></option>
-                                                                    <?php for ($i=$curYear;$i<=$curYear+12;$i++):?>
+                                                                    <?php for ($i=$curYear;$i<=$curYear+20;$i++):?>
                                                                         <option value="<?php echo $i?>"><?php echo $i?></option>
                                                                     <?php endfor;?>
                                                                 </select>
@@ -245,7 +245,7 @@ get_header(); ?>
                                                     <div class="col-sm-12 col-md-6">
                                                         <div class="row">
                                                             <div class="col-6">
-                                                                <input type="text" name="ccv" id="ccv"  value="">
+                                                                <input type="text" name="cvv" id="cvv"  value="">
                                                             </div>
                                                         </div>
                                                     </div>

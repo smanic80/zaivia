@@ -9,7 +9,9 @@ if(get_current_user_id() && isset($_REQUEST['delete']) && $_REQUEST['delete']){
 	$listing_id = $_REQUEST['listing_id'];
 	unset($request['listing_id']);
 	unset($request['delete']);
-	ZaiviaListings::deleteListing($listing_id, json_encode($request));
+	if(ZaiviaListings::isOwner($listing_id)) {
+		ZaiviaListings::deleteListing($listing_id, json_encode($request));
+    }
 	wp_redirect($_SERVER['HTTP_REFERER']);
 	die;
 }
@@ -77,13 +79,13 @@ get_header(); ?>
                             <td><?php echo $listing['address-text']?></td>
                             <td><?php echo $listing['sale_rent-text']; ?></td>
                             <td><?php echo ZaiviaListings::formatDate($listing['date_created']); ?></td>
-                            <td><?php echo $listing['date_published'] ? ZaiviaListings::formatDate($listing['date_published']) : ''; ?></td>
+                            <td><?php echo $listing['renewal_date'] ? ZaiviaListings::formatDate($listing['renewal_date']) : ''; ?></td>
                             <td><?php echo $listing['status']; ?></td>
                             <td><?php echo $listing['active-text']; ?></td>
                             <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
                                 <a href="#delete<?php echo $listing['sale_rent'] == ZaiviaListings::$for_rent ? '2' : '' ?>" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $listing['listing_id']?>"><?php _e('Delete', 'am') ?></a>
                                 <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step5" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
-                                <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step6" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
+                                <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step5" class="btn btn-secondary btn-sm"><?php _e('Renew', 'am') ?></a>
                             </td>
                         </tr>
                         <?php endforeach;?>

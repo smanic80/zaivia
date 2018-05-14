@@ -17,7 +17,7 @@
         <div class="right">
             <div class="free"><?php _e('It’s Free', 'am') ?></div>
             <a href="<?php if(!is_user_logged_in()):?>#login<?php else:?><?php the_field("page_postlisting", "option")?><?php endif;?>" class="btn btn-secondary br<?php if(!is_user_logged_in()):?> open-modal<?php endif;?>"><?php _e('List Your Property', 'am') ?></a>
-            <a href="<?php if(!is_user_logged_in()):?>#login<?php else:?><?php the_field("page_postlisting", "option")?><?php endif;?>" class="btn btn-primary bl<?php if(!is_user_logged_in()):?> open-modal<?php endif;?>"><?php _e('List Your Business', 'am') ?></a>
+            <a href="<?php if(!is_user_logged_in()):?>#login<?php else:?><?php the_field("page_postcard", "option")?><?php endif;?>" class="btn btn-primary bl<?php if(!is_user_logged_in()):?> open-modal<?php endif;?>"><?php _e('List Your Business', 'am') ?></a>
         </div>
         <div class="menu-trigger"><span></span><span></span><span></span></div>
 	    <?php if ( has_nav_menu( 'mainmenu' ) ) : ?>

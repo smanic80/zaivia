@@ -1,77 +1,75 @@
 <script type="text/html" id="tmpl-payment">
-    <div <# if(data.total > 0) { #>class="row"<# } #>>
+    <div <# if(data.total_num > 0) { #>class="row"<# } #>>
 
-    <# if(data.total > 0) { #>
-
+    <# if(data.total_num > 0) { #>
         <div class="col-lg-6">
             <div class="acc-item mb-15">
-                <h3><?php _e('Payment Details', 'am') ?></h3>
-                <?php $cards = am_getCurrentUserCCs(); ?>
-                <fieldset>
-                    <label><?php _e('Saved Credit Card', 'am') ?></label>
-                    <select id="saved_card" title="">
-                        <option></option>
-                        <?php foreach ($cards as $card): ?>
-                            <option value="<?php echo $card['cc_uid']?>"><?php echo $card['cc_type']?> <?php echo $card['cc_number_safe']?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </fieldset>
-                <div id="card_info">
+                <form id="payment-form" method="post" action="#">
+                    <h3><?php _e('Payment Details', 'am') ?></h3>
+                    <div id="payment_error"></div>
                     <fieldset>
-                        <label><?php _e('Cardholder Name', 'am') ?></label>
-                        <input type="text" id="cardholder_name" title="" class="tosave">
-                    </fieldset>
-                    <fieldset>
-                        <label><?php _e('Credit Card Number', 'am') ?></label>
-                        <input type="text" id="card_number" title="" class="tosave">
-                    </fieldset>
-                    <fieldset>
-                        <label><?php _e('Credit Card Type', 'am') ?></label>
-                        <select title="" id="card_type" class="tosave">
-                            <option><?php _e('Visa', 'am') ?></option>
-                            <option><?php _e('Master Card', 'am') ?></option>
+                        <?php $cards = am_getCurrentUserCCs(); ?>
+                        <label><?php _e('Saved Credit Card', 'am') ?></label>
+                        <select id="saved_card" name="saved_card" title="" class="tosave">
+                            <option></option>
+                            <?php foreach ($cards as $card): ?>
+                                <option value="<?php echo $card['cc_uid']?>"><?php echo $card['cc_type']?> <?php echo $card['cc_number_safe']?></option>
+                            <?php endforeach; ?>
                         </select>
                     </fieldset>
-                    <fieldset>
-                        <label><?php _e('Expiration Date', 'am') ?></label>
-                        <div class="row">
-                            <div class="col-6">
-                                <select id="exp_month" title="" class="tosave">
-                                    <option value="1"><?php _e('January', 'am') ?></option>
-                                    <option value="2"><?php _e('February', 'am') ?></option>
-                                    <option value="3"><?php _e('March', 'am') ?></option>
-                                    <option value="4"><?php _e('April', 'am') ?></option>
-                                    <option value="5"><?php _e('May', 'am') ?></option>
-                                    <option value="6"><?php _e('June', 'am') ?></option>
-                                    <option value="7"><?php _e('July', 'am') ?></option>
-                                    <option value="8"><?php _e('August', 'am') ?></option>
-                                    <option value="9"><?php _e('September', 'am') ?></option>
-                                    <option value="10"><?php _e('October', 'am') ?></option>
-                                    <option value="11"><?php _e('November', 'am') ?></option>
-                                    <option value="12"><?php _e('December', 'am') ?></option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <select id="exp_year" title="" class="tosave">
+                    <div id="card_info">
+                        <fieldset>
+                            <label><?php _e('Cardholder Name', 'am') ?></label>
+                            <input type="text" id="cardholder_name" name="cardholder_name" title="" class="tosave">
+                        </fieldset>
+                        <fieldset>
+                            <label><?php _e('Credit Card Number', 'am') ?></label>
+                            <input type="text" id="cc_number" name="cc_number" title="" class="tosave">
+                        </fieldset>
+                        <fieldset>
+                            <label><?php _e('Credit Card Type', 'am') ?></label>
+                            <select title="" id="cc_type" name="cc_type" class="tosave">
+                                <option value=""></option>
+                                <option value="visa"><?php _e('Visa', 'am') ?></option>
+                                <option value="mastercard"><?php _e('Master Card', 'am') ?></option>
+                                <option value="amex"><?php _e('American Express', 'am') ?></option>
+                                <option value="maestro"><?php _e('Maestro', 'am') ?></option>
+                            </select>
+                        </fieldset>
+                        <fieldset>
+                            <label><?php _e('Expiration Date', 'am') ?></label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <select name="cc_date_m" id="cc_date_m" class="tosave" >
+                                        <option value=""></option>
+                                        <?php for ($i=1;$i<=12;$i++):?>
+                                            <option value="<?php echo $i?>"><?php echo $i?></option>
+                                        <?php endfor;?>
+                                    </select>
+                                </div>
+                                <div class="col-6">
                                     <?php $cur_year = date('Y'); ?>
-                                    <?php for ($y = $cur_year;$y < $cur_year + 20; $y++): ?>
-                                        <option value="<?php echo $y-2000; ?>"><?php echo $y; ?></option>
-                                    <?php endfor; ?>
-                                </select>
+                                    <select name="cc_date_y" id="cc_date_y" title="" class="tosave">
+                                        <?php for ($i=$cur_year; $i < $cur_year + 20; $i++): ?>
+                                            <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                                        <?php endfor; ?>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                    </fieldset>
-                    <fieldset>
-                        <label><?php _e('CVV', 'am') ?></label>
-                        <div class="row">
-                            <div class="col-6">
-                                <input type="text" id="card_cvv" title="" class="tosave">
+                        </fieldset>
+                        <fieldset>
+                            <label><?php _e('CVV', 'am') ?></label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="text" id="cvv" title="" class="tosave">
+                                </div>
                             </div>
-                        </div>
-                    </fieldset>
-                </div>
+                        </fieldset>
+                    </div>
+                </form>
             </div>
         </div>
+
         <div class="col-lg-6">
             <div class="acc-item mb-15">
                 <h3><?php _e('Order Summary', 'am') ?></h3>
@@ -90,19 +88,19 @@
                         <tr>
                             <td></td>
                             <td class="text-right"><?php _e('Sub-Total', 'am') ?></td>
-                            <td class="text-right" id="sub_total">${{data.subtotal}}</td>
+                            <td class="text-right" id="sub_total">{{data.subtotal}}</td>
                         </tr>
                         <tr>
                             <td></td>
                             <td class="text-right"><?php _e('Discounts', 'am') ?></td>
-                            <td class="text-right" id="discount">${{data.discounts}}</td>
+                            <td class="text-right" id="discount">{{data.discounts}}</td>
                         </tr>
                         </tbody>
                         <tfoot>
                         <tr>
                             <td></td>
                             <td class="text-right"><strong><?php _e('Total', 'am') ?></strong></td>
-                            <td class="text-right"><strong id="total">${{data.total}}</strong></td>
+                            <td class="text-right"><strong id="total">{{data.total}}</strong></td>
                         </tr>
                         </tfoot>
                     </table>
@@ -123,7 +121,7 @@
             </div>
 	        <?php if(isset($business)) :?>
                 <div class="text-right">
-                    <a href="#" class="btn btn-primary btn-sm"><?php _e('Purchase', 'am') ?></a>
+                    <a href="#" class="btn btn-primary btn-sm" id="business-pay"><?php _e('Purchase', 'am') ?></a>
                 </div>
 	        <?php endif; ?>
         </div>
@@ -145,32 +143,36 @@
                     <tr>
                         <td></td>
                         <td class="text-right"><?php _e('Sub-Total', 'am') ?></td>
-                        <td class="text-right">${{data.subtotal}}</td>
+                        <td class="text-right">{{data.subtotal}}</td>
                     </tr>
                     <tr>
                         <td></td>
                         <td class="text-right"><?php _e('Discounts', 'am') ?></td>
-                        <td class="text-right">${{data.discounts}}</td>
+                        <td class="text-right">{{data.discounts}}</td>
                     </tr>
                     </tbody>
                     <tfoot>
                     <tr>
                         <td></td>
                         <td class="text-right"><strong><?php _e('Total', 'am') ?></strong></td>
-                        <td class="text-right"><strong>${{data.total}}</strong></td>
+                        <td class="text-right"><strong>{{data.total}}</strong></td>
                     </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
     <# } #>
-    <?php if(!isset($business)) :?>
+    <div id="payment-error" class="error"></div>
+    <?php if(!isset($business) && !get_user_meta(get_current_user_id(), "listing_source")) :?>
         <div class="col-lg-6 ml-auto mr-auto">
             <div class="acc-item mb-30">
                 <h3><?php _e('How did you hear about us?', 'am') ?></strong></h3>
                 <fieldset>
+                    <?php $options = get_field("how_did_you_hear_about_us", "option"); ?>
                     <select id="source" title="" class="tosave">
-                        <option><?php _e('Friend', 'am') ?></strong></option>
+                        <?php foreach($options as $option):?>
+                        <option value="<?php echo $option['option'] ?>"><?php echo $option['option'] ?></strong></option>
+                        <?php endforeach; ?>
                     </select>
                 </fieldset>
             </div>

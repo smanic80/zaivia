@@ -4032,7 +4032,7 @@ code br {
   text-align: center;
 }
 
-.wpcf7-not-valid-tip, .wpcf7-validation-errors {
+.wpcf7-not-valid-tip, .wpcf7-validation-errors, #banner_upload_input_file-errors {
   color: #d93c3c;
 }
 
@@ -5727,7 +5727,7 @@ body {
   background-color: whitesmoke;
 }
 
-.steps-all li + li.blue:after, .steps-all li + li.blue:before {
+.steps-all li + li.current:after, .steps-all li + li.current:before {
   background: #47688b;
 }
 
@@ -8275,7 +8275,7 @@ div.entry form p label + br {
   display: none;
 }
 
-.styled-form .row:not(.gutters-16) > div > label {
+.styled-form .row:not(.gutters-16) > div > label:first-child {
   padding-top: 10px;
 }
 
@@ -9443,7 +9443,14 @@ div.entry form p label + br {
   padding-left: 2px;
 }
 
-
+.trait-valid-until {
+  display: inline-block;
+  font-size: 12px;
+  padding-bottom: 10px;
+}
+.trait-description {
+  display: inline-block;
+}
 
 #map-wrap {
     display: none;
@@ -9453,6 +9460,7 @@ div.entry form p label + br {
   color: #d93c3c !important;
   border-color: #d93c3c !important;
 }
+
 .g-recaptcha .error {
   border-width: 1px;
   border-style: solid;
@@ -9481,7 +9489,7 @@ div.entry form p label + br {
   background: none;
 }
 
-.payment-step {
+.payment-step, .confirmation-step {
   display:none;
 }
 

@@ -46,38 +46,38 @@ get_header(); ?>
 			<div class="col-md-3">
 				<div class="my-ad widget widget_archive">
 					<ul>
-						<li class="current"><a href="<?php the_field("page_postbusiness", "option")?>#edit_banners" ><?php _e('Banner Ads', 'am') ?></a></li>
-						<li><a href="<?php the_field("page_postbusiness", "option")?>#edit_cards" ><?php _e('Community Partners', 'am') ?></a></li>
+						<li class="current"><a href="<?php the_field("page_mybusiness", "option")?>#edit_<?php echo ZaiviaBusiness::$posttype_banner?>" ><?php _e('Banner Ads', 'am') ?></a></li>
+						<li><a href="<?php the_field("page_mybusiness", "option")?>#edit_<?php echo ZaiviaBusiness::$posttype_card?>" ><?php _e('Community Partners', 'am') ?></a></li>
 					</ul>
 				</div>
 			</div>
 			<div class="col-md-9">
 				<div class="my-ad">
-					<div class="styled-form form-step">
+					<div class="styled-form multistep-step form-step">
 						<?php
-                            $banner = $bannerId = null;
+						    $item = $itemId = null;
                             if(isset($_GET['edit'])) {
-                                $bannerId = (int)$_GET['edit'];
-                                $banner = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $bannerId, get_current_user_id());
+	                            $itemId = (int)$_GET['edit'];
+	                            $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $itemId, get_current_user_id());
                             }
+
+echo '<pre>';
+print_r($item);
+echo '</pre>';
 						?>
 						<form action="#" id="add_banner_form" enctype="multipart/form-data">
-                            <input type="text" name="banner_id" id="banner_id" value="<?php echo isset($banner['id']) ? $banner['id'] : '';?>">
-
+							<?php wp_nonce_field('zai_add_banner','add_banner_nonce', true, true ); ?>
+                            <input type="hidden" name="entity_id" id="entity_id" value="<?php echo isset($item['id']) ? $item['id'] : '';?>">
 							<span class="saved-confirmation"><?php _e('Banner saved', 'am') ?></span>
 
-							<?php wp_nonce_field('zai_add_banner','add_banner_nonce', true, true ); ?>
-
 							<div class="entry">
-								<h1 class="pb-10"><?php echo ZaiviaBusiness::formatMoney(get_field("banner_price", "option"))?> / <?php _e('month', 'am') ?></h1>
+								<h1 class="pb-10"><?php echo ZaiviaBusiness::formatMoney(get_field("banner_price", "option"), 2)?> / <?php _e('month', 'am') ?></h1>
 								<div class="row">
 									<div class="col-md-6 mb-15">
-										<p><?php _e('Ad Sizes Excepted', 'am') ?></p>
-										<h2>728px by 90px</h2>
+										<p><?php _e('Ad Sizes Excepted', 'am') ?></p><h2><?php _e('728px by 90px', 'am') ?></h2>
 									</div>
 									<div class="col-md-6 mb-15">
-										<p><?php _e('File Types Excepted', 'am') ?></p>
-										<h2>JPEG & PNG</h2>
+										<p><?php _e('File Types Excepted', 'am') ?></p><h2><?php _e('JPEG & PNG', 'am') ?></h2>
 									</div>
 								</div>
 							</div>
@@ -94,22 +94,23 @@ get_header(); ?>
                                             <label><?php _e('Ad Name', 'am') ?></label>
                                             <div class="row">
                                                 <div class="col-sm-12 col-md-6">
-                                                    <input type="text" name="banner_title" id="banner_title" value="<?php echo isset($banner['title']) ? $banner['title'] : '';?>">
+                                                    <input type="text" name="banner_title" id="banner_title" value="<?php echo isset($item['title']) ? $item['title'] : '';?>">
                                                 </div>
                                             </div>
                                         </fieldset>
 										<fieldset class="mb-15">
-                                            <input type="hidden" name="banner_upload_input_media" id="banner_upload_input_media" value="<?php echo isset($banner['image_id']) ? $banner['image_id'] : '';?>">
-											<img alt="" id="banner_upload_input_src" src="<?php echo isset($banner['image_url']) ? $banner['image_url'] : '';?>">
+											<?php $key = ZaiviaListings::$image_key; ?>
+                                            <input type="hidden" name="<?php echo $key?>_upload_input_media" id="<?php echo $key?>_upload_input_media" value="<?php echo isset($item[$key.'_id']) ? $item[$key.'_id'] : '';?>" rel="banner_image_error">
+											<img alt="" id="<?php echo $key?>_upload_input_src" src="<?php echo isset($item[$key.'_url']) ? $item[$key.'_url'] : '';?>">
 											<br class="mobile-only">
-											<label class="btn btn-secondary ml-20">Upload image<input type="file" name="E" class="banner_upload" id="banner_upload_input"></label>
-                                            <p id="banner_upload_input_file-errors"></p>
+											<label class="btn btn-secondary ml-20 banner_image_error"><?php _e('Upload image', 'am') ?><input type="file" name="E" class="business_upload" id="<?php echo $key?>_upload_input"></label>
+                                            <p id="<?php echo $key?>_upload_input_file-errors"></p>
 										</fieldset>
 										<fieldset>
 											<label><?php _e('URL (Make your banner clicable so users can go directly to your website)', 'am') ?></label>
 											<div class="row">
 												<div class="col-sm-12 col-md-6">
-													<input type="text" name="banner_url" id="banner_url" value="<?php echo isset($banner['url']) ? $banner['url'] : '';?>">
+													<input type="text" name="banner_url" id="banner_url" value="<?php echo isset($item['url']) ? $item['url'] : '';?>">
 												</div>
 											</div>
 										</fieldset>
@@ -118,9 +119,9 @@ get_header(); ?>
 											<div class="row">
 												<div class="col-sm-12 col-md-6">
 													<select name="banner_section" id="banner_section">
-														<option value="<?php echo ZaiviaListings::$for_rent?>" <?php if(isset($banner['section']) && (int)$banner['section']===ZaiviaListings::$for_rent) echo "selected"; ?>>
+														<option value="<?php echo ZaiviaListings::$for_rent?>" <?php if(isset($item['section']) && (int)$item['section']===ZaiviaListings::$for_rent) echo "selected"; ?>>
                                                             <?php _e('Rental', 'am') ?></option>
-														<option value="<?php echo ZaiviaListings::$for_sale?>" <?php if(isset($banner['section']) && (int)$banner['section']===ZaiviaListings::$for_sale) echo "selected"; ?>>
+														<option value="<?php echo ZaiviaListings::$for_sale?>" <?php if(isset($item['section']) && (int)$item['section']===ZaiviaListings::$for_sale) echo "selected"; ?>>
                                                             <?php _e('Sale', 'am') ?></option>
 													</select>
 												</div>
@@ -130,7 +131,7 @@ get_header(); ?>
 											<label><?php _e('Community (Your Ad will be displayed withing this community +50 kms)', 'am') ?></label>
 											<div class="row">
 												<div class="col-sm-12 col-md-6">
-													<input type="text" name="banner_community" id="banner_community" value="<?php echo isset($banner['community']) ? $banner['community'] : '';?>">
+													<input type="text" name="banner_community" id="banner_community" value="<?php echo isset($item['community']) ? $item['community'] : '';?>">
 												</div>
 											</div>
 										</fieldset>
@@ -140,26 +141,23 @@ get_header(); ?>
 
 							<div class="acc-item mb-30">
 								<h3><?php _e('Duration', 'am') ?></h3>
-								<p class="intro duration_checked_error"><?php _e('Post My Advertismant For*', 'am') ?></p>
-                                <input type="hidden" name="duration_checked" id="duration_checked" value="<?php echo isset($banner['duration']) ? $banner['duration'] : '';?>" rel="duration_checked_error">
+
+                                <span class="business-valid-until" style="<?php if(!$item || !$item['date_renewal']):?>display:none;<?php endif; ?>">
+                                    <?php _e('Valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['date_renewal']); ?></span><br>
+                                </span>
+
+								<p class="intro duration_checked_error"><?php _e('Post My Advertismant For', 'am') ?></p>
+                                <input type="hidden" name="duration_checked" id="duration_checked" value="<?php echo isset($item['duration']) ? $item['duration'] : '';?>" rel="duration_checked_error">
 								<?php $durations = get_field("banner_duration", "option")?>
 								<?php if($durations) :?>
 								<fieldset class="checkbox checked-one_holder">
 									<?php foreach($durations as $duration):?>
-									<p>
-				                      <span class="wpcf7-form-control-wrap">
-				                        <span class="wpcf7-form-control wpcf7-checkbox">
-				                          <span class="wpcf7-list-item">
-				                            <label>
-                                                <input type="checkbox" class="checked-one" rel="duration_checked" name="duration[]" id="duration-<?php echo $duration['months']?>"
-                                                          value="<?php echo $duration['months']?>"
-	                                                <?php if(isset($banner['duration']) && $banner['duration']===$duration['months']) echo "checked"; ?> />
+                                        <p><span class="wpcf7-form-control-wrap"><span class="wpcf7-form-control wpcf7-checkbox"><span class="wpcf7-list-item">
+                                            <label>
+                                                <input type="checkbox" class="checked-one banner-date-update" rel="duration_checked" name="duration[]" id="duration-<?php echo $duration['months']?>" value="<?php echo $duration['months']?>" />
                                                 &nbsp;<span class="wpcf7-list-item-label"><?php echo $duration['label']?></span>
                                             </label>
-				                          </span>
-				                        </span>
-				                      </span>
-									</p>
+                                        </span></span></span></p>
 									<?php endforeach; ?>
 								</fieldset>
 								<?php endif;?>
@@ -167,14 +165,25 @@ get_header(); ?>
 
 							<div class="btn-s">
 								<div class="text-right">
-									<a href="#" class="btn btn-primary btn-sm submit"><?php _e('Payment', 'am') ?></a>
+									<a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
+                                    <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
 								</div>
 							</div>
 						</form>
 					</div>
-                    <div class="styled-form payment-step">
+                    <div class="styled-form multistep-step payment-step">
                         <?php $business = true;?>
 	                    <?php include(locate_template('templates/payment.php')); ?>
+                    </div>
+                    <div class="styled-form multistep-step confirmation-step">
+                        <div class="box-center">
+                            <i class="fa fa-check-circle " aria-hidden="true"></i>
+                            <div class="entry">
+                                <h2><?php the_field("confirmation_title")?></h2>
+                                <p><?php the_field("confirmation_text")?></p>
+                                <a href="<?php the_field("page_mybusiness", "option")?>" class="btn btn-primary btn-block"><?php the_field("confirmation_button")?></a>
+                            </div>
+                        </div>
                     </div>
 				</div>
 			</div>

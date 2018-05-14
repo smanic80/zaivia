@@ -11,11 +11,11 @@ class ZaiviaListings extends listing_base {
 	public static $file_logo = 5;
 
 	public static $max_rescent = 5;
-	public static $search_per_page = 10;
-
+	public static $search_per_page = ['list'=>9, 'grid'=>12];
 	public static $market_radius = 10;
 	public static $market_limit = 10;
 
+	public static $image_key = 'banner_image';
 
 	public static function getListings($listingId = null, $userId=null, $formatMoney = true) {
 		global $wpdb;
@@ -39,8 +39,10 @@ class ZaiviaListings extends listing_base {
 
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 		foreach($results as $key=>$val) {
+
 			$results[$key]['partial_rent'] = explode(";", $results[$key]['partial_rent']);
 			$results[$key]['room_features'] = unserialize($results[$key]['room_features']);
+			$results[$key]['renewal_date'] = self::getRenewealDate($val);
 
 			for($i=1; $i<=3; $i++) {
 				$featuresArray = [];
@@ -60,10 +62,10 @@ class ZaiviaListings extends listing_base {
 
 			if($listingId) {
 				$results[ $key ]['rent']      = self::getListingRent( $listingId );
-				$results[ $key ]['price']     = $formatMoney ? self::formatMoney( $results[0]['price'] ) : $results[0]['price'];
+				$results[ $key ]['price']     = $formatMoney ? self::formatMoney( $val['price'] ) : $val['price'];
 				$results[ $key ]['images']    = self::getListingImage( $listingId, false );
 				$results[ $key ]['blueprint'] = self::getListingFiles( $listingId, self::$file_blueprint, 1, false );
-				$results[ $key ]['openhouse'] = ( $results[0]['sale_rent'] === self::$for_sale ) ? self::getListingOpenhouse( $listingId ) : [];
+				$results[ $key ]['openhouse'] = ( $val['sale_rent'] === self::$for_sale ) ? self::getListingOpenhouse( $listingId ) : [];
 				$results[ $key ]['contact']   = self::getListingContact( $listingId );
 				$results[ $key ]['faved']     = in_array( $listingId, self::getCurrentUserFavedIds() );
 			}
@@ -75,6 +77,16 @@ class ZaiviaListings extends listing_base {
 		}
 
 		return $res;
+	}
+
+	public static function getRenewealDate($listing){
+
+		$dates = [];
+		if($listing['featured_date']) $dates[] = strtotime($listing['featured_date']);
+		if($listing['premium_date']) $dates[] = strtotime($listing['premium_date']);
+		if($listing['url_date']) $dates[] = strtotime($listing['url_date']);
+
+		return $dates ? min(array_values($dates)) : "";
 	}
 
 	public static function saveListing($data) {
@@ -122,6 +134,7 @@ class ZaiviaListings extends listing_base {
 			'featured' => $data['featured'],
 			'premium' => $data['premium'],
 			'url' => $data['url'],
+			'url_value' => $data['url_value'],
 			'bump_up' => $data['bump_up'],
 
 			'status' => $data['status'],
@@ -194,11 +207,11 @@ class ZaiviaListings extends listing_base {
 
 	public static function activateListing($listingId){
 		global $wpdb;
-		$files_tablename = $wpdb->prefix . self::$listing_tablename;
+		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
 
 		$userId = get_current_user_id();
 		if(!self::isOwner($userId, $listingId)) {
-			return 'This is not yours!';
+			return __('This is not yours!');
 		}
 
 		$listing = self::getListings($listingId, get_current_user_id());
@@ -213,21 +226,25 @@ class ZaiviaListings extends listing_base {
 			$preparedData['date_created'] = $curDate;
 		}
 
-		$daysFeatured = (int)get_field("featured_days", "option");
-		$daysPremium = (int)get_field("premium_days", "option");
-		$daysUrl = (int)get_field("new_days", "option");
-		//$countBump = (int)get_field("bump_max_count", "option");
-
-		if($listing['featured'] === '1' && !$listing['featured_date']) $preparedData['featured_date'] = date('Y-m-d', strtotime("+" .$daysFeatured, " days"));
-		if($listing['premium'] === '1' && !$listing['premium_date']) $preparedData['premium_date'] = date('Y-m-d', strtotime("+" .$daysPremium, " days"));;
-		if($listing['url'] === '1' && !$listing['url_date']) $preparedData['url_date'] = date('Y-m-d', strtotime("+" .$daysUrl, " days"));;
+		$traits = ["featured", "premium", "url"];
+		foreach($traits as $trait) {
+			$preparedData[$trait . '_date'] = self::calculateTraitDate($trait, $listing);
+			$preparedData[$trait] = 0;
+		}
 
 		//if($listing['bump_up'] === '1') $preparedData['bump_up'] = $curDate;
 
-		return (bool) $wpdb->update($files_tablename, $preparedData, ['listing_id' => $listingId]);
+		return (bool) $wpdb->update($listing_tablename, $preparedData, ['listing_id' => $listingId]);
 	}
 
+	public static function calculateTraitDate($trait, $listing) {
+		if((int)$listing[$trait] !== 1) return $listing[$trait . '_date'];
 
+		$period = (int)get_field($trait . "_days", "option");
+		$date = $listing[$trait . '_date'] ? strtotime($listing[$trait . '_date']) : time();
+
+		return date('Y-m-d', strtotime("+" . $period . " days", $date));
+	}
 
 
 
@@ -453,7 +470,7 @@ class ZaiviaListings extends listing_base {
 		$contact_tablename = $wpdb->prefix . self::$contact_tablename;
 		$files_tablename = $wpdb->prefix . self::$files_tablename;
 
-		$rent = [
+		$contactData= [
 			'contact_name' => $data['contact_name'],
 			'contact_name_show' => $data['contact_name_show'],
 			'contact_email' => $data['contact_email'],
@@ -475,10 +492,10 @@ class ZaiviaListings extends listing_base {
 		$sql = "SELECT * from $contact_tablename where listing_id = ".(int)$listingId;
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 		if(count($results)) {
-			$wpdb->update($contact_tablename, $rent, ['listing_id' => $listingId]);
+			$wpdb->update($contact_tablename, $contactData, ['listing_id' => $listingId]);
 		} else {
-			$rent['listing_id'] = $listingId;
-			$wpdb->insert($contact_tablename, $rent);
+			$contactData['listing_id'] = $listingId;
+			$wpdb->insert($contact_tablename, $contactData);
 		}
 
 		if(isset($data['contact_profile']) && is_array($data['contact_profile']) && isset($data['contact_profile']['file_id'])) {
@@ -522,12 +539,12 @@ class ZaiviaListings extends listing_base {
 			$wpdb->update($files_tablename, ['confirmed' => 1], ['file_id' => (int)$data['contact_logo']]);
 		}
 
-		$rent['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
-		$rent['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
+		$contactData['contact_profile'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_profile);
+		$contactData['contact_logo'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_logo);
 
-//		update_user_meta(get_current_user_id(), "listing_contact", $rent);
+//		update_user_meta(get_current_user_id(), "listing_contact", $contactData);
 
-		return ['contact_profile' => $rent['contact_profile'], 'contact_logo'=>$rent['contact_logo']];
+		return ['contact_profile' => $contactData['contact_profile'], 'contact_logo'=>$contactData['contact_logo']];
 	}
 
 
@@ -577,6 +594,8 @@ class ZaiviaListings extends listing_base {
 			$results[$key]['big'] = wp_get_attachment_image_url($val['media_id'],'listing-big');
 			$results[$key]['card'] = wp_get_attachment_image_url($val['media_id'],'listing-card');
 			$results[$key]['thumb'] = wp_get_attachment_image_url($val['media_id'],'listing-th');
+			$results[$key]['contact_card_profile'] = wp_get_attachment_image_url($val['media_id'],'contact_card-profile');
+			$results[$key]['contact_card_logo'] = wp_get_attachment_image_url($val['media_id'],'contact_card-logo');
 		}
 
 		if($single && $results && isset($results[0])) {
@@ -624,6 +643,8 @@ class ZaiviaListings extends listing_base {
 		if(is_wp_error($mediaId)) {
 			$results['error'] = "Media creation error";
 		} else {
+			add_post_meta($mediaId, "listing_file", $listingId);
+
 			$filename = basename(get_attached_file( $mediaId));
 			$fileurl = wp_get_attachment_url($mediaId);
 
@@ -669,12 +690,7 @@ class ZaiviaListings extends listing_base {
 		global $wpdb;
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
 
-		$sql = "SELECT user_id from $listing_tablename where listing_id = ".(int)$listing_id;
-		$listing = $wpdb->get_results( $sql,ARRAY_A);
-
-		if(isset($listing[0]) and $listing[0]['user_id'] == get_current_user_id()) {
-			$wpdb->update($listing_tablename, ['deleted_reason' => $reason, 'deleted' => 1], ['listing_id' => $listing_id]);
-		}
+		$wpdb->update($listing_tablename, ['deleted_reason' => $reason, 'deleted' => 1], ['listing_id' => $listing_id]);
 	}
 
 	public static function deleteListingFile($fileData) {
@@ -718,7 +734,9 @@ class ZaiviaListings extends listing_base {
 			"from $listing_tablename a left join $features_tablename b on a.listing_id = b.listing_id and b.feature_type = 1" :
 			"from $listing_tablename a";
 
+
 		$sqlWhere = self::buildSearchWhere($request);
+
 		$featured = ($request_type !== 'map') ? self::searchFeatured($sqlWhere) : [];
 		if($featured){
 			$sqlWhere[] = 'a.listing_id <> '.$featured['listing_id'];
@@ -727,7 +745,8 @@ class ZaiviaListings extends listing_base {
 
 		$sqlGroup = ($request_type !== 'map') ? "group by a.listing_id" : "";
 		$sqlOrder = ($request_type !== 'map') ? self::searchOrder($request['sort_by']) : "";
-		$pagination = ($request_type !== 'map') ? self::searchPagination($sqlFrom, $sqlWhere, $featured, (isset($request['page']) ? intval($request['page']) : 1)) : "";
+
+		$pagination = ($request_type !== 'map') ? self::searchPagination($sqlFrom, $sqlWhere, $featured, (isset($request['page']) ? intval($request['page']) : 1), $request_type) : "";
 		$sqlLimit = ($request_type !== 'map') ? ('limit ' . (($pagination['page'] - 1) * $pagination['per_page']) . ',' . ($pagination['per_page'] - ($featured ? 1 : 0)) ) : "";
 
 		$paginationHtml = self::buildBaginationHtml($pagination['page_max'], $pagination['page']);
@@ -736,15 +755,11 @@ class ZaiviaListings extends listing_base {
 		$sql = $sqlSelect . " " . $sqlFrom . ' ' . $sqlWhere . ' ' . $sqlGroup . ' ' . $sqlOrder . ' ' . $sqlLimit;
 
 		$results = $wpdb->get_results( $sql, ARRAY_A);
-
 		$results = ($request_type !== 'map') ? self::prepareSearchResult($results) : $results;
 
-		$ads = ($request_type !== 'map') ? [
-			'list_banner_url' => get_field('list_banner_url',intval($request['page_id'])),
-			'list_banner_image' => get_field('list_banner_image',intval($request['page_id']))
-		] : [];
+		$ads = ZaiviaBusiness::findBanners(($request['rent'] == 'true') ? self::$for_rent : self::$for_sale,$request['city']?$request['city']:'');
 
-		return array('items'=>$results, 'count'=>$pagination['count'], 'pagination'=>$paginationHtml, 'filtered'=>$filteredHtml, 'ads'=>$ads, 'featured'=>$featured );
+		return array('items'=>$results, 'count'=>$pagination['count'], 'pagination'=>$paginationHtml, 'filtered'=>$filteredHtml, 'ads'=>$ads, 'featured'=>$featured, );
 	}
 
 
@@ -761,7 +776,7 @@ class ZaiviaListings extends listing_base {
 
 		$rad = $request['rad']?$request['rad']:'';
 		$city = $request['city']?$request['city']:'';
-		$geo = self::getCityCoords($city, $rad);
+		$geo = self::getCityCoords($city);
 
 		if($geo) {
 			$sqlWhere[] = self::getGeoRadiusSql($geo['lat'], $geo['lng'], $rad);
@@ -885,15 +900,15 @@ class ZaiviaListings extends listing_base {
 		return $filtered;
 	}
 
-	private static function searchPagination($sqlFrom, $sqlWhere, $featured, $page){
+	private static function searchPagination($sqlFrom, $sqlWhere, $featured, $page, $request_type){
 		global $wpdb;
 
 		$sql = 'select count(distinct a.listing_id)' . " " . $sqlFrom . " " . $sqlWhere;
 		$cnt = $wpdb->get_var($sql) + ($featured ? 1 : 0);
-		$page_max = ceil($cnt / self::$search_per_page) + 1;
+		$page_max = ceil($cnt / self::$search_per_page[$request_type]) + 1;
 		$page = ( $page < 1 ) ? 1 : ($page > $page_max ? $page_max : $page);
 
-		return ['count' => $cnt, 'page' => $page, 'pages' => ($page_max-1), 'per_page'=>self::$search_per_page];
+		return ['count' => $cnt, 'page' => $page, 'pages' => ($page_max-1), 'per_page'=>self::$search_per_page[$request_type]];
 	}
 
 	private static function buildBaginationHtml($page_max, $page){
@@ -1132,18 +1147,15 @@ class ZaiviaListings extends listing_base {
 		return $results;
 	}
 
-	public static function calculateMortage($price) {
-		return $price / 12;
-	}
 
 	public static function prepareRenderListingData($listing) {
 		$na = __("N/A", 'am');
 
 		$listing['price_per_month'] = ($listing['sale_rent'] == ZaiviaListings::$for_rent) ?
 			__('per month','am') :
-			__('Est. Mortage: $','am') . ZaiviaListings::formatMoney(ZaiviaListings::calculateMortage($listing['price'])) . __('/mth','am');
+			__('Est. Mortage: ','am') . '<span class="calc_payment_top">' . ZaiviaListings::formatMoney(ZaiviaListings::calculateMortage($listing['price'])) . '</span>' . __('/mth','am');
 
-		$listing['price'] = ZaiviaListings::formatMoney($listing['price']);
+		$listing['price_formatted'] = ZaiviaListings::formatMoney($listing['price']);
 		$listing['date_published'] = date('M d, Y',strtotime($listing['date_published']));
 		$listing['MLSNumber'] = $listing['MLSNumber'] ? $listing['MLSNumber'] : $na;
 
@@ -1180,6 +1192,47 @@ class ZaiviaListings extends listing_base {
 		return $listing;
 	}
 
+
+	public static function calculateMortage($price, $deposit=null, $rate=null, $period=null) {
+		$deposit = is_null($deposit) ? (int) get_field( "mortage_default_deposit", "option" ) : $deposit;
+		$rate = is_null($rate) ? (float) get_field( "mortage_annual_interest", "option" ) : $rate;
+		$period = is_null($period) ? (int) get_field( "mortage_payment_period", "option" ) : $period;
+
+		$monthRate = $rate / 12;
+		$monthPriod = $period * 12;
+
+		$pow = pow($monthRate+1, $monthPriod);
+
+		return round(($price - $deposit) * ( ($monthRate * $pow) / ($pow - 1) ));
+	}
+
+	public static function calculatePrice($listing){
+		if(!is_array($listing)) {
+			$listing = ZaiviaListings::getListings($listing);
+		}
+
+		$featured_price = (int) get_field( "featured_price", "option" );
+		$premium_price  = (int) get_field( "premium_price", "option" );
+		$url_price      = (int) get_field( "url_price", "option" );
+		$bump_price     = (int) get_field( "bump_price", "option" );
+
+		$sum = 0;
+		if($listing['featured']){
+			$sum += $featured_price;
+		}
+		if($listing['premium']) {
+			$sum += $premium_price;
+		}
+		if($listing['url']) {
+			$sum += $url_price;
+		}
+		if($listing['bump_up']) {
+			$sum += $bump_price;
+		}
+
+		return $sum;
+	}
+
 	private static function getRenderBathroom($listing, $key){
 		$res = (int)$listing[$key];
 		if($res) {
@@ -1195,6 +1248,4 @@ class ZaiviaListings extends listing_base {
 
 		return $res;
 	}
-
-
 }

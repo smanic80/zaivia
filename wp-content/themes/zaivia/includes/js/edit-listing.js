@@ -44,6 +44,7 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
         'featured':'',
         'premium':'',
         'url':'',
+        'url_value': '',
         'bump_up':'',
         'rent_date':'',
         'rent_deposit':'',
@@ -80,14 +81,13 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
         'prop_blue':[],
 
         'source':'',
-        'source2':'',
         'saved_card':'',
         'cardholder_name':'',
-        'card_number':'',
-        'card_type':'',
-        'exp_month':'',
-        'exp_year':'',
-        'card_cvv':'',
+        'cc_number':'',
+        'cc_type':'',
+        'cc_date_m':'',
+        'cc_date_y':'',
+        'cvv':'',
         'promo_code':''
     };
 
@@ -117,13 +117,6 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             if(isNaN(num)) $(this).val('');
         });
 
-        $("#post-listing-form #set_url").change(function(){
-            if($(this).prop("checked")) {
-                $("#post-listing-form #url").removeAttr("disabled");
-            } else {
-                $("#post-listing-form #url").val('').attr("disabled", "disabled");
-            }
-        });
         $(document).on('change', '#saved_card', function(){
             if($(this).val()) {
                 $("#card_info").hide();
@@ -144,8 +137,6 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                 i,j,k;
 
             $.post(amData.ajaxurl, data, function(ret){
-
-                //console.log(listingData);
 
                 for(i in listingData) if(listingData.hasOwnProperty(i)){
                     if(i in ret) if(['premium','featured','url','bump_up'].indexOf(i)===-1){
@@ -427,6 +418,31 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             }
         }
 
+        $(".trait-date-update").click(function(){
+            var $this = $(this),
+                data = {
+                    'action' : 'calculateTraitDate',
+                    'listing_id' : listingData['listing_id'],
+                    'trait' : $(this).attr("id"),
+                    'ch' : ($(this).is(":checked") ? 1 : 0)
+                };
+            $.ajax({
+                url: amData.ajaxurl,
+                type: 'POST',
+                data: data,
+                cache: false,
+                dataType: 'json',
+                success: function(data, textStatus, jqXHR) {
+                    if(data) {
+                        $this.next().find(".trait-valid-until").show().find("span").text(data);
+                    } else {
+                        $this.next().find(".trait-valid-until").hide()
+                    }
+
+                }
+            });
+        });
+
         $("#post-listing-form .listing-step").click(function(){
             var curStep =  $("#post-listing-form .steps-all li.cur").attr("id").split("-")[1],
                 nextStep = $(this).attr("rel");
@@ -629,7 +645,16 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                 'listing-data': JSON.stringify(listingData)
             };
         $.post(amData.ajaxurl, data, function(ret){
-            if(data) {
+            $('.error').removeClass('error');
+            $('#payment_error').hide();
+
+            if(ret.errors) {
+                for (var i in ret.errors) if (ret.errors.hasOwnProperty(i)) {
+                    $('#' + ret.errors[i]).addClass('error');
+                }
+            } if(ret.payment_error) {
+                $('#payment_error').text(ret.payment_error).show().addClass("error");
+            } else {
                 gotoStep(7, true);
                 $(".steps-all, .btns-start").hide();
             }

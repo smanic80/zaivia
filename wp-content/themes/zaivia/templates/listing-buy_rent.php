@@ -33,68 +33,11 @@
                 </div>
                 <div class="widget widget-need">
                     <h3><?php _e('Do You Need A Designer?','am'); ?></h3>
-                    <div class="agent-item">
-                        <div class="image">
-                            <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/p1.jpg" alt=""></a>
-                        </div>
-                        <div class="text">
-                            <div class="center">
-                                <h4><a href="#">John Smith</a></h4>
-                                <div class="role">Web Designer</div>
-                                <div class="by">
-                                    <p>YasTech Developments</p>
-                                    <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/a1.png" alt=""></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bottom">
-                            <ul>
-                                <li>
-                                    <a href="tel:3061234567">
-                                        <i class="fa fa-phone" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-phone" aria-hidden="true"></i>
-                                            <strong><?php _e('Phone','am'); ?></strong><br>Office: 306-123-4567
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="mailto:">
-                                        <i class="fa fa-envelope" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-envelope" aria-hidden="true"></i>
-                                            <strong><?php _e('Mail','am'); ?></strong><br>email.com
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                            <strong><?php _e('Address','am'); ?></strong><br>Street
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-chain" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-chain" aria-hidden="true"></i>
-                                            <strong><?php _e('Link','am'); ?></strong><br>www.com
-                                        </span>
-                                    </a>
-                                </li>
-                            </ul>
-                            <div class="profile">
-                                <a href="#"><?php _e('View Profile','am'); ?></a>
-                            </div>
-                        </div>
-                    </div>
+                    <?php include(locate_template('templates/business-card.php')); ?>
                 </div>
                 <div class="widget widget-promo">
                     <h3><?php _e('PROMOTE YOUR BUSINESS','am'); ?><br><span class="or"><?php _e('on','am'); ?></span><br><strong><?php _e('ZAIVIA FOR FREE!','am'); ?></strong></h3>
-                    <a href="#" class="btn btn-secondary"><?php _e('List Your Business','am'); ?></a>
+                    <a href="<?php the_field("page_postcard", "option")?>" class="btn btn-secondary"><?php _e('List Your Business','am'); ?></a>
                 </div>
                 <div class="widget widget-tabs">
                     <ul class="nav">

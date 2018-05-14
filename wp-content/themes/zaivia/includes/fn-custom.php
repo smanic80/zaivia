@@ -18,7 +18,12 @@
 		add_image_size( 'listing-big', 801, 534 );
 		add_image_size( 'listing-card', 321, 214 );
 		add_image_size( 'listing-th', 118, 92 );
+
 		add_image_size( 'banner', 728, 90, true );
+		add_image_size( 'partner_industry', 118, 100, true );
+
+		add_image_size( 'contact_card-profile', 120, 150);
+		add_image_size( 'contact_card-logo', 100, 50);
 	});
 
 
@@ -245,24 +250,220 @@
 		die;
 	}
 
+    add_action( 'wp_ajax_calculateTraitDate', 'calculateTraitDate' );
+    add_action( 'wp_ajax_nopriv_calculateTraitDate', 'calculateTraitDate' );
+    function calculateTraitDate() {
+	    $listing_id = (int)$_REQUEST['listing_id'];
+	    $trait = $_REQUEST['trait'];
+        $ch = $_REQUEST['ch'];
+
+	    $listing = ZaiviaListings::getListings($listing_id, get_current_user_id());
+	    $listing[$trait] = $ch ? 1 : 0;
+	    $date = ZaiviaListings::calculateTraitDate($trait, $listing);
+
+        echo json_encode(ZaiviaListings::formatDate($date));
+        die;
+    }
+
 	add_action( 'wp_ajax_processLising', 'processLising' );
 	add_action( 'wp_ajax_nopriv_processLising', 'processLising' );
 	function processLising() {
-		$res = false;
+		$res = [];
+
 		if($_POST['listing-data']){
 			$str = stripslashes_deep($_POST['listing-data']);
 
 			$data = json_decode($str, true);
-            ZaiviaListings::saveListing($data);
-			if(isset($data['listing_id'])) {
-				$res = ZaiviaListings::activateListing((int)$data['listing_id']);
+			if ( !isset( $data['listing_id'] ) ) {
+				$res["payment_error"] = __("Listing id not set");
 			}
+
+
+            $saveRes = ZaiviaListings::saveListing($data);
+            if(!is_array($saveRes)) {
+	            $res["payment_error"] = $saveRes;
+            } else {
+                $listing_id = intval( $data['listing_id'] );
+
+                $payed = am_processPayment( $data, ZaiviaListings::calculatePrice( $listing_id ) );
+	            if ($payed === true ) {
+		            update_user_meta(get_current_user_id(), "listing_source", $data['source']);
+		            if ( ! ZaiviaListings::activateListing( $listing_id ) ) {
+			            $res["payment_error"] = __("Activation Error");
+		            }
+	            } else {
+                    $res = $payed;
+                }
+            }
 		}
 		echo json_encode($res);
 		die;
 	}
 
 
+
+
+    add_action( 'wp_ajax_uploadBusinessFile', 'uploadBusinessFile' );
+    add_action( 'wp_ajax_nopriv_uploadBusinessFile', 'uploadBusinessFile' );
+    function uploadBusinessFile() {
+        $list = [];
+        $user_id = get_current_user_id();
+        if($_FILES && $user_id) {
+            $list = ZaiviaBusiness::addBusinessFile($user_id);
+        }
+
+        echo json_encode($list);
+        die;
+    }
+
+    add_action( 'wp_ajax_add_banner_form', 'add_banner_formProcess' );
+    add_action( 'wp_ajax_nopriv_add_banner_form', 'add_banner_formProcess' );
+    function add_banner_formProcess() {
+        $nonce = $_POST['add_banner_nonce'];
+        if ( ! wp_verify_nonce( $nonce, 'zai_add_banner' ) ) {
+            echo json_encode(['error'=>'Security checked!']);
+            die;
+        }
+        $res = ZaiviaBusiness::addBanner($_POST);
+
+        echo json_encode($res);
+        die;
+    }
+
+    add_action( 'wp_ajax_add_card_form', 'add_card_formProcess' );
+    add_action( 'wp_ajax_nopriv_add_card_form', 'add_card_formProcess' );
+    function add_card_formProcess() {
+        $nonce = $_POST['add_card_nonce'];
+        if ( ! wp_verify_nonce( $nonce, 'zai_add_card' ) ) {
+            echo json_encode(['error'=>'Security checked!']);
+            die;
+        }
+
+        $res = ZaiviaBusiness::addCard($_POST);
+
+        echo json_encode($res);
+        die;
+    }
+
+
+    add_action( 'wp_ajax_delete_business', 'delete_businessProcess' );
+    add_action( 'wp_ajax_nopriv_delete_busines', 'delete_businessProcess' );
+    function delete_businessProcess() {
+        $entity = $_POST['entity'];
+        $id = $_POST['id'];
+        $userId = get_current_user_id();
+
+        $res = [];
+        if(ZaiviaBusiness::isOwner($userId, $id, $entity)) {
+            $res = ZaiviaBusiness::deleteEntity($id, $entity);
+        }
+        echo json_encode([]);
+        die;
+    }
+
+    add_action( 'wp_ajax_calculateBannerDate', 'calculateBannerDate' );
+    add_action( 'wp_ajax_nopriv_calculateBannerDate', 'calculateBannerDate' );
+    function calculateBannerDate() {
+        $entity_id = (int)$_REQUEST['entity_id'];
+        $date = $_REQUEST['date'];
+
+	    $date = ZaiviaBusiness::calculateEndDate($entity_id, $date, ['date_renewal']);
+
+        echo json_encode(ZaiviaBusiness::formatDate($date));
+        die;
+    }
+
+    add_action( 'wp_ajax_calculateCardDate', 'calculateCardDate' );
+    add_action( 'wp_ajax_nopriv_calculateCardDate', 'calculateCardDate' );
+    function calculateCardDate() {
+        $entity_id = (int)$_REQUEST['entity_id'];
+        $date = $_REQUEST['date'];
+
+        $keys = [];
+        if(isset($_POST['card_sponsor']) && $_POST['card_sponsor'] ) $keys[] = "card_sponsor_date";
+	    if(isset($_POST['card_url_show']) && $_POST['card_url_show'] ) $keys[] = "card_url_show_date";
+	    if(isset($_POST['card_featured']) && $_POST['card_featured'] ) $keys[] = "card_featured_date";
+
+	    $res = ZaiviaBusiness::calculateEndDate($entity_id, $date, $keys);
+
+	    foreach($res as $key => $date ) {
+		    $res[$key] = ZaiviaBusiness::formatDate($date);
+        }
+        echo json_encode($res);
+        die;
+    }
+
+    add_action( 'wp_ajax_activateBusiness', 'activateBusiness' );
+    add_action( 'wp_ajax_nopriv_activateBusiness', 'activateBusiness' );
+    function activateBusiness() {
+        $res = [];
+
+        if($_POST['payment-data']){
+	        $entity_id = isset($_POST['entity_id']) ? (int)$_POST['entity_id'] : "";
+	        $type = isset($_POST['type']) ? $_POST['type'] : "";
+
+	        parse_str($_POST['payment-data'], $paymentData);
+
+            if ( !$entity_id || !$type || !$paymentData ) {
+                $res["payment_error"] = __("Entity not set");
+            }
+
+            $payed = am_processPayment( $paymentData, ZaiviaBusiness::calculatePrice( $entity_id ) );
+            if ($payed === true ) {
+                if ( ! ZaiviaBusiness::activateBusiness( $entity_id, $type ) ) {
+                    $res["payment_error"] = __("Activation Error");
+                }
+            } else {
+                $res = $payed;
+            }
+        }
+        echo json_encode($res);
+        die;
+    }
+
+
+    function am_processPayment($data, $price) {
+        if(!$price) return true;
+
+        if(isset($data['saved_card']) && $data['saved_card']){
+            $cards = am_getCurrentUserCCs();
+            foreach($cards as $card){
+                if($card['cc_uid'] == $data['saved_card']){
+                    $card_number = $card['cc_number'];
+                    $card_name = $card['cardholder_name'];
+                    $card_m = $card['cc_date_m'];
+                    $card_y = $card['cc_date_y'];
+                    $card_cvv = $card['cvv'];
+                    break;
+                }
+            }
+        } else {
+            $card_number = isset($data['cc_number']) ? $data['cc_number'] : '';
+            $card_name = isset($data['cardholder_name']) ? $data['cardholder_name'] : '';
+            $card_m = isset($data['cc_date_m']) ? $data['cc_date_m'] : '';
+            $card_y = isset($data['cc_date_y']) ? $data['cc_date_y'] : '';
+            $card_cvv = isset($data['cvv']) ? $data['cvv'] : '';
+        }
+
+        $res = [];
+
+        if(!am_validateCCNumber($card_number))  $res[] = 'cc_number';
+        if(!$card_cvv) $res[] = 'cvv';
+        if(!$card_m) $res[] = 'cc_date_m';
+        if(!$card_y) $res[] = 'cc_date_y';
+
+        if(count($res)){
+            return ["errors" => $res];
+        }
+
+        $payed = bamboraPayByCard($card_name, $card_number, $card_m, $card_y, $card_cvv, $price);
+
+        if($payed !== true ){
+            return ["payment_error"=>$payed];
+        }
+
+        return true;
+    }
 
 	add_filter( 'wp_nav_menu_items', function( $items, $args ) {
 		if ($args->theme_location == 'accountmenu') {
@@ -273,33 +474,6 @@
 		return $items;
 	}, 10, 2 );
 
-	add_filter('wp_authenticate_user', function($user) {
-		$data = get_user_meta($user->ID, 'activation_hash', true);
-		if (!$data) {
-			return $user;
-		}
-		return new WP_Error('ERROR','Please, activate account first' );
-	}, 10, 2);
-
-
-	add_action( 'init', 'am_processActivation' );
-	function am_processActivation(){
-		if(isset($_GET['akey'])){
-			$hash = $_GET['akey'];
-
-			$userId = (int)get_option('activation_hash_' . $_GET['akey']);
-			if($userId) {
-				delete_user_meta( $userId, 'activation_hash' );
-				delete_option('activation_hash_' . $hash);
-			} else {
-			    var_dump('activation_hash_' . $_GET['akey']);
-			    die;
-            }
-
-			wp_redirect(home_url(get_field("page_account_activated", "option")));
-			die;
-		}
-	}
 
 	add_action( 'wp_ajax_login_form', 'login_formProcess' );
 	add_action( 'wp_ajax_nopriv_login_form', 'login_formProcess' );
@@ -395,30 +569,6 @@
 		die;
 	}
 
-    function am_setAndSendActivation($userId, $pw){
-        $hash = wp_generate_password(12, false);
-
-        add_user_meta( $userId, 'activation_hash', $hash );
-        add_option('activation_hash_' . $hash, $userId);
-
-        $user_info = get_userdata($userId);
-
-        $activationLink = home_url('/').'activate?akey='.$hash;
-
-        $to = $user_info->user_email;
-        $subject = __('Member Verification');
-        $message = __('Hello, ').$user_info->display_name;
-        $message .= "<br>";
-        $message .= __('You password is').' <b>' . $pw . '</b>';
-        $message .= "<br><br>";
-        $message .= __('Please click this link to activate your account:');
-        $message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
-
-        $headers = '';
-        add_filter('wp_mail_content_type', 'am_html_email');
-        wp_mail( $to, $subject, $message, $headers );
-        remove_filter('wp_mail_content_type', 'am_html_email');
-    }
 
 
 
@@ -508,7 +658,7 @@
 		$cc_type = $_POST['cc_type'];
 		$cc_date_m = $_POST['cc_date_m'];
 		$cc_date_y = $_POST['cc_date_y'];
-		$ccv = trim($_POST['ccv']);
+		$cvv = trim($_POST['cvv']);
 
 		$cc_number_safe = am_validateCCNumber($cc_number);
 
@@ -524,7 +674,7 @@
 			'cc_type'         => $cc_type,
 			'cc_date_m'       => $cc_date_m,
 			'cc_date_y'       => $cc_date_y,
-			'ccv'             => $ccv,
+			'cvv'             => $cvv,
 		];
 
 		$oldCcs = am_getCurrentUserCCs();
@@ -543,7 +693,7 @@
 
 		update_user_meta($user_id,"ccs", $oldCcs);
 		unset($data['cc_number']);
-		unset($data['ccv']);
+		unset($data['cvv']);
 
 		echo json_encode($data);
 		die;
@@ -620,10 +770,43 @@
 		die;
 	}
 
+    add_filter('wp_authenticate_user', function($user) {
+        $data = get_user_meta($user->ID, 'activation_hash', true);
+        if (!$data) {
+            return $user;
+        }
+        return new WP_Error('ERROR','Please, activate account first' );
+    }, 10, 2);
+
+
+    add_action( 'init', 'am_processActivation' );
+    function am_processActivation(){
+        if(isset($_GET['akey'])){
+            $hash = $_GET['akey'];
+
+            $userId = (int)get_option('activation_hash_' . $_GET['akey']);
+            if($userId) {
+                delete_user_meta( $userId, 'activation_hash' );
+                delete_option('activation_hash_' . $hash);
+            } else {
+                var_dump('activation_hash_' . $_GET['akey']);
+                die;
+            }
+
+            wp_redirect(home_url(get_field("page_account_activated", "option")));
+            die;
+        }
+    }
+
+
 	add_action( 'wp_ajax_getListings', 'getListings' );
 	add_action( 'wp_ajax_nopriv_getListings', 'getListings' );
 	function getListings() {
-	    echo json_encode(ZaiviaListings::searchListings($_REQUEST));
+		$res = ZaiviaListings::searchListings($_REQUEST);
+		ob_start();
+		include(get_template_directory() . "/templates/listing-empty.php");
+		$res['no_result'] = ob_get_clean();
+	    echo json_encode($res);
 	    die;
 	}
 
@@ -694,31 +877,26 @@
 		die;
 	}
 
-	add_action( 'wp_ajax_getMarket', 'getMarket' );
-	add_action( 'wp_ajax_nopriv_getMarket', 'getMarket' );
-	function getMarket() {
-		echo json_encode(ZaiviaListings::getMarket(intval($_REQUEST['id'])));
-		die;
-	}
-
     add_action( 'wp_ajax_reportListing', 'reportListing' );
     add_action( 'wp_ajax_nopriv_reportListing', 'reportListing' );
     function reportListing() {
-        $post_data = http_build_query([
-            'secret' => RECAPTCHA,
-            'response' => $_POST['g-recaptcha-response'],
-            'remoteip' => $_SERVER['REMOTE_ADDR']
-        ]);
-        $opts = ['http' =>[
-            'method'  => 'POST',
-            'header'  => 'Content-type: application/x-www-form-urlencoded',
-            'content' => $post_data
-        ] ];
-
+        $post_data = http_build_query(
+            array(
+                'secret' => RECAPTCHA,
+                'response' => $_POST['g-recaptcha-response'],
+                'remoteip' => $_SERVER['REMOTE_ADDR']
+            )
+        );
+        $opts = array('http' =>
+                          array(
+                              'method'  => 'POST',
+                              'header'  => 'Content-type: application/x-www-form-urlencoded',
+                              'content' => $post_data
+                          )
+        );
         $context  = stream_context_create($opts);
         $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
         $result = json_decode($response);
-
         if ($result->success) {
             $message = __('From:', 'am').' '. $_REQUEST["report_full_name"];
             $message .= '<br>'. __('Email:', 'am') .' '. $_REQUEST["report_email"];
@@ -729,8 +907,7 @@
             $message .= '<br>'.__('Message:', 'am').' ' . $_REQUEST["report_text"];
 
             add_filter('wp_mail_content_type', 'am_html_email');
-            wp_mail(get_field("report_email", "option"), 'Report Listing', $message);
-
+            wp_mail('zaivia@mailinator.com', 'Report Listing', $message);
             if($_REQUEST["report_send_copy"]){
                 $user_info = get_userdata(get_current_user_id());
                 if($user_info) {
@@ -738,51 +915,38 @@
                 }
             }
             remove_filter('wp_mail_content_type', 'am_html_email');
-            echo json_encode(['ok' => true]);
+            echo json_encode(array('ok' => true));
         } else {
-            echo json_encode(['error' => 'Captcha fail']);
+            echo json_encode(array('error' => 'Captcha fail'));
         }
         die;
     }
 
+	add_action( 'wp_ajax_getMarket', 'getMarket' );
+	add_action( 'wp_ajax_nopriv_getMarket', 'getMarket' );
+	function getMarket() {
+		echo json_encode(ZaiviaListings::getMarket(intval($_REQUEST['id'])));
+		die;
+	}
 
+    add_action( 'wp_ajax_getMortage', 'getMortage' );
+    add_action( 'wp_ajax_nopriv_getMarket', 'getMortage' );
+    function getMortage() {
+	    $price = (int)str_replace([",","."], "", $_REQUEST['calc_price']);
+	    $deposit = (int)str_replace([",","."], "", $_REQUEST['calc_deposit']);
+	    $rate = (float)str_replace([","], "", $_REQUEST['calc_rate']);
+	    $period = (int)str_replace([",","."], "", $_REQUEST['calc_period']);
 
-    add_action( 'wp_ajax_uploadBannerFile', 'uploadBannerFile' );
-    add_action( 'wp_ajax_nopriv_uploadBannerFile', 'uploadBannerFile' );
-    function uploadBannerFile() {
-        $list = [];
-        $user_id = get_current_user_id();
+	    $price = ZaiviaListings::calculateMortage($price, $deposit, $rate, $period);
 
-        if($_FILES && $user_id) {
-            $list = ZaiviaBusiness::addBusinessFile($user_id);
-        }
-
-        echo json_encode($list);
+        echo json_encode(ZaiviaListings::formatMoney($price));
         die;
     }
 
-    add_action( 'wp_ajax_add_banner_form', 'add_banner_formProcess' );
-    add_action( 'wp_ajax_nopriv_add_banner_form', 'add_banner_formProcess' );
-    function add_banner_formProcess() {
-	    $nonce = $_POST['add_banner_nonce'];
-	    if ( ! wp_verify_nonce( $nonce, 'zai_add_banner' ) ) {
-		    echo json_encode(['error'=>'Security checked!']);
-		    die;
-	    }
 
-	    $res = ZaiviaBusiness::addBanner($_POST);
-
-	    echo json_encode($res);
-	    die;
-    }
-
-
-
-
-
-    add_action( 'wp_ajax_getPayment', 'getPayment' );
-    add_action( 'wp_ajax_nopriv_getPayment', 'getPayment' );
-    function getPayment() {
+    add_action( 'wp_ajax_getPaymentForm', 'getPaymentForm' );
+    add_action( 'wp_ajax_nopriv_getPaymentForm', 'getPaymentForm' );
+    function getPaymentForm() {
         $items = [];
         $sum = 0;
         $discounts = 0;
@@ -801,28 +965,28 @@
                 if ( $listing['featured'] ) {
                     $items[] = [
                         'label' => __( 'Featured Listing', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $featured_price )
+                        'price' => ZaiviaListings::formatMoney( $featured_price, 2 )
                     ];
                     $sum     += $featured_price;
                 }
                 if ( $listing['premium'] ) {
                     $items[] = [
                         'label' => __( 'Premium Listing', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $premium_price )
+                        'price' => ZaiviaListings::formatMoney( $premium_price, 2 )
                     ];
                     $sum     += $premium_price;
                 }
                 if ( $listing['url'] ) {
                     $items[] = [
                         'label' => __( 'Website URL', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $url_price )
+                        'price' => ZaiviaListings::formatMoney( $url_price, 2 )
                     ];
                     $sum     += $url_price;
                 }
                 if ( $listing['bump_up'] ) {
                     $items[] = [
                         'label' => __( 'Bump Up', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $bump_price )
+                        'price' => ZaiviaListings::formatMoney( $bump_price, 2 )
                     ];
                     $sum     += $bump_price;
                 }
@@ -834,17 +998,18 @@
             }
         }
 
-        if($_POST['type'] === 'banner'){
+        if($_POST['type'] === ZaiviaBusiness::$posttype_banner){
             $entityId = intval($_REQUEST['id']);
 
-            $banner = ZaiviaBusiness::getEntities('banner', $entityId, $userId);
-            if($banner) {
-                $price = (int) get_field( "banner_price", "option" );
-                $duration = get_post_meta( $entityId, "duration" );
+	        $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $entityId, $userId);
+            if($item) {
+                $price = ZaiviaBusiness::calculatePrice($entityId);
+
+                $duration = get_post_meta( $entityId, "duration", true );
 
                 $items[] = [
-                    'label' => __( 'Banner Ad:', 'am' ) . ' ' . $duration . __( 'month(s):', 'am' ),
-                    'price' => ZaiviaListings::formatMoney( $price )
+                    'label' => __( 'Banner Ad:', 'am' ) . ' ' . $duration . ' ' . __( 'month(s):', 'am' ),
+                    'price' => ZaiviaListings::formatMoney( $price, 2 )
                 ];
                 $sum += $price;
             } else {
@@ -855,84 +1020,193 @@
             }
         }
 
-        echo json_encode(['total'=>($sum-$discounts), 'subtotal'=>$sum, 'discounts'=>$discounts, 'items'=>$items]);
+	    if($_POST['type'] === ZaiviaBusiness::$posttype_card){
+		    $entityId = intval($_REQUEST['id']);
+
+		    $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $entityId, $userId);
+		    if($item) {
+			    $prices = ZaiviaBusiness::calculatePrice($entityId);
+
+			    $duration = get_post_meta( $entityId, "duration", true );
+                $keys = [
+                    "sponsor" =>  __( 'Mortgage Broker Sponsorship:', 'am' ),
+			        "link" =>  __( 'Added Link to Your Website:', 'am' ),
+                    "featured" =>  __( 'Featured Community Partnership', 'am' ),
+                ];
+                foreach($keys as $key=>$label) {
+                    if(isset($prices[$key])){
+                        $items[] = [
+                            'label' => $label . ' ' . $duration . ' ' . __( 'month(s):', 'am' ),
+                            'price' => ZaiviaListings::formatMoney( $price, 2 )
+                        ];
+                        $sum += $prices[$key];
+                    }
+                }
+		    } else {
+			    $items[] = [
+				    'label' => __( "That's not yours", 'am' ),
+				    'price' => ''
+			    ];
+		    }
+	    }
+
+        echo json_encode([
+                'total_num' => $sum - $discounts,
+                'total'=>ZaiviaListings::formatMoney( ($sum - $discounts), 2 ),
+                'subtotal'=>ZaiviaListings::formatMoney( $sum, 2 ),
+                'discounts'=>ZaiviaListings::formatMoney( $discounts, 2 ),
+                'items'=>$items
+        ]);
         die;
     }
 
-	function am_getCurrentUserCCs(){
-		$res = get_user_meta(get_current_user_id(), "ccs", true);
-		return $res ? $res : [];
+
+
+function am_getCurrentUserCCs(){
+	$res = get_user_meta(get_current_user_id(), "ccs", true);
+	return $res ? $res : [];
+}
+
+
+function am_validateCCNumber($cc, $extra_check = true){
+	$cards = array(
+		"visa" => "(4\d{12}(?:\d{3})?)",
+		"amex" => "(3[47]\d{13})",
+		"jcb" => "(35[2-8][89]\d\d\d{10})",
+		"maestro" => "((?:5020|5038|6304|6579|6761)\d{12}(?:\d\d)?)",
+		"solo" => "((?:6334|6767)\d{12}(?:\d\d)?\d?)",
+		"mastercard" => "(5[1-5]\d{14})",
+		"switch" => "(?:(?:(?:4903|4905|4911|4936|6333|6759)\d{12})|(?:(?:564182|633110)\d{10})(\d\d)?\d?)",
+	);
+	$matches = array();
+	$pattern = "#^(?:".implode("|", $cards).")$#";
+	$result = preg_match($pattern, str_replace(" ", "", $cc), $matches);
+	if($extra_check && $result > 0){
+		$result = (validatecard($cc))?1:0;
 	}
+	if($result > 0) {
+		return str_repeat('X', strlen($cc) - 4) . substr($cc, -4);
+	} else {
+		return false;
+	}
+}
+function validatecard($cardnumber) {
+	$cardnumber=preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
+	$cardlength=strlen($cardnumber);
+	$parity=$cardlength % 2;
+	$sum=0;
+	for ($i=0; $i<$cardlength; $i++) {
+		$digit=$cardnumber[$i];
+		if ($i%2==$parity) $digit=$digit*2;
+		if ($digit>9) $digit=$digit-9;
+		$sum=$sum+$digit;
+	}
+	$valid=($sum%10==0);
+	return $valid;
+}
 
+function bamboraPayByCard($card_name, $card_number, $card_m, $card_y, $card_cvv, $amount){
+	require_once 'Beanstream/Gateway.php';
+	require_once 'Beanstream/Exception.php';
 
-	function am_validateCCNumber($cc, $extra_check = true){
-		$cards = array(
-			"visa" => "(4\d{12}(?:\d{3})?)",
-			"amex" => "(3[47]\d{13})",
-			"jcb" => "(35[2-8][89]\d\d\d{10})",
-			"maestro" => "((?:5020|5038|6304|6579|6761)\d{12}(?:\d\d)?)",
-			"solo" => "((?:6334|6767)\d{12}(?:\d\d)?\d?)",
-			"mastercard" => "(5[1-5]\d{14})",
-			"switch" => "(?:(?:(?:4903|4905|4911|4936|6333|6759)\d{12})|(?:(?:564182|633110)\d{10})(\d\d)?\d?)",
-		);
-		$matches = array();
-		$pattern = "#^(?:".implode("|", $cards).")$#";
-		$result = preg_match($pattern, str_replace(" ", "", $cc), $matches);
-		if($extra_check && $result > 0){
-			$result = (validatecard($cc))?1:0;
+	if($card_m < 10) $card_m = "0".$card_m;
+	if($card_y > 2000) $card_y -= 2000;
+
+	$card = [
+		'name'=>$card_name,
+		'number' => $card_number,
+		'expiry_month' => $card_m,
+		'expiry_year' => $card_y,
+		'cvd' => $card_cvv
+	];
+
+	$beanstream = new Beanstream\Gateway(get_field( "bambora_merchant_id", "option" ), get_field( "bambora_api_key", "option" ),'www','v1');
+	$payment_data = array(
+		'order_number' => bin2hex(random_bytes(10)),
+		'amount' => $amount,
+		'payment_method' => 'card',
+		'card' => $card
+	);
+
+	try {
+		$result = $beanstream->payments()->makeCardPayment($payment_data);
+		if(!is_null($result) and $result['approved'] == '1'){
+			return true;
 		}
-		if($result > 0) {
-			return str_repeat('X', strlen($cc) - 4) . substr($cc, -4);
-		} else {
-			return false;
+		return "Payment Error";
+	} catch (\Beanstream\Exception $e) {
+		return $e->getMessage();
+	}
+}
+
+
+function am_setAndSendActivation($userId, $pw){
+	$hash = wp_generate_password(12, false);
+
+	add_user_meta( $userId, 'activation_hash', $hash );
+	add_option('activation_hash_' . $hash, $userId);
+
+	$user_info = get_userdata($userId);
+
+	$activationLink = home_url('/').'activate?akey='.$hash;
+
+	$to = $user_info->user_email;
+	$subject = __('Member Verification');
+	$message = __('Hello, ').$user_info->display_name;
+	$message .= "<br>";
+	$message .= __('You password is').' <b>' . $pw . '</b>';
+	$message .= "<br><br>";
+	$message .= __('Please click this link to activate your account:');
+	$message .= '<a href="' . $activationLink . '">'. $activationLink .'</a>';
+
+	$headers = '';
+	add_filter('wp_mail_content_type', 'am_html_email');
+	wp_mail( $to, $subject, $message, $headers );
+	remove_filter('wp_mail_content_type', 'am_html_email');
+}
+
+function am_html_email(){ return "text/html"; }
+
+function am_array_search($search, $field, $array) {
+	foreach ($array as $key => $val) {
+		if ($val[$field] === $search) {
+			return $key;
 		}
 	}
-    function validatecard($cardnumber) {
-        $cardnumber = preg_replace("/\D|\s/", "", $cardnumber);  # strip any non-digits
-        $cardlength = strlen($cardnumber);
-        $parity = $cardlength % 2;
-        $sum = 0;
-        for ($i = 0; $i < $cardlength; $i++) {
-            $digit = $cardnumber[$i];
-            if ($i%2 == $parity) $digit = $digit * 2;
-            if ($digit > 9) $digit = $digit - 9;
-            $sum = $sum + $digit;
-        }
-        $valid = ($sum % 10 == 0);
+	return null;
+}
 
-        return $valid;
-    }
-
-	function am_html_email(){ return "text/html"; }
-
-	function am_array_search($search, $field, $array) {
-		foreach ($array as $key => $val) {
-			if ($val[$field] === $search) {
-				return $key;
-			}
-		}
-		return null;
-	}
-
-	function am_renderOtherControl($listing, $key, $additionalClass="") {
-        $items = get_field($key, 'option');
-        if($items){
-            $itemsNames = array_map(function ($i) { return $i['name']; }, $items);
-            $other = ($listing && $listing[$key] && !in_array($listing[$key], $itemsNames)) ? true : false;
-        ?>
+function am_renderOtherControl($listing, $key, $additionalClass="") {
+	$items = get_field($key, 'option');
+	if($items){
+		$itemsNames = array_map(function ($i) { return $i['name']; }, $items);
+		$other = ($listing && $listing[$key] && !in_array($listing[$key], $itemsNames)) ? true : false;
+		?>
         <select name="<?php echo $key ?>" id="<?php echo $key ?>"
                 class="tosave have_other <?php echo $additionalClass ?>" title="">
             <option value=""><?php _e('-select-', 'am') ?></option>
-            <?php foreach ($items as $item): ?>
+			<?php foreach ($items as $item): ?>
                 <option value="<?php echo $item['name'] ?>" <?php echo ($listing && $listing[$key] === $item['name']) ? 'selected' : ''; ?>><?php echo $item['name'] ?></option>
-            <?php endforeach; ?>
+			<?php endforeach; ?>
             <option value="other" <?php echo $other ? 'selected' : ''; ?>><?php _e('Other', 'am') ?></option>
         </select>
         <input name="<?php echo $key ?>_other" id="<?php echo $key ?>_other"
                value="<?php echo $other ? $listing[$key] : "" ?>" type="text"
                class="value_other<?php echo $other ? ' active' : ''; ?>" title="">
-        <?php
-        }
+		<?php
 	}
+}
 
-
+function am_renderUploaderControl($item, $key, $uploaderKey="business_upload", $width="", $additionalClass="") {
+?>
+    <input type="hidden" name="<?php echo $key?>_upload_input_media" id="<?php echo $key?>_upload_input_media" value="<?php echo isset($item[$key.'_id']) ? $item[$key.'_id'] : '';?>">
+    <fieldset>
+        <img
+            id="<?php echo $key?>_upload_input_src"
+            src="<?php echo isset($item[$key.'_url']) ? $item['card_profile_image_url'] : '';?>"
+            <?php if($width):?>width="<?php echo $width;?>"<?php endif;?> alt="">
+    </fieldset>
+    <label class="btn btn-secondary mb-15"><?php _e('Upload image', 'am') ?><input type="file" name="E" class="<?php echo $uploaderKey?>" id="<?php echo $key?>_upload_input"></label>
+    <p id="<?php echo $key?>_upload_input_file-errors"></p>
+<?php
+}
