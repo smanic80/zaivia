@@ -22,14 +22,9 @@ if($listing): ?>
                 <h1><?php echo $listing['unit_number'].' '.$listing['address']; ?></h1>
                 <p><?php echo $listing['city'].', '.$listing['province']; ?></p>
             </div>
-            <div class="price"><?php echo $listing['price']; ?><div class="time">
-                <?php if($listing['sale_rent'] == ZaiviaListings::$for_rent){
-                    echo $listing['price_per_month'];
-                } else {
-                    _e('Est. Mortage','am');
-                    echo ': <span class="calc_payment">-</span>/mth';
-                } ?>
-                </div>
+            <div class="price">
+                <?php echo $listing['price_formatted']; ?>
+                <div class="time"><?php echo $listing['price_per_month']; ?></div>
             </div>
         </div>
     </div>
@@ -84,7 +79,7 @@ if($listing): ?>
                                             <h4><?php echo $listing['listing_type_title']; ?></h4>
                                         </div>
                                         <div class="col-sm-4 text-right">
-                                            <h4><?php echo $listing['price']; ?><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?> / <?php _e('month','am') ?><?php endif; ?></h4>
+                                            <h4><?php echo $listing['price_formatted']; ?><?php if($listing['sale_rent'] == ZaiviaListings::$for_rent): ?> / <?php _e('month','am') ?><?php endif; ?></h4>
                                         </div>
                                     </div>
 
@@ -385,16 +380,16 @@ if($listing): ?>
                                 </div>
                                 <div class="row gutters-50">
                                     <div class="col-sm-75">
-                                        <p><?php _e('Quickly estimate your mortgage payments with our handy calculator.','am') ?></p>
+                                        <p><?php the_field("mortgage_calculator_title")?></p>
                                         <div class="styled-form">
-                                            <form action="#">
+                                            <form action="#" id="getMortage">
                                                 <fieldset>
                                                     <div class="row">
                                                         <div class="col-sm-6 col-xl-5">
                                                             <label><?php _e('Property Price','am') ?></label>
                                                         </div>
                                                         <div class="col-sm-6 col-xl-7">
-                                                            <input type="text" id="calc_price" title="" value="<?php echo str_replace(array('$',','),'', $listing['price']); ?>">
+                                                            <input type="text" id="calc_price" title="" value="<?php echo $listing['price']; ?>" class="mortage-calc us-price">
                                                         </div>
                                                     </div>
                                                 </fieldset>
@@ -404,7 +399,7 @@ if($listing): ?>
                                                             <label><?php _e('Deposit','am') ?></label>
                                                         </div>
                                                         <div class="col-sm-6 col-xl-7">
-                                                            <input type="text" id="calc_deposit" title="">
+                                                            <input type="text" id="calc_deposit" title="" value="<?php echo (int)get_field( "mortage_default_deposit", "option" );?>" class="mortage-calc us-price">
                                                         </div>
                                                     </div>
                                                 </fieldset>
@@ -414,7 +409,7 @@ if($listing): ?>
                                                             <label><?php _e('Annual interest','am') ?></label>
                                                         </div>
                                                         <div class="col-sm-6 col-xl-7">
-                                                            <input type="text" id="calc_annual" title="">
+                                                            <input type="text" id="calc_rate" title="" value="<?php echo get_field( "mortage_annual_interest", "option" );?>" class="mortage-calc">
                                                         </div>
                                                     </div>
                                                 </fieldset>
@@ -424,7 +419,7 @@ if($listing): ?>
                                                             <label><?php _e('Repayment Period','am') ?></label>
                                                         </div>
                                                         <div class="col-sm-6 col-xl-7">
-                                                            <input type="text" id="calc_period" title="">
+                                                            <input type="text" id="calc_period" title="" value="<?php echo (int)get_field( "mortage_payment_period", "option" );?>" class="mortage-calc">
                                                         </div>
                                                     </div>
                                                 </fieldset>
@@ -434,80 +429,22 @@ if($listing): ?>
                                                             <label><?php _e('Monthly Payment','am') ?></label>
                                                         </div>
                                                         <div class="col-sm-6 col-xl-7 text-right">
-                                                            <strong class="calc_payment">-</strong>
+                                                            <strong class="calc_payment"><?php echo ZaiviaListings::formatMoney(ZaiviaListings::calculateMortage($listing['price'])) ?></strong>
                                                         </div>
                                                     </div>
                                                 </fieldset>
                                             </form>
-                                            <p class="note"><?php _e('These results are only intended as a guide. Make sure you obtain accurate figures from a mortgage broker or lender before committing to any mortgage.','am') ?></p>
+                                            <p class="note"><?php the_field("mortgage_calculator_disclaimer")?></p>
                                         </div>
                                     </div>
                                     <div class="col-sm-45">
                                         <div class="pl">
-                                            <p><?php _e('Mortgage Calculator sponsored by the following Featured Community Partner','am') ?></p>
+                                            <p><?php the_field("mortgage_calculator_sponsor_title")?></p>
                                         </div>
 
-                                        <div class="agent-item">
-                                            <div class="image">
-                                                <a href="#"><img src="images/p1.jpg" alt=""></a>
-                                            </div>
-                                            <div class="text">
-                                                <div class="center">
-                                                    <h4><a href="#">John Smith</a></h4>
-                                                    <div class="role">
-                                                        Web Designer
-                                                    </div>
-                                                    <div class="by">
-                                                        <h6>Business</h6>
-                                                        <p>YasTech Developments</p>
-                                                        <a href="#"><img src="images/a1.png" alt=""></a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="bottom">
-                                                <ul>
-                                                    <li>
-                                                        <a href="tel:3061234567">
-                                                            <i class="fa fa-phone" aria-hidden="true"></i>
-                                                            <span class="tooltip">
-                                                                <i class="fa fa-phone" aria-hidden="true"></i>
-                                                                <strong>Phone</strong><br>Office: 306-123-4567
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="mailto:">
-                                                            <i class="fa fa-envelope" aria-hidden="true"></i>
-                                                            <span class="tooltip">
-                                                                <i class="fa fa-envelope" aria-hidden="true"></i>
-                                                                <strong>Mail</strong><br>email.com
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="#">
-                                                            <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                                            <span class="tooltip">
-                                                                <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                                                <strong>Address</strong><br>Street
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                    <li>
-                                                        <a href="#">
-                                                            <i class="fa fa-chain" aria-hidden="true"></i>
-                                                            <span class="tooltip">
-                                                                <i class="fa fa-chain" aria-hidden="true"></i>
-                                                                <strong>Link</strong><br>www.com
-                                                            </span>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                                <div class="profile">
-                                                    <a href="#">View Profile</a>
-                                                </div>
-                                            </div>
-                                        </div>
+	                                    <?php include(locate_template('templates/business-card.php')); ?>
+
+
                                         <div class="widget widget-promo">
                                             <h3>WOULD YOU LIKE TO BE A <br>FEATURED COMMUNITY <br>PARTNER</h3>
                                             <a href="#report" class="open-modal btn btn-secondary">Sign Up Today!</a>
@@ -628,67 +565,7 @@ if($listing): ?>
                 </div>
                 <div class="widget widget-need">
                     <h3><?php _e('Listed By Agent','am') ?></h3>
-                    <div class="agent-item">
-                        <div class="image">
-                            <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/p1.jpg" alt=""></a>
-                        </div>
-                        <div class="text">
-                            <div class="center">
-                                <h4><a href="#">John Smith</a></h4>
-                                <div class="role">
-                                    Web Designer
-                                </div>
-                                <div class="by text-left">
-                                    <h6>Bisiness</h6>
-                                    <p>YasTech Developments</p>
-                                    <a href="#"><img src="<?php echo get_template_directory_uri(); ?>/images/a1.png" alt=""></a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="bottom">
-                            <ul>
-                                <li>
-                                    <a href="tel:3061234567">
-                                        <i class="fa fa-phone" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-phone" aria-hidden="true"></i>
-                                            <strong><?php _e('Phone','am') ?></strong><br>Office: 306-123-4567
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="mailto:">
-                                        <i class="fa fa-envelope" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-envelope" aria-hidden="true"></i>
-                                            <strong><?php _e('Mail','am') ?></strong><br>email.com
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-map-marker" aria-hidden="true"></i>
-                                            <strong><?php _e('Address','am') ?></strong><br>Street
-                                        </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#">
-                                        <i class="fa fa-chain" aria-hidden="true"></i>
-                                        <span class="tooltip">
-                                            <i class="fa fa-chain" aria-hidden="true"></i>
-                                            <strong><?php _e('Link','am') ?></strong><br>www.com
-                                        </span>
-                                    </a>
-                                </li>
-                            </ul>
-                            <div class="profile">
-                                <a href="#"><?php _e('View Profile','am') ?></a>
-                            </div>
-                        </div>
-                    </div>
+	                <?php echo ZaiviaBusiness::renderCard(ZaiviaBusiness::listingContactToCard(ZaiviaListings::getListingContact($listing['listing_id'])));?>
                 </div>
                 <div class="widget widget-listing">
                     <a href="#"><?php _e('View Other Listings','am') ?></a>
@@ -734,21 +611,21 @@ if($listing): ?>
                 <h3 class="report"><i class="fa fa-flag-o" aria-hidden="true"></i>Report Listing </h3>
                 <div class="styled-form">
                     <form action="#" method="post" id="reportListing">
-                        <input type="text" placeholder="Full Name" id="report_full_name">
-                        <input type="email" size="40" class="wpcf7-form-control wpcf7-text wpcf7-email wpcf7-validates-as-required wpcf7-validates-as-email half" placeholder="Email" aria-required="true" aria-invalid="false" id="report_email">
-                        <input type="text" class="half-r" placeholder="Phone" id="report_phone">
-                        <select id="report_reason" title=""><option value="1">Reason For Reporting</option></select>
+                        <input type="text" placeholder="<?php _e('Full Name','am') ?>" id="report_full_name">
+                        <input type="email" size="40" class="wpcf7-form-control wpcf7-text wpcf7-email wpcf7-validates-as-required wpcf7-validates-as-email half" placeholder="<?php _e('Email','am') ?>" aria-required="true" aria-invalid="false" id="report_email">
+                        <input type="text" class="half-r" placeholder="<?php _e('Phone','am') ?>" id="report_phone">
+                        <select id="report_reason" title=""><option value="1"><?php _e('Reason For Reporting','am') ?></option></select>
                         <textarea placeholder="Please Describe The Problem" id="report_text"></textarea>
                         <p>
                             <span class="wpcf7-form-control-wrap checkbox-399">
                                 <span class="wpcf7-form-control wpcf7-checkbox">
                                     <span class="wpcf7-list-item first">
-                                        <label><input type="checkbox" value="1" id="report_send_copy">&nbsp;<span class="wpcf7-list-item-label">Send me a copy of the email</span></label>
+                                        <label><input type="checkbox" value="1" id="report_send_copy">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Send me a copy of the email','am') ?></span></label>
                                     </span>
                                 </span>
                             </span>
                         </p>
-                        <div class="g-recaptcha" data-sitekey="6Le5j0sUAAAAABC0PwDA8hjfUWT-Te_nhf-fYluN"></div>
+                        <div class="g-recaptcha" data-sitekey="<?php the_field('recaptcha_key', "option"); ?>"></div>
                         <input type="submit" value="Send Message" class="wpcf7-form-control wpcf7-submit">
                     </form>
                 </div>

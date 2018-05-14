@@ -1,0 +1,1 @@
+<div class="no-found-line"><h1><?php _e('No Search Results Found', 'am') ?></h1><p><?php _e('Please try searching for properties in a different city.', 'am') ?></p></div>

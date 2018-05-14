@@ -64,11 +64,25 @@ class listing_base {
 	];
 
 	public static function formatDate($date) {
+		if(!$date || is_array($date)) return "";
+
+		if(is_numeric($date)) return date("M j, Y ", $date);
+
 		$d = new DateTime($date);
 		return $d->format("M j, Y ");
 	}
-	public static function formatMoney($var) {
-		return "$" . number_format((float)$var, 2);
+	public static function formatMoney($var, $dec = 0) {
+		return "$" . number_format((float)$var, $dec);
+	}
+
+	public static function formatPhone($var) {
+		$var = preg_replace("/[^\d]/","",$var);
+		$length = strlen($var);
+		if($length == 10) {
+			$var = preg_replace("/^1?(\d{3})(\d{3})(\d{4})$/", "$1-$2-$3", $var);
+		}
+
+		return $var;
 	}
 
 	protected static function getGeoRadiusSql($centerLat, $centerLng, $radius=0){
@@ -78,17 +92,28 @@ class listing_base {
 		return $sql;
 	}
 
-	protected static function getCityCoords($city, $rad=10){
+	protected static function getCityCoords($city){
 		if(!$city) return false;
 
-		$geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($city));
-		$geo = @json_decode($geo, true);
+		$cleanCity = sanitize_key($city);
 
-		if($geo && count($geo['items'])) {
-			return ['lat'=> $geo['items'][0]['latitude'], 'lng' => $geo['items'][0]['longitude'] ];
+		$geo = get_transient("geo_".$cleanCity);
+		if(!$geo) {
+			$geo = file_get_contents('http://geogratis.gc.ca/services/geoname/en/geonames.json?concise=CITY,TOWN&sort-field=name&q='.urlencode($city));
+			$geo = @json_decode($geo, true);
+
+			if($geo) {
+				if(count($geo['items'])) {
+					$geo = ['lat'=> $geo['items'][0]['latitude'], 'lng' => $geo['items'][0]['longitude'] ];
+					set_transient("geo_".$cleanCity, $geo, 24 * HOUR_IN_SECONDS * 30 * 30);
+				} else {
+					$geo = null;
+				}
+			}
+
 		}
 
-		return false;
+		return $geo;
 	}
 
 	public function maintenance(){
@@ -104,7 +129,7 @@ class listing_base {
 		}
 
 
-		//unpromote expired card and listing items - clear  flag and date field
+		//unpromote expired card and listing items - clear flag and date field
 
 
 		//send email with serach results

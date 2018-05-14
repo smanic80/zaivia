@@ -642,86 +642,80 @@
             if(!$('body').hasClass('page-template-buy') && !$('body').hasClass('page-template-rent')){
                 return false;
             }
+            var view_type = $(".container .sub-filter li.current a").data('type');
 
-            if(view_type === 'map') {
-                $.ajax({
-                    url: amData.ajaxurl,
-                    dataType: "json",
-                    data: addFilterData({
-                        action: 'getListings',
-                        type: 'map'
-                    }),
-                    success: function (data) {
+            if(!$('.ad-listing').length && view_type !== 'map'){
+                return false;
+            }
+            $.ajax({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: addFilterData({
+                    action: 'getListings',
+                    type: view_type
+                }),
+                success: function (data) {
+                    if(view_type === 'map') {
+                        if(markerCluster){
+                            markerCluster.setMap(null);
+                        }
+
                         if(data.items.length){
                             var bounds = new google.maps.LatLngBounds();
                             for(var c in data.items) if(data.items.hasOwnProperty(c)) {
                                 bounds.extend(new google.maps.LatLng({lat: parseFloat(data.items[c].lat), lng: parseFloat(data.items[c].lng)}));
                             }
 
-                            google.maps.event.trigger(map2,'resize');
+                            google.maps.event.trigger(map2, 'resize');
                             map2.fitBounds(bounds);
                             map2.setZoom(map2.getZoom()-2);
-                        }
-                        if(markerCluster){
-                            markerCluster.setMap(null);
-                        }
-                        markers = data.items.map(function(l) {
-                            var marker = new google.maps.Marker({
-                                position: {lat:parseFloat(l.lat), lng:parseFloat(l.lng)},
-                                icon: amData.template_url+'/images/ico_mappin.png'
+
+                            markers = data.items.map(function(l) {
+                                var marker = new google.maps.Marker({
+                                    position: {lat:parseFloat(l.lat), lng:parseFloat(l.lng)},
+                                    icon: amData.template_url+'/images/ico_mappin.png'
+                                });
+                                marker.listing_id = l.listing_id;
+                                google.maps.event.addListener(marker, 'click', (function(m) {
+
+                                    return function() {
+                                        $.ajax({
+                                            url: amData.ajaxurl,
+                                            dataType: "json",
+                                            data: {
+                                                action: 'getListingItem',
+                                                'listing_id': m.listing_id
+                                            },
+                                            success: function (data) {
+                                                listing_item = wp.template( "popup-item" );
+                                                infobox.setContent(listing_item(data));
+                                                infobox.open(map2, m);
+                                                google.maps.event.trigger(map2, "resize");
+                                            }
+                                        });
+                                    }
+                                })(marker));
+                                return marker;
                             });
-                            marker.listing_id = l.listing_id;
-                            google.maps.event.addListener(marker, 'click', (function(m) {
+                            markerCluster = new MarkerClusterer(map2, markers, {imagePath: amData.template_url+'/images/m'});
+                        }
+                    } else {
+                        var list = $('.ad-listing'),
+                            listing_ad = wp.template( "listing-ad" ),
+                            pagination = $('.pagination'),
+                            filtered = $('.applied-filters ul'),
+                            listing_item;
 
-                                return function() {
-                                    $.ajax({
-                                        url: amData.ajaxurl,
-                                        dataType: "json",
-                                        data: {
-                                            action: 'getListingItem',
-                                            'listing_id': m.listing_id
-                                        },
-                                        success: function (data) {
-                                            listing_item = wp.template( "popup-item" );
-                                            infobox.setContent(listing_item(data));
-                                            infobox.open(map2, m);
-                                            google.maps.event.trigger(map2, "resize");
-                                        }
-                                    });
-                                }
-                            })(marker));
-                            return marker;
-                        });
-                        markerCluster = new MarkerClusterer(map2, markers, {imagePath: amData.template_url+'/images/m'});
-                    }
-                });
-            } else {
-                if(!$('.ad-listing').length){
-                    return false;
-                }
-
-                $.ajax({
-                    url: amData.ajaxurl,
-                    dataType: "json",
-                    data: addFilterData({
-                        action: 'getListings'
-                    }),
-                    success: function (data) {
-                        var type = $('.sub-filter li.current a').data('type');
-                        var list = $('.ad-listing');
-                        var listing_item;
-                        if(type === 'grid'){
+                        if(view_type === 'grid'){
                             listing_item = wp.template( "grid-item" );
                             list.addClass('gallery');
-                        } else if(type === 'list') {
+                        } else {
                             listing_item = wp.template( "listing-item" );
                             list.removeClass('gallery');
                         }
-                        var listing_ad = wp.template( "listing-ad" );
                         list.empty();
-                        var pagination = $('.pagination');
-                        pagination.empty();
-                        var filtered = $('.applied-filters ul');
+
+
                         filtered.empty();
                         if (data.filtered) {
                             filtered.append(data.filtered);
@@ -729,6 +723,15 @@
                         } else {
                             $('.applied-filters').hide();
                         }
+
+                        pagination.empty();
+                        if(data.pagination) {
+                            pagination.append(data.pagination);
+                            $(".pagination-holder").show();
+                        } else {
+                            $(".pagination-holder").hide();
+                        }
+
                         if(data.featured.listing_id || data.items.length) {
                             var index = 0;
                             if (data.featured.listing_id) {
@@ -738,7 +741,7 @@
                             for (var i in data.items) if (data.items.hasOwnProperty(i)) {
                                 list.append(listing_item(data.items[i]));
 
-                                if ((type==='grid' && index % 9 === 8) || (type==='list' && index % 5 === 4)) {
+                                if ((view_type==='grid' && index % 9 === 8) || (view_type==='list' && index % 5 === 4)) {
                                     list.append(listing_ad(data.ads));
                                 }
                             }
@@ -752,26 +755,19 @@
                                 $('.found-line p .result_city').text('');
                             }
 
-
                             $('.found-line p').removeClass('hidden');
-
-                            if(data.pagination) {
-                                pagination.append(data.pagination);
-                                $(".pagination-holder").show();
-                            } else {
-                                $(".pagination-holder").hide();
-                            }
-
                             $('.sub-filter').show();
                         } else {
+                            list.append(data.no_result);
+
                             $('.found-line p').addClass('hidden');
                             $('.sub-filter').hide();
-                            list.append('<div class="no-found-line"><h1>No Search Results Found</h1><p>Please try searching for properties in a different city.</p></div>');
                         }
                     }
-                });
-            }
+                }
+            });
         }
+
         $("input.update_checks").each(function(){
             var checks = [];
 
@@ -902,6 +898,7 @@
             return false;
         });
         if(window.location.hash) {
+console.log($('.tab-control a[href$="'+window.location.hash+'"]'));
             $('.tab-control a[href$="'+window.location.hash+'"]').trigger("click");
         }
 
@@ -1003,29 +1000,20 @@
                 'edit_phone', 'edit_phonetype'
             ];
             processAjaxForm(fields, $(this), function (){
-                $(".saved-confirmation").hide();
-                $("#edit_account_form .saved-confirmation").show();
-                setTimeout(function () {
-                    $("#edit_account_form .saved-confirmation").fadeOut(400);
-                }, 1000);
+                showSavedConfirmation($("#edit_account_form"));
             }, ['edit_user_nonce']);
         });
 
         $("#edit_payment_form").submit(function(e){
             e.preventDefault();
             var fields = [
-                'cardholder_name', 'cc_number', 'cc_type', 'ccv',
+                'cardholder_name', 'cc_number', 'cc_type', 'cvv',
                 'cc_date_m', 'cc_date_y'
             ];
 
             processAjaxForm(fields, $(this), function (data){
-                $(".saved-confirmation").hide();
-                $("#edit_payment_form .saved-confirmation").show();
-                setTimeout(function () {
-                    $("#edit_payment_form .saved-confirmation").fadeOut(400);
-                }, 1000);
-
-                $("#cardholder_name, #cc_number, #cc_type, #cc_date_m, #cc_date_y, #cc_uid, #ccv").val('');
+                showSavedConfirmation($("#edit_payment_form"));
+                $("#cardholder_name, #cc_number, #cc_type, #cc_date_m, #cc_date_y, #cc_uid, #cvv").val('');
                 addUpdateCCRow(data);
             }, ['edit_user_nonce', 'cc_uid']);
 
@@ -1060,7 +1048,7 @@
                         $("#cc_type").val(data['cc_type']).removeClass("placeholder");
                         $("#cc_date_m").val(data['cc_date_m']).removeClass("placeholder");
                         $("#cc_date_y").val(data['cc_date_y']).removeClass("placeholder");
-                        $("#ccv").val(data['ccv']).removeClass("placeholder");
+                        $("#cvv").val(data['cvv']).removeClass("placeholder");
                         $("#cc_uid").val(data['cc_uid']).removeClass("placeholder");
                     } else {
                         $("#cc-list").find(".error_placeholder").text(data['error']).addClass('error').show();
@@ -1107,11 +1095,7 @@
                 'edit_user_nonce'
             ];
             processAjaxForm(fields, $(this), function (){
-                $(".saved-confirmation").hide();
-                $("#edit_password_form .saved-confirmation").show();
-                setTimeout(function () {
-                    $("#edit_password_form .saved-confirmation").fadeOut(400);
-                }, 1000);
+                showSavedConfirmation($("#edit_password_form"));
                 $("#edit_old_password, #edit_new_password, #edit_confirm_password").val('');
             });
         });
@@ -1131,7 +1115,6 @@
         );
     });
 
-
     $(".checked-one").change(function(){
         if($(this).is(":checked")) {
             $(this).parents(".checked-one_holder").find(".checked-one").not($(this)).prop("checked", false);
@@ -1140,17 +1123,19 @@
             $("#" + $(this).attr("rel")).val('');
         }
     });
-    $('#calc_price,#calc_deposit,#calc_annual,#calc_period').keyup(function () {
-        var price = parseFloat($('#calc_price').val());
-        var deposit = parseFloat($('#calc_deposit').val());
-        var annual = parseFloat($('#calc_annual').val())/12;
-        var period = parseInt($('#calc_period').val())*12;
-        if(!isNaN(price) && !isNaN(deposit) && !isNaN(annual) && !isNaN(period)) {
-            var res = Math.round(100*(price-deposit)*(annual*Math.pow(1+annual,period)/(Math.pow(1+annual,period)-1)))/100;
-            $('.calc_payment').text('$'+res);
-        } else {
-            $('.calc_payment').text('-');
-        }
+
+    $('.mortage-calc').keyup(function () {
+        processAjaxForm(['calc_price','calc_deposit','calc_rate','calc_period'],
+            $("#getMortage"),
+            function (data){
+                if(data){
+                    $('.calc_payment').text(data);
+                } else {
+                    $('.calc_payment').text("");
+                }
+            }
+        );
+
     });
 })(jQuery);
 
@@ -1177,6 +1162,9 @@ function processAjaxForm(requiredFields, $form, callback, additionalFiels, initi
                     }
                 } else {
                     $form.find(".error_placeholder").text(data['error']).addClass('error').show();
+                    jQuery('html, body').animate({
+                        scrollTop: jQuery(".error_placeholder").eq(0).offset().top-100
+                    }, 500);
                 }
             }
         },
@@ -1187,9 +1175,9 @@ function processAjaxForm(requiredFields, $form, callback, additionalFiels, initi
 }
 
 function vaidateAjaxForm(requiredFields, $form) {
-    $form.find(".error_placeholder").removeClass('error').hide();
-
     var error = false, i;
+
+    $form.find(".error_placeholder").removeClass('error').hide();
 
     for(i in requiredFields) {
         if (requiredFields.hasOwnProperty(i)) {
@@ -1221,6 +1209,11 @@ function vaidateAjaxForm(requiredFields, $form) {
         }
     }
 
+    if(error) {
+        jQuery('html, body').animate({
+            scrollTop: jQuery(".error").eq(0).offset().top-100
+        }, 500);
+    }
     return error;
 }
 
@@ -1240,10 +1233,14 @@ function buildDataAjaxForm(requiredFields, $form, additionalFiels, data) {
         for(i in additionalFiels) {
             if (additionalFiels.hasOwnProperty(i)) {
                 $cur = jQuery("#" + additionalFiels[i]);
-                if ($cur[0].type !== "checkbox" || $cur.prop('checked')) {
-                    data[additionalFiels[i]] = $cur.val();
+                if($cur.length) {
+                    if ($cur[0].type !== "checkbox" || $cur.prop('checked')) {
+                        data[additionalFiels[i]] = $cur.val();
+                    } else {
+                        data[additionalFiels[i]] = '';
+                    }
                 } else {
-                    data[additionalFiels[i]] = '';
+                    console.log(additionalFiels[i]);
                 }
             }
         }
@@ -1255,13 +1252,25 @@ function buildDataAjaxForm(requiredFields, $form, additionalFiels, data) {
 }
 
 
-function initPaymentForm(type, id) {
+function initPaymentForm(type, id, callback) {
     var payment_form = wp.template( "payment" );
     jQuery.post(amData.ajaxurl, {
-        'action':'getPayment',
+        'action':'getPaymentForm',
         'type':type,
         'id':id
     }, function(ret){
         jQuery('#payment').empty().append(payment_form(ret));
+        if(callback) {
+            callback();
+        }
     }, 'json');
+}
+
+function showSavedConfirmation($section) {
+    jQuery(".saved-confirmation").hide();
+    $section.find(".saved-confirmation").show();
+    setTimeout(function () {
+        $section.find(".saved-confirmation").fadeOut(400);
+    }, 1000);
+    window.scrollTo(0,0);
 }
