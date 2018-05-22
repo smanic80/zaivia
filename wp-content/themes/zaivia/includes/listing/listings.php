@@ -146,7 +146,7 @@ class ZaiviaListings extends listing_base {
 			$listingId = (int)$data['listing_id'];
 
 			if(!self::isOwner($userId, $listingId)) {
-				return 'This is not yours!';
+				return __('This is not yours!');
 			}
 
 			$listing = self::getListings($listingId, $userId);
@@ -724,10 +724,9 @@ class ZaiviaListings extends listing_base {
 
 		$request_type = isset($request['type']) ? $request['type'] : '';
 		$daysNew = (int)get_field("new_days", "option");
-		$daysPremium = (int)get_field("premium_days", "option");
 
 		$sqlSelect = ($request_type !== 'map') ?
-			"SELECT a.*, DATEDIFF(NOW(), date_published) <= {$daysNew} as new_listing, IF(DATEDIFF(NOW(), premium_date) <= {$daysPremium}, premium, 0) as premium" :
+			"SELECT a.*, DATEDIFF(NOW(), date_published) <= {$daysNew} as new_listing, DATEDIFF(NOW(), premium_date) < 0 as premium" :
 			"SELECT a.listing_id, a.lat, a.lng";
 
 		$sqlFrom = ($request_type !== 'map') ?
@@ -757,7 +756,7 @@ class ZaiviaListings extends listing_base {
 		$results = $wpdb->get_results( $sql, ARRAY_A);
 		$results = ($request_type !== 'map') ? self::prepareSearchResult($results) : $results;
 
-		$ads = ZaiviaBusiness::findBanners(($request['rent'] == 'true') ? self::$for_rent : self::$for_sale,$request['city']?$request['city']:'');
+		$ads = ZaiviaBusiness::findRandomBanner(($request['rent'] == 'true') ? self::$for_rent : self::$for_sale,$request['city']?$request['city']:'');
 
 		return array('items'=>$results, 'count'=>$pagination['count'], 'pagination'=>$paginationHtml, 'filtered'=>$filteredHtml, 'ads'=>$ads, 'featured'=>$featured, );
 	}
@@ -949,14 +948,9 @@ class ZaiviaListings extends listing_base {
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
 		$features_tablename = $wpdb->prefix . self::$features_tablename;
 
-		$daysFeatured = (int)get_field("featured_days", "option");
 		$daysNew = (int)get_field("new_days", "option");
 
-		$where[] = "featured = 1";
-
-		if($daysFeatured) {
-			$where[] = "DATEDIFF(now(), featured_date) < {$daysFeatured}";
-		}
+		$where[] = "DATEDIFF(now(), featured_date) < 0";
 
 		$featuredSql = "
 			SELECT a.*, DATEDIFF(NOW(), date_published) <= {$daysNew} as new_listing 
@@ -1211,26 +1205,54 @@ class ZaiviaListings extends listing_base {
 			$listing = ZaiviaListings::getListings($listing);
 		}
 
-		$featured_price = (int) get_field( "featured_price", "option" );
-		$premium_price  = (int) get_field( "premium_price", "option" );
-		$url_price      = (int) get_field( "url_price", "option" );
-		$bump_price     = (int) get_field( "bump_price", "option" );
+		$keys = array_keys(ZaiviaListings::getFeatureKeys());
 
-		$sum = 0;
-		if($listing['featured']){
-			$sum += $featured_price;
-		}
-		if($listing['premium']) {
-			$sum += $premium_price;
-		}
-		if($listing['url']) {
-			$sum += $url_price;
-		}
-		if($listing['bump_up']) {
-			$sum += $bump_price;
+		$price = ["total"=>0];
+		foreach($keys as $key) {
+			if($listing[$key]){
+				$featurePrice = (float)get_field($key."_price", "option");
+
+				$price[$key] = $featurePrice;
+				$price["total"] += $featurePrice;
+			}
 		}
 
-		return $sum;
+		$discounted = self::applyCoupon((int)$listing['used_coupon'], $price["total"]);
+
+		$price["subtotal"] = $price["total"];
+		$price["total"] = $discounted["sum"];
+		$price["discount"] = $discounted["coupon_amount"];
+		$price["coupon_name"] = $discounted["coupon_name"];
+
+		return $price;
+	}
+
+	public static function saveSearch($request, $email=null){
+		global $wpdb;
+
+		$search_tablename = $wpdb->prefix . self::$search_tablename;
+
+		if(!$email) {
+			$user = wp_get_current_user();
+			$email = $user->user_email;
+		}
+		if(is_array($request)) {
+			$request = json_encode($request);
+		}
+
+		$wpdb->delete( $search_tablename, ["search_email"=>$email], ["%s"]);
+		$wpdb->insert( $search_tablename, ["search_email"=>$email, "search_request"=>$request], ["%s". "%s"]);
+
+		return true;
+	}
+
+	public static function getFeatureKeys(){
+		return [
+			"featured" =>  __( 'Featured Listing:', 'am' ),
+			"premium" =>  __( 'Premium Listing:', 'am' ),
+			"link" =>  __( 'Website URL', 'am' ),
+			"bump_up" =>  __( 'Bump Up', 'am' ),
+		];
 	}
 
 	private static function getRenderBathroom($listing, $key){

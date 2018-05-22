@@ -132,8 +132,8 @@
 </script>
 <script type="text/html" id="tmpl-listing-ad">
     <div class="ad-insert">
-        <a href="{{data.list_banner_url}}">
-            <img src="{{data.list_banner_image}}" alt="">
+        <a href="{{data.url}}">
+            <img src="{{data.banner_image_url}}" alt="">
         </a>
     </div>
 </script>

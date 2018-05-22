@@ -93,13 +93,13 @@
                         <tr>
                             <td></td>
                             <td class="text-right"><?php _e('Discounts', 'am') ?></td>
-                            <td class="text-right" id="discount">{{data.discounts}}</td>
+                            <td class="text-right" id="discount">{{data.discount}}</td>
                         </tr>
                         </tbody>
                         <tfoot>
                         <tr>
                             <td></td>
-                            <td class="text-right"><strong><?php _e('Total', 'am') ?></strong></td>
+                            <td class="text-right"><strong><?php _e('Total', 'am') ?></strong>&nbsp;</td>
                             <td class="text-right"><strong id="total">{{data.total}}</strong></td>
                         </tr>
                         </tfoot>
@@ -109,14 +109,25 @@
             <div class="acc-item mb-15">
                 <h3><?php _e('Promo Code', 'am') ?></h3>
                 <fieldset>
+                    <# if ( data.coupon_name ) { #>
+                    <div class="row gutters-16">
+                        <div class="col-8">
+                            <div class="col-8">{{data.coupon_name}}&nbsp;<a href="#" id="remove-promo">[X]</a></div>
+                        </div>
+                    </div>
+                    <# } else { #>
                     <div class="row gutters-16">
                         <div class="col-8">
                             <input type="text" id="promo_code" title="" class="tosave">
                         </div>
                         <div class="col-4">
-                            <button class="btn btn-outline blue btn-md btn-block"><?php _e('Apply', 'am') ?></button>
+                            <button class="btn btn-outline blue btn-md btn-block" id="apply-promo"><?php _e('Apply', 'am') ?></button>
                         </div>
                     </div>
+                    <div class="row gutters-16" id="promo_code_error" style="display: none;">
+                        <div class="col-8 error"></div>
+                    </div>
+                    <# } #>
                 </fieldset>
             </div>
 	        <?php if(isset($business)) :?>
@@ -148,7 +159,7 @@
                     <tr>
                         <td></td>
                         <td class="text-right"><?php _e('Discounts', 'am') ?></td>
-                        <td class="text-right">{{data.discounts}}</td>
+                        <td class="text-right">{{data.discount}}</td>
                     </tr>
                     </tbody>
                     <tfoot>
@@ -162,6 +173,7 @@
             </div>
         </div>
     <# } #>
+    </div>
     <div id="payment-error" class="error"></div>
     <?php if(!isset($business) && !get_user_meta(get_current_user_id(), "listing_source")) :?>
         <div class="col-lg-6 ml-auto mr-auto">
@@ -179,4 +191,5 @@
         </div>
     <?php endif; ?>
 </script>
+
 <div id="payment"></div>

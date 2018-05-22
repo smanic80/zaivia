@@ -69,12 +69,12 @@ get_header();?>
                             <span class="delete-confirmation"><?php _e('Advertisment deleted', 'am') ?></span>
                         </div>
                         <div class="acc-item bb">
-                            <h3><?php the_field("banner_table_title")?></h3>
+                            <h3><?php the_field("banner_table_title");?></h3>
                             <?php $items = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, null, get_current_user_id());?>
 
                             <?php if($items) :?>
                             <div class="table mb-15 responsive">
-                                <table id="banner-list">
+                                <table id="banner-list" class="items-list">
                                     <tbody>
                                     <tr>
                                         <th><?php _e('Ad Name', 'am') ?></th>
@@ -103,17 +103,17 @@ get_header();?>
                     </div>
                     <div class="styled-form tabbed-content" id="edit_contact-card">
                         <div class="entry text-center mb-30">
-                            <h2><?php the_field("card_button_title")?></h2>
+                            <h2><?php the_field("card_button_title"); ?></h2>
                             <p><?php the_field("card_button_subtitle")?></p>
                             <a href="<?php the_field("page_postcard", "option")?>" class="btn btn-primary"><?php the_field("card_button_text")?></a>
                             <span class="delete-confirmation"><?php _e('Contact Card deleted', 'am') ?></span>
                         </div>
                         <div class="acc-item bb">
-                            <h3><?php the_field("card_table_title")?></h3>
+                            <h3><?php the_field("card_table_title");?></h3>
                             <?php $items = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, null, get_current_user_id());?>
                             <?php if($items) :?>
                                 <div class="table mb-15 responsive">
-                                    <table id="cards-list">
+                                    <table id="cards-list" class="items-list">
                                         <tbody>
                                         <tr>
                                             <th><?php _e('Name', 'am') ?></th>
@@ -126,9 +126,9 @@ get_header();?>
                                                 <td><?php echo $item['title']?></td>
                                                 <td><?php echo ZaiviaBusiness::formatDate($item['date_created']); ?></td>
                                                 <td><?php echo $item['date_renewal'] ? ZaiviaBusiness::formatDate($item['date_renewal']) : ''; ?></td>
-                                                <td>
+                                                <td class="text-right">
                                                     <a href="<?php the_field("page_postcard", "option")?>?edit=<?php echo $item['id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                                    <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>"><?php _e('Delete', 'am') ?></a>
+                                                    <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>" data-entity="<?php echo ZaiviaBusiness::$posttype_card?>"><?php _e('Delete', 'am') ?></a>
                                                 </td>
                                             </tr>
                                         <?php endforeach;?>

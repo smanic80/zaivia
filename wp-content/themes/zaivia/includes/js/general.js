@@ -831,7 +831,8 @@
             return false;
         });
 
-        if (location.hash) {
+        if(window.location.hash) {
+            activateTab($('.tab-control a[href$="'+window.location.hash+'"]'));
             openModal(location.hash);
         }
 
@@ -840,13 +841,15 @@
             $(".modal-overlay").removeClass("active");
         }
         function openModal(id){
-            $(id).find(".step1").show();
-            $(id).find(".step2").hide();
-            $(id).find("input[type=text], input[type=password]").val("");
-            $(id).find("input[type=checkbox]").prop("checked", false);
+            if($(id).find(".step1").length) {
+                $(id).find(".step1").show();
+                $(id).find(".step2").hide();
+                $(id).find("input[type=text], input[type=password]").val("");
+                $(id).find("input[type=checkbox]").prop("checked", false);
 
-            $("body").addClass("active-modal");
-            $(id).addClass("active");
+                $("body").addClass("active-modal");
+                $(id).addClass("active");
+            }
         }
 
 
@@ -887,19 +890,18 @@
         });
 
         $(".tab-control a").click(function() {
-            var $parent = $(this).parents("ul");
+            activateTab($(this));
+            return false;
+        });
+        function activateTab($link){
+            if(!$link.length) return false;
+            var $parent = $link.parents("ul");
 
             $($parent.find("li.current a").attr("href")).removeClass("current");
             $parent.find("li.current").removeClass("current");
 
-            $(this).parent().addClass("current");
-            $($(this).attr("href")).addClass("current");
-
-            return false;
-        });
-        if(window.location.hash) {
-console.log($('.tab-control a[href$="'+window.location.hash+'"]'));
-            $('.tab-control a[href$="'+window.location.hash+'"]').trigger("click");
+            $link.parent().addClass("current");
+            $($link.attr("href")).addClass("current");
         }
 
 

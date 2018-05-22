@@ -8,90 +8,132 @@
                 $("#entity_id").val(id);
 
                 if($(".banner-date-update:checked").length) {
-
                     $(".multistep-step").hide();
                     $(".payment-step").show();
 
-                    initPaymentForm('banner', id, function () {
-                        $("#business-pay").click(function (e) {
-                            e.preventDefault();
-
-                            var $payment_error = $('#payment_error'),
-                                data = {
-                                    'action':'activateBusiness',
-                                    'entity_id' : $("#entity_id").val(),
-                                    'type': $("#add_banner_form").length ? "banner" : "contact-card",
-                                    'payment-data': $("#payment-form").serialize()
-                                };
-
-                            $.post(amData.ajaxurl, data, function(ret){
-                                $('.error').removeClass('error');
-                                $payment_error.hide();
-
-                                if(ret.errors) {
-                                    for (var i in ret.errors) if (ret.errors.hasOwnProperty(i)) {
-                                        $('#' + ret.errors[i]).addClass('error');
-                                    }
-                                } if(ret.payment_error) {
-                                    $payment_error.text(ret.payment_error).show().addClass("error");
-                                } else {
-                                    showActivationConfirmation();
-                                }
-                            }, 'json');
-                        });
-                    });
-
+                    initBusinessPaymentForm(id);
                 } else {
                     showSavedConfirmation($("#add_banner_form"));
                 }
             }, ['entity_id', 'duration_checked']);
         });
 
+
+
         $("#add_card_form").submit(function(e){
             e.preventDefault();
+            saveCard($(this), function(id){
+                $("#entity_id").val(id);
+
+                if($(".card-date-update:checked").length) {
+                    $(".form-step").hide();
+                    $(".payment-step").show();
+                    initBusinessPaymentForm(id);
+                } else {
+                    showSavedConfirmation($("#add_card_form"));
+                }
+            });
+        });
+
+        function initBusinessPaymentForm(id){
+            initPaymentForm("business", id, function () {
+
+                $("#apply-promo").click(function () {
+                    if(!$("#promo_code").val()) return false;
+
+                    var data = {
+                        'action':'applyPromo',
+                        'entity_id' : $("#entity_id").val(),
+                        'entity_type' : "business",
+                        'promo_code': $("#promo_code").val()
+                    };
+                    $.post(amData.ajaxurl, data, function(ret){
+                        if(ret.errors) {
+                            $("#promo_code_error ").show().find("div").text(ret.errors);
+                        } else {
+                            initBusinessPaymentForm(id);
+                        }
+                    }, 'json');
+                });
+
+                $("#remove-promo").click(function(e){
+                    e.preventDefault();
+
+                    var data = {
+                        'action':'removePromo',
+                        'entity_id' : $("#entity_id").val(),
+                        'entity_type' : "business"
+                    };
+                    $.post(amData.ajaxurl, data, function(ret){
+                        initBusinessPaymentForm(id);
+                    }, 'json');
+                });
+
+                $("#business-pay").click(function () {
+
+                    var $payment_error = $('#payment_error'),
+                        data = {
+                            'action':'activateBusiness',
+                            'entity_id' : $("#entity_id").val(),
+                            'payment-data': $("#payment-form").serialize()
+                        };
+
+                    $.post(amData.ajaxurl, data, function(ret){
+                        $('.error').removeClass('error');
+                        $payment_error.hide();
+
+                        if(ret.errors) {
+                            for (var i in ret.errors) if (ret.errors.hasOwnProperty(i)) {
+                                $('#' + ret.errors[i]).addClass('error');
+                            }
+                        } else if(ret.payment_error) {
+                            $payment_error.text(ret.payment_error).show().addClass("error");
+                        } else {
+                            $(".form-step").show();
+                            $(".payment-step").hide();
+                            showActivationConfirmation();
+                        }
+                    }, 'json');
+                });
+            });
+        }
+
+        $("#previw_card").click(function(){
+            var $this = $(this);
+            saveCard($("#add_card_form"), function(id) {
+                var data = {
+                    action : 'prepareCardPreview',
+                    entity_id : id
+                };
+
+                console.log(data);
+                $.ajax({
+                    url: amData.ajaxurl,
+                    type: 'POST',
+                    data: data,
+                    cache: false,
+                    dataType: 'html',
+                    success: function (data, textStatus, jqXHR) {
+                        $("#preview_inner").html(data);
+                        closeModal();
+                        openModal($this);
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        $("#add_card_form #" + $this.attr("id") + "_file-errors").text('ERRORS: ' + textStatus);
+                    }
+                });
+            });
+        });
+
+        function saveCard($form, callback){
             processAjaxForm(['add_card_nonce',
                 'card_first_name', 'card_last_name', 'card_company', 'card_job_title', 'card_email', 'card_phone', 'card_phone_type',
                 'card_industry', 'card_address', 'card_city', 'card_zip', 'card_comments',
-                'card_profile_image_upload_input_media', 'card_business_image_upload_input_media'], $(this), function(id){
-                    $("#entity_id").val(id);
-
-                    if($(".card-date-update:checked").length) {
-                        $(".form-step").hide();
-                        initPaymentForm('banner', id, function () {
-                            $("#business-pay").click(function () {
-
-                                var $payment_error = $('#payment_error'),
-                                    data = {
-                                        'action':'activateBusiness',
-                                        'entity_id' : $("#entity_id").val(),
-                                        'type': $("#add_banner_form").length ? "banner" : "contact-card",
-                                        'payment-data': $("#payment-form").serialize()
-                                    };
-
-                                $.post(amData.ajaxurl, data, function(ret){
-                                    $('.error').removeClass('error');
-                                    $payment_error.hide();
-
-                                    if(ret.errors) {
-                                        for (var i in ret.errors) if (ret.errors.hasOwnProperty(i)) {
-                                            $('#' + ret.errors[i]).addClass('error');
-                                        }
-                                    } if(ret.payment_error) {
-                                        $payment_error.text(ret.payment_error).show().addClass("error");
-                                    } else {
-                                        $(".form-step").show();
-                                        $(".payment-step").hide();
-                                        showSavedConfirmation($("#add_banner_form"));
-                                    }
-                                }, 'json');
-                            });
-                        });
-                        $(".payment-step").show();
-                    } else {
-                        showSavedConfirmation($("#add_banner_form"));
-                    }
-                }, ['entity_id', 'card_phone2', 'card_phone2_type', 'card_company_show', 'card_sponsor', 'card_url', 'card_url_show', 'card_featured', 'duration_checked']);
-        });
+                'card_profile_image_upload_input_media', 'card_business_image_upload_input_media'],
+                $form,
+                callback,
+             ['entity_id', 'card_phone2', 'card_phone2_type', 'card_company_show', 'card_sponsor', 'card_url', 'card_link', 'card_featured', 'duration_checked']);
+        }
 
         $(".banner-date-update").click(function(){
             var $this = $(this);
@@ -99,9 +141,9 @@
             setTimeout(function () {
                 var $date = $(".banner-date-update:checked"),
                     data = {
-                        'action' : 'calculateBannerDate',
-                        'entity_id' : $("#entity_id").val(),
-                        'date' : $date.length ? $date.val() : 0
+                        action : 'calculateBannerDate',
+                        entity_id : $("#entity_id").val(),
+                        date : $date.length ? $date.val() : 0
                     };
                 if($date.length) {
                     $(".btn-primary.payment").show();
@@ -118,34 +160,32 @@
                     dataType: 'json',
                     success: function(data, textStatus, jqXHR) {
                         if(data) {
-                            $this.parents(".acc-item").find(".business-valid-until").show().find("span").text(data);
+                            $this.parents(".acc-item").find(".business-valid-until").show().find("span").text(data.date_renewal);
                         } else {
                             $this.parents(".acc-item").find(".business-valid-until").hide()
                         }
-
                     }
                 });
             }, 100);
         });
 
         $(".card-date-update, .payed_feature").click(function(){
-            if(!$(".payed_feature:checked").length || !$(".card-date-update").length){
-                $(".card_sponsor-valid_until").hide();
-                $(".card_url-valid_until").hide();
-                $(".card_featured-valid_until").hide();
-                return true;
-            }
-
             setTimeout(function () {
+                if(!$(".payed_feature:checked").length || !$(".card-date-update:checked").length){
+                    restoreFeaturedDate($(".card_sponsor-valid_until, .card_url-valid_until, .card_featured-valid_until"));
+                    return true;
+                }
+
                 var $date = $(".card-date-update:checked"),
                     data = {
-                        'action' : 'calculateCardDate',
-                        'entity_id' : $("#entity_id").val(),
-                        'date' : $date.length ? $date.val() : 0,
-                        'card_sponsor' : $("#card_sponsor:checked").length,
-                        'card_url_show' : $("#card_url_show:checked").length,
-                        'card_featured' : $("#card_featured:checked").length
+                        action : 'calculateCardDate',
+                        entity_id : $("#entity_id").val(),
+                        date : $date.length ? $date.val() : 0,
+                        card_sponsor : $("#card_sponsor:checked").length,
+                        card_link : $("#card_link:checked").length,
+                        card_featured : $("#card_featured:checked").length
                     };
+
                 if($date.length) {
                     $(".btn-primary.payment").show();
                     $(".btn-primary.save").hide();
@@ -153,6 +193,7 @@
                     $(".btn-primary.payment").hide();
                     $(".btn-primary.save").show();
                 }
+
                 $.ajax({
                     url: amData.ajaxurl,
                     type: 'POST',
@@ -161,31 +202,42 @@
                     dataType: 'json',
                     success: function(data, textStatus, jqXHR) {
                         if(data) {
-                            if(data.card_sponsor_date) {
+                            if(data.card_sponsor_date && $("#card_sponsor:checked").length) {
                                 $(".card_sponsor-valid_until").show().find("span").text(data.card_sponsor_date);
                             } else {
                                 $(".card_sponsor-valid_until").hide();
+                                restoreFeaturedDate($(".card_sponsor-valid_until"));
                             }
 
-                            if(data.card_url_show_date) {
+                            if(data.card_url_show_date && $("#card_link:checked").length) {
                                 $(".card_url-valid_until").show().find("span").text(data.card_url_show_date);
                             } else {
                                 $(".card_url-valid_until").hide();
+                                restoreFeaturedDate($(".card_url-valid_until"));
                             }
 
-                            if(data.card_featured_date) {
+                            if(data.card_featured_date && $("#card_featured:checked").length) {
                                 $(".card_featured-valid_until").show().find("span").text(data.card_featured_date);
                             } else {
                                 $(".card_featured-valid_until").hide();
+                                restoreFeaturedDate($(".card_featured-valid_until"));
                             }
                         } else {
-                            $(".card_sponsor-valid_until").hide();
-                            $(".card_url-valid_until").hide();
-                            $(".card_featured-valid_until").hide();
+                            restoreFeaturedDate($(".card_sponsor-valid_until, .card_url-valid_until, .card_featured-valid_until"));
                         }
                     }
                 });
             }, 100);
+
+            function restoreFeaturedDate($items){
+                $items.each(function(){
+                    if($(this).data("date")) {
+                        $(this).show().find("span").text($(this).data("date"));
+                    } else {
+                        $(this).hide();
+                    }
+                });
+            }
         });
 
         $(".business_upload").change(function(event){
@@ -237,13 +289,18 @@
             });
         });
 
-        $("#banner-list").on("click", ".delete-business", function (e) {
+
+
+        $(".items-list").on("click", ".delete-business", function (e) {
             e.preventDefault();
             if(!confirm("Are you sure?")) return false;
 
             var id = $(this).data("id"),
                 entity = $(this).data("entity"),
-                data = {'action':'delete_business', 'entity':entity, 'id':id};
+                data = {
+                    action: 'delete_business',
+                    id: id
+                };
             $.post({
                 url: amData.ajaxurl,
                 dataType: "json",
@@ -267,7 +324,6 @@
         });
 
     });
-
 
 
     function showActivationConfirmation() {

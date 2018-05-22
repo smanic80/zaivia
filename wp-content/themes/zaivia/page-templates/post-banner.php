@@ -60,10 +60,6 @@ get_header(); ?>
 	                            $itemId = (int)$_GET['edit'];
 	                            $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $itemId, get_current_user_id());
                             }
-
-echo '<pre>';
-print_r($item);
-echo '</pre>';
 						?>
 						<form action="#" id="add_banner_form" enctype="multipart/form-data">
 							<?php wp_nonce_field('zai_add_banner','add_banner_nonce', true, true ); ?>

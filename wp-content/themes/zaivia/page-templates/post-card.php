@@ -91,7 +91,7 @@ get_header(); ?>
 						$item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $ietmId, get_current_user_id());
 					}
 					?>
-					<div class="styled-form form-step">
+					<div class="styled-form multistep-step form-step">
 						<form action="#" id="add_card_form" enctype="multipart/form-data">
 							<?php wp_nonce_field('zai_add_card','add_card_nonce', true, true ); ?>
 							<input type="hidden" name="entity_id" id="entity_id" value="<?php echo isset($item['id']) ? $item['id'] : '';?>">
@@ -224,7 +224,9 @@ get_header(); ?>
                                                     </label>
                                                 </span></span>
                                             </span></p>
-                                            <p><span class="card_sponsor-valid_until" style="<?php if(!$item || !$item['card_sponsor_date']):?>display:none;<?php endif; ?>">
+                                            <p><span class="card_sponsor-valid_until"
+                                                     style="<?php if(!$item || !$item['card_sponsor_date']):?>display:none;<?php endif; ?>"
+                                                     data-date="<?php if($item && $item['card_sponsor_date']) echo ZaiviaListings::formatDate($item['card_sponsor_date']) ?>">
                                                 <?php _e('Your mortgage broker sponsorship is valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['card_sponsor_date']); ?></span><br>
                                             </span></p>
 										</div>
@@ -271,13 +273,15 @@ get_header(); ?>
                                             <p><span class="wpcf7-form-control-wrap">
                                                 <span class="wpcf7-form-control wpcf7-checkbox"><span class="wpcf7-list-item">
                                                     <label>
-                                                        <input type="checkbox" name="card_url_show" id="card_url_show" value="1" class="payed_feature">&nbsp;
+                                                        <input type="checkbox" name="card_link" id="card_link" value="1" class="payed_feature">&nbsp;
                                                         <span class="wpcf7-list-item-label"><?php the_field("card_link_price_label") ?> (<?php echo ZaiviaBusiness::formatMoney(get_field("card_link_price", "option"), 2)?> / <?php _e('month', 'am') ?>)</span>
                                                     </label>
                                                 </span></span>
                                             </span></p>
-                                            <p><span class="card_url-valid_until" style="<?php if(!$item || !$item['card_url_date']):?>display:none;<?php endif; ?>">
-                                                <?php _e('Link to your website is active until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['card_url_date']); ?></span><br>
+                                            <p><span class="card_url-valid_until"
+                                                     style="<?php if(!$item || !$item['card_url_show_date']):?>display:none;<?php endif; ?>"
+                                                     data-date="<?php if($item && $item['card_url_show_date']) echo ZaiviaListings::formatDate($item['card_url_show_date']) ?>">
+                                                <?php _e('Link to your website is active until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['card_url_show_date']); ?></span><br>
                                             </span></p>
                                             <input type="text" name="card_url" id="card_url" placeholder="" value="<?php echo isset($item['card_url']) ? $item['card_url'] : '';?>">
 										</div>
@@ -322,7 +326,7 @@ get_header(); ?>
                                             <label class="business_logo_error"><?php _e('Business Logo', 'am') ?></label>
                                         </div>
                                         <div class="col-sm-12 col-lg-6">
-	                                        <?php $key = ZaiviaBusiness::$image_key_logo; ?>0
+	                                        <?php $key = ZaiviaBusiness::$image_key_logo; ?>
                                             <input type="hidden" name="<?php echo $key?>_upload_input_media" id="<?php echo $key?>_upload_input_media" value="<?php echo isset($item[$key.'_id']) ? $item[$key.'_id'] : '';?>" rel="business_logo_error">
                                             <fieldset>
                                                 <img id="<?php echo $key?>_upload_input_src" src="<?php echo isset($item[$key.'_url']) ? $item[$key.'_url'] : '';?>" width="130" />
@@ -342,7 +346,9 @@ get_header(); ?>
                                         <label><input type="checkbox" name="card_featured" id="card_featured" value="1" class="payed_feature">&nbsp;<span class="wpcf7-list-item-label"><?php the_field("card_featured_price_label") ?> (<?php echo ZaiviaBusiness::formatMoney(get_field("card_featured_price", "option"), 2)?> / <?php _e('month', 'am') ?>)</span></label>
                                     </span></span></span>
                                 </p>
-                                    <p><span class="card_featured-valid_until" style="<?php if(!$item || !$item['card_featured_date']):?>display:none;<?php endif; ?>">
+                                    <p><span class="card_featured-valid_until"
+                                             style="<?php if(!$item || !$item['card_featured_date']):?>display:none;<?php endif; ?>"
+                                             data-date="<?php if($item && $item['card_featured_date']) echo ZaiviaListings::formatDate($item['card_featured_date']) ?>">
                                         <?php _e('Your featured partnership is valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['card_featured_date']); ?></span><br>
                                     </span></p>
                                 </fieldset>
@@ -368,17 +374,48 @@ get_header(); ?>
                             </div>
 
 							<div class="btn-s">
-								<div class="text-right">
-									<a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
-									<a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+								<div class="row">
+									<div class="col-6">
+										<a href="#preview" class="btn btn-secondary btn-sm open-modal" id="previw_card"><?php _e('Preview', 'am') ?></a>
+									</div>
+									<div class="col-6 text-right">
+										<a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
+										<a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+									</div>
 								</div>
 							</div>
 						</form>
 					</div>
-					<div class="styled-form payment-step">
+
+                    <div class="styled-form multistep-step payment-step">
 						<?php $business = true;?>
 						<?php include(locate_template('templates/payment.php')); ?>
 					</div>
+
+                    <div class="styled-form multistep-step confirmation-step">
+                        <div class="box-center">
+                            <i class="fa fa-check-circle " aria-hidden="true"></i>
+                            <div class="entry">
+                                <h2><?php the_field("confirmation_title")?></h2>
+                                <p><?php the_field("confirmation_text")?></p>
+                                <a href="<?php the_field("page_mybusiness", "option")?>" class="btn btn-primary btn-block"><?php the_field("confirmation_button")?></a>
+                            </div>
+                        </div>
+                    </div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal-overlay" id="preview">
+		<div class="table">
+			<div class="center">
+				<div class="box max-375">
+					<div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
+					<h3>Account preview</h3>
+					<div id="preview_inner"></div>
 				</div>
 			</div>
 		</div>

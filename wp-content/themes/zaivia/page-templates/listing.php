@@ -442,7 +442,8 @@ if($listing): ?>
                                             <p><?php the_field("mortgage_calculator_sponsor_title")?></p>
                                         </div>
 
-	                                    <?php include(locate_template('templates/business-card.php')); ?>
+	                                    <?php echo ZaiviaBusiness::renderCard(ZaiviaBusiness::findMortageCard());?>
+
 
 
                                         <div class="widget widget-promo">
@@ -564,7 +565,6 @@ if($listing): ?>
                     </div>
                 </div>
                 <div class="widget widget-need">
-                    <h3><?php _e('Listed By Agent','am') ?></h3>
 	                <?php echo ZaiviaBusiness::renderCard(ZaiviaBusiness::listingContactToCard(ZaiviaListings::getListingContact($listing['listing_id'])));?>
                 </div>
                 <div class="widget widget-listing">

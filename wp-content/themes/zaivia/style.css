@@ -6813,6 +6813,10 @@ select::-ms-expand {
   text-align: left;
 }
 
+.agent-item .text img {
+  max-height: 40px;
+}
+
 .agent-item .bottom {
   clear: both;
   border-top: 1px solid #ebebeb;

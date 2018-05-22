@@ -32,8 +32,7 @@
                     </div>
                 </div>
                 <div class="widget widget-need">
-                    <h3><?php _e('Do You Need A Designer?','am'); ?></h3>
-                    <?php include(locate_template('templates/business-card.php')); ?>
+	                <?php echo ZaiviaBusiness::renderCard(ZaiviaBusiness::findRandomCard(isset($_GET['city']) ? $_GET['city'] : ""));?>
                 </div>
                 <div class="widget widget-promo">
                     <h3><?php _e('PROMOTE YOUR BUSINESS','am'); ?><br><span class="or"><?php _e('on','am'); ?></span><br><strong><?php _e('ZAIVIA FOR FREE!','am'); ?></strong></h3>

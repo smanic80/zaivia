@@ -8,54 +8,17 @@ class ZaiviaBusiness extends listing_base{
 	public static $image_key_logo = 'card_business_image';
 
 
-	public static $banner_radius = 50;
+	public static $item_radius = 50;
 
-	public static function findBanners($section, $city) {
-		$res = [];
 
-		if(!$city) return $res;
-		$geo = self::getCityCoords($city);
-		if(!$geo) return $res;
 
-		$res = self::getBanner($section, $geo['lat'], $geo['lng']);
 
-		return $res;
-	}
-
-	public static function getBanner($section, $lat, $lng){
-		global $wpdb;
-
-		$geo_tablename = $wpdb->prefix . self::$geo_tablename;
-		$posts_tablename = $wpdb->prefix . "posts";
-		$postmeta_tablename = $wpdb->prefix . "postmeta";
-
-		$res = [];
-		$sql = "select {$geo_tablename}.post_id from {$geo_tablename} 
-			join {$posts_tablename} on {$geo_tablename}.post_id = ID and post_status = 'publish'
-			join {$postmeta_tablename} on {$postmeta_tablename}.post_id = {$geo_tablename}.post_id and meta_key = 'section' and meta_value = '{$section}'
-			where " . self::getGeoRadiusSql($lat, $lng, self::$banner_radius) . "
-			order by rand()
-			limit 1";
-		$posts = $wpdb->get_col($sql);
-		if($posts) {
-			$postId = $posts[0];
-			$media = get_attached_media("image", $postId);
-			$image = array_shift($media);
-
-			$res = [
-				'list_banner_url' => get_post_meta($postId, 'url', true),
-				'list_banner_image' => ($image ? wp_get_attachment_url($image->ID) : "")
-			];
-		}
-
-		return $res;
-	}
 
 	public static function addBanner($request){
 		$user_id = get_current_user_id();
 
 		$editPostId = isset($request['entity_id']) ? (int)$request['entity_id'] : 0;
-		if(!self::isOwner($user_id, $editPostId, ZaiviaBusiness::$posttype_banner)) {
+		if(!self::isOwner($user_id, $editPostId)) {
 			return ['error'=>__('This is not yours!')];
 		}
 
@@ -86,6 +49,7 @@ class ZaiviaBusiness extends listing_base{
 		if (is_wp_error($postId)) {
 			$res['error'] = $postId->get_error_message();
 		} else {
+			update_post_meta($postId,"banner", 1);
 			update_post_meta($postId,"url", esc_url($request['banner_url']));
 			update_post_meta($postId,"section", sanitize_text_field($request['banner_section']));
 			update_post_meta($postId,"community", $banner_community);
@@ -93,7 +57,7 @@ class ZaiviaBusiness extends listing_base{
 			update_post_meta($postId,"geo", $geo);
 
 			self::updateBusinessFile($postId, $mediaId, ZaiviaListings::$image_key);
-			self::updateBusinessGeo($postId, $geo, $banner_community);
+			self::updateItemGeo($postId, $geo, $banner_community);
 
 			$res = $postId;
 		}
@@ -105,7 +69,7 @@ class ZaiviaBusiness extends listing_base{
 		$user_id = get_current_user_id();
 
 		$editPostId = isset($request['entity_id']) ? (int)$request['entity_id'] : 0;
-		if(!self::isOwner($user_id, $editPostId, ZaiviaBusiness::$posttype_card)) {
+		if(!self::isOwner($user_id, $editPostId)) {
 			return ['error'=>'This is not yours!'];
 		}
 
@@ -158,7 +122,7 @@ class ZaiviaBusiness extends listing_base{
 			update_post_meta($postId,"card_address", sanitize_text_field($request['card_address']));
 			update_post_meta($postId,"card_city", $card_city);
 			update_post_meta($postId,"card_zip", sanitize_text_field($request['card_zip']));
-			update_post_meta($postId,"card_url_show", (int)$request['card_url_show']);
+			update_post_meta($postId,"card_link", (int)$request['card_link']);
 			update_post_meta($postId,"card_url", esc_url($request['card_url']));
 			update_post_meta($postId,"card_comments", sanitize_text_field($request['card_comments']));
 			update_post_meta($postId,"card_featured", (int)$request['card_featured']);
@@ -168,7 +132,7 @@ class ZaiviaBusiness extends listing_base{
 
 			self::updateBusinessFile($postId, $profile_imageId, ZaiviaBusiness::$image_key_profile);
 			self::updateBusinessFile($postId, $business_imageId, ZaiviaBusiness::$image_key_logo);
-			self::updateBusinessGeo($postId, $geo, $card_city);
+			self::updateItemGeo($postId, $geo, $card_city);
 
 			$res = $postId;
 		}
@@ -176,31 +140,49 @@ class ZaiviaBusiness extends listing_base{
 		return $res;
 	}
 
-	public static function activateBusiness($itemId, $type){
+	public static function activateBusiness($itemId){
 		$userId = get_current_user_id();
-		if(!self::isOwner($userId, $itemId, $type)) {
+		if(!self::isOwner($userId, $itemId)) {
 			return __('This is not yours!');
 		}
 
 		wp_publish_post($itemId);
+		$type = get_post_type($itemId);
+		if($type === ZaiviaBusiness::$posttype_banner) {
+			$keys = ["date_renewal"];
+		} else {
+			$keys = ["card_sponsor_date", "card_url_show_date", "card_featured_date"];
 
-		$duration = (int)get_post_meta($itemId,"duration");
-		$date_renewal = self::calculateEndDate($itemId, $duration, ["card_sponsor_date", "card_url_show_date", "card_featured_date"]);
-		update_post_meta($itemId,"date_renewal", $date_renewal);
+			update_post_meta($itemId,"card_sponsor", 0);
+			update_post_meta($itemId,"card_link", 0);
+			update_post_meta($itemId,"card_featured", 0);
+		}
+
+		$duration = (int)get_post_meta($itemId, "duration", true);
+		$dates = self::calculateEndDate($itemId, $duration, $keys);
+
+		foreach($dates as $key=>$date) {
+			update_post_meta($itemId, $key, $date);
+		}
+
 		update_post_meta($itemId,"duration", 0);
 		return true;
 	}
 
 	public static function getEntities($entity, $entityId = null, $userId = null, $status='any'){
+
 		$args = [
-			'author' => (int)$userId,
 			'post_type' => $entity,
 			'post_status' => $status,
 			'nopaging' => true,
 		];
+		if($userId) {
+			$args['author'] = (int)$userId;
+		}
 		if($entityId) {
 			$args['post__in'] = [(int)$entityId];
 		}
+
 		$items = get_posts($args);
 
 		$results = [];
@@ -246,13 +228,13 @@ class ZaiviaBusiness extends listing_base{
 				$tmp['card_address'] = get_post_meta($item->ID,"card_address", true);
 				$tmp['card_city'] = get_post_meta($item->ID,"card_city", true);
 				$tmp['card_zip'] = get_post_meta($item->ID,"card_zip", true);
-				$tmp['card_url_show'] = get_post_meta($item->ID,"card_url_show", true);
+				$tmp['card_link'] = get_post_meta($item->ID,"card_link", true);
 				$tmp['card_url'] = get_post_meta($item->ID,"card_url", true);
 				$tmp['card_comments'] = get_post_meta($item->ID, 'card_comments', true);
 				$tmp['card_featured'] = get_post_meta($item->ID,"card_featured", true);
 
 				$tmp['card_sponsor_date'] = get_post_meta($item->ID,"card_sponsor_date", true);
-				$tmp['card_url_date'] = get_post_meta($item->ID,"card_url_date", true);
+				$tmp['card_url_show_date'] = get_post_meta($item->ID,"card_url_show_date", true);
 				$tmp['card_featured_date'] = get_post_meta($item->ID,"card_featured_date", true);
 			}
 
@@ -264,7 +246,6 @@ class ZaiviaBusiness extends listing_base{
 		} else {
 			$res = $results;
 		}
-
 		return $res;
 	}
 
@@ -288,9 +269,7 @@ class ZaiviaBusiness extends listing_base{
 
 
 
-
-
-	public static function addBusinessFile($user_id){
+	public static function addBusinessFile($userId){
 		if ( ! function_exists( 'media_handle_upload' ) ) {
 			require_once( ABSPATH . 'wp-admin/includes/image.php' );
 			require_once( ABSPATH . 'wp-admin/includes/file.php' );
@@ -302,7 +281,7 @@ class ZaiviaBusiness extends listing_base{
 			'numberposts' => -1,
 			'post_status' => null,
 			'post_parent' => 0,
-			'author' => $user_id,
+			'author' => $userId,
 			'meta_query' => [[
 				'key'     => 'listing_file',
 				'compare' => 'NOT EXISTS'
@@ -327,75 +306,118 @@ class ZaiviaBusiness extends listing_base{
 		return $results;
 	}
 
-	public static function calculateCardEndDates($entity_id) {
+	public static function calculatePrice( $entityId ) {
+		$discount = 0;
 
-	}
+		$months = get_post_meta( $entityId, "duration", true );
 
-	public static function calculatePrice( $entity_id ) {
-		if(get_post_type($entity_id) === ZaiviaBusiness::$posttype_banner) {
-			$months = get_post_meta($entity_id,"duration", true);
-			$price = (float)get_field("banner_price", "option");
+		if(get_post_type($entityId) === ZaiviaBusiness::$posttype_banner) {
 			$durations = get_field("banner_duration", "option");
-			$discount = 0;
 			foreach($durations as $duration) {
 				if((int)$duration['months'] === $months) {
 					$discount = (int)$duration['discount'];
 				}
 			}
-
-			$price = $price * $months - ($price * $months * $discount / 100);
 		}
 
-		if(get_post_type($entity_id) === ZaiviaBusiness::$posttype_card) {
-			$months = get_post_meta($entity_id,"duration", true);
+		$price = ["total"=>0];
+		$keys = array_keys(ZaiviaBusiness::getFeatureKeys(get_post_type($entityId)));
 
-			$sponsor_price = (float)get_field("card_sponsor_price", "option");
-			$sponsor_checked = (int)get_post_meta($entity_id,"card_sponsor", true);
+		foreach($keys as $key) {
+			if(get_post_meta($entityId, $key,true)) {
+				$featurePrice = (float)get_field($key."_price", "option");
 
-			$link_price = (float)get_field("card_link_price", "option");
-			$link_checked = (int)get_post_meta($entity_id,"card_url_show", true);
+				$itemPrice = $featurePrice * $months;
+				$itemPrice -= ($itemPrice * $discount / 100);
 
-			$featured_price = (float)get_field("card_featured_price", "option");
-			$featured_checked = (int)get_post_meta($entity_id,"card_featured", true);
-
-			$price = [];
-			if($sponsor_checked) $price['sponsor'] = $sponsor_price * $months;
-			if($link_checked) $price['link'] = $link_price * $months;
-			if($featured_checked) $price['featured'] = $featured_price * $months;
+				$price[$key] = $itemPrice;
+				$price["total"] += $itemPrice;
+			}
 		}
+		$discounted = self::applyCoupon((int)get_post_meta($entityId, "used_coupon", true), $price["total"]);
+
+		$price["subtotal"] = $price["total"];
+		$price["total"] = $discounted["sum"];
+		$price["discount"] = $discounted["coupon_amount"];
+		$price["coupon_name"] = $discounted["coupon_name"];
 
 		return $price;
 	}
 
-	public static function calculateEndDate($entity_id, $duration, $keys) {
-		if(!$duration) return '';
-
+	public static function calculateEndDate($entityId, $duration, $keys) {
 		$startDates = [];
-		$published = ($entity_id && get_post_status($entity_id) === 'publish');
+		$published = ($entityId && get_post_status($entityId) === 'publish');
+
 		foreach($keys as $key) {
 			if($published) {
-				$startDates[$key] = get_post_meta($entity_id, $key, true);
+				$startDates[$key] = get_post_meta($entityId, $key, true);
 			}
-			if(!isset($startDates[$key])) {
+			if(!isset($startDates[$key]) || !$startDates[$key]) {
 				$startDates[$key] = time();
 			}
 		}
 
 		$date_renewal = null;
+		$timestamp = [];
 		foreach($startDates as $key=>$startDate) {
-			$newDate = strtotime('+'.$duration.' months', $startDate);
+			$newDate = $duration ? strtotime('+'.$duration.' months', $startDate) : $startDate;
 			$timestamp[$key] = $newDate;
 			if(!$date_renewal || $date_renewal > $startDate) {
 				$date_renewal = $newDate;
 			}
 		}
+		$timestamp['date_renewal'] = $date_renewal;
 
 		return $timestamp;
 	}
 
-	public static function isOwner($userId, $id, $entity) {
-		if(!$id) return true;
-		return (bool)count(self::getEntities($entity, $id, $userId));
+	public static function isOwner($userId, $entityId) {
+		if(!$entityId) return true;
+		$entity = get_post_type($entityId);
+		return (bool)count(self::getEntities($entity, $entityId, $userId));
+	}
+
+
+	public static function findRandomBanner($section, $city) {
+		$res = [];
+
+		if(!$city) return $res;
+		$geo = self::getCityCoords($city);
+		if(!$geo) return $res;
+
+		$postId = self::getRandomItem(self::$posttype_banner, ["lat"=>$geo['lat'], "lng"=>$geo['lng']], ["section"=>$section]);
+		if($postId) {
+			$res = self::getEntities( self::$posttype_banner, $postId );
+		}
+
+		return $res;
+	}
+
+	public static function findRandomCard($city){
+		$res = [];
+
+		if(!$city) return $res;
+		$geo = self::getCityCoords($city);
+		if(!$geo) return $res;
+
+		$postId = self::getRandomItem(self::$posttype_card, ["lat"=>$geo['lat'], "lng"=>$geo['lng']], ["card_featured_date"=>null]);
+		if($postId) {
+			$res = self::getEntities( self::$posttype_card, $postId );
+			$res["card_title"] = __('Do You Need A','am')." ".ucfirst($res['card_job_title']) . "?";
+		}
+
+		return $res;
+	}
+
+	public static function findMortageCard(){
+		$res = [];
+
+		$postId = self::getRandomItem(self::$posttype_card, [], ["card_sponsor_date"=>null]);
+		if($postId) {
+			$res = self::getEntities( self::$posttype_card, $postId );
+		}
+
+		return $res;
 	}
 
 	public static function listingContactToCard($data) {
@@ -405,6 +427,7 @@ class ZaiviaBusiness extends listing_base{
 		}
 
 		$res = [
+			"card_title" => __('Listed By Agent','am'),
 			"card_first_name" => $first_name,
 			"card_last_name" => $last_name,
 			"card_job_title" => __("Agent"),
@@ -426,6 +449,8 @@ class ZaiviaBusiness extends listing_base{
 	}
 
 	public static function renderCard($data) {
+		if(!$data) return "";
+
 		if(isset($data['card_lat']) && isset($data['card_lng']) ) {
 			$data["card_address_query"] = $data['card_lat'].",".$data['card_lng'];
 		} elseif(isset($data['card_city']) || isset($data['card_address'])) {
@@ -434,6 +459,22 @@ class ZaiviaBusiness extends listing_base{
 		ob_start();
 		include(get_template_directory() . "/templates/business-card.php");
 		return ob_get_clean();
+	}
+
+	public static function getFeatureKeys($type){
+		if($type === ZaiviaBusiness::$posttype_card){
+			$keys = [
+				"card_sponsor" =>  __( 'Mortgage Broker Sponsorship:', 'am' ),
+				"card_link" =>  __( 'Added Link to Your Website:', 'am' ),
+				"card_featured" =>  __( 'Featured Community Partnership', 'am' ),
+			];
+		} else {
+			$keys = [
+				"banner" =>  __( 'Banner Ad:', 'am' ),
+			];
+		}
+
+		return $keys;
 	}
 
 	private static function updateBusinessFile($postId, $mediaId, $filetype){
@@ -458,7 +499,7 @@ class ZaiviaBusiness extends listing_base{
 		return true;
 	}
 
-	private static function updateBusinessGeo($postId, $geo, $address){
+	private static function updateItemGeo($postId, $geo, $address){
 		global $wpdb;
 
 		$geo_tablename = $wpdb->prefix . self::$geo_tablename;
@@ -478,5 +519,32 @@ class ZaiviaBusiness extends listing_base{
 		}
 
 		return true;
+	}
+
+	private static function getRandomItem($itemType, $geo=[], $meta=[]){
+		global $wpdb;
+
+		$geo_tablename = $wpdb->prefix . self::$geo_tablename;
+		$posts_tablename = $wpdb->prefix . "posts";
+		$postmeta_tablename = $wpdb->prefix . "postmeta";
+
+		$meta_query = ["1=1"];
+		foreach($meta as $key=>$val) {
+			$meta_query[] = "meta_key = '{$key}'" . ($val ? " and meta_value = '{$val}'" : "");
+		}
+
+		$res = null;
+		$sql = "select {$geo_tablename}.post_id from {$geo_tablename} 
+			join {$posts_tablename} on {$geo_tablename}.post_id = ID and post_type = '{$itemType}' and post_status = 'publish'
+			join {$postmeta_tablename} on {$postmeta_tablename}.post_id = {$geo_tablename}.post_id AND " . implode(" AND ", $meta_query) . "		         
+			where " . ($geo ? self::getGeoRadiusSql($geo['lat'], $geo['lng'], self::$item_radius) : "1=1") . "
+			order by rand()
+			limit 1";
+		$posts = $wpdb->get_col($sql);
+		if($posts) {
+			$res = $posts[0];
+		}
+
+		return $res;
 	}
 }

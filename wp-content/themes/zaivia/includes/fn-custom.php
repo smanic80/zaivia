@@ -132,11 +132,50 @@
 		    'rewrite' => array('slug' => 'section-category'),
 	    );
 	    register_taxonomy('section-category', ['banner'], $tx_args);
+
+
+	    $args = [
+		    'labels'             => [
+			    'name'               => __('Discounts', 'am'),
+			    'singular_name'      => __('Discount', 'am'),
+			    'menu_name'          => __('Discounts', 'am'),
+			    'name_admin_bar'     => __('Discount', 'am'),
+			    'add_new'            => __('Add New Discount', 'am'),
+			    'add_new_item'       => __('Add New Discount', 'am' ),
+			    'new_item'           => __( 'New Discount', 'am' ),
+			    'edit_item'          => __( 'Edit Discount', 'am' ),
+			    'view_item'          => __( 'View Discount', 'am' ),
+			    'all_items'          => __( 'All Discounts', 'am' ),
+			    'search_items'       => __( 'Search Discounts', 'am' ),
+			    'parent_item_colon'  => __( 'Parent Discounts:', 'am' ),
+			    'not_found'          => __( 'No Discounts found.', 'am' ),
+			    'not_found_in_trash' => __( 'No Discounts found in Trash.', 'am' )
+		    ],
+		    'description'        => __( 'Description.', 'am' ),
+
+            'exclude_from_search' => true,
+            'publicly_queryable' => false,
+            'show_in_nav_menus' => true,
+		    'show_ui' => true,
+		    'rewrite'            => ['slug' => 'discount'],
+		    'capability_type'    => 'post',
+		    'has_archive'        => false,
+		    'hierarchical'       => false,
+		    'menu_position'      => 5,
+		    'supports'           => ['title', 'editor']
+	    ];
+	    register_post_type( ZaiviaBusiness::$posttype_discount, $args );
     });
 
 
 
-
+    add_action( 'init', 'am_processCron' );
+    function am_processCron(){
+        $cronKey = get_field("cron_key", "option");
+        if(isset($_GET[$cronKey])) {
+	        listing_base::maintenance();
+        }
+    }
 
 	add_action( 'wp_ajax_uploadImageFile', 'uploadImageFile' );
 	add_action( 'wp_ajax_nopriv_uploadImageFile', 'uploadImageFile' );
@@ -278,14 +317,14 @@
 				$res["payment_error"] = __("Listing id not set");
 			}
 
-
             $saveRes = ZaiviaListings::saveListing($data);
             if(!is_array($saveRes)) {
 	            $res["payment_error"] = $saveRes;
             } else {
                 $listing_id = intval( $data['listing_id'] );
 
-                $payed = am_processPayment( $data, ZaiviaListings::calculatePrice( $listing_id ) );
+	            $proces = ZaiviaListings::calculatePrice( $listing_id );
+                $payed = am_processPayment( $data, $proces['total'] );
 	            if ($payed === true ) {
 		            update_user_meta(get_current_user_id(), "listing_source", $data['source']);
 		            if ( ! ZaiviaListings::activateListing( $listing_id ) ) {
@@ -299,7 +338,6 @@
 		echo json_encode($res);
 		die;
 	}
-
 
 
 
@@ -349,15 +387,14 @@
     add_action( 'wp_ajax_delete_business', 'delete_businessProcess' );
     add_action( 'wp_ajax_nopriv_delete_busines', 'delete_businessProcess' );
     function delete_businessProcess() {
-        $entity = $_POST['entity'];
-        $id = $_POST['id'];
+	    $itemId = (int)$_POST['id'];
         $userId = get_current_user_id();
 
         $res = [];
-        if(ZaiviaBusiness::isOwner($userId, $id, $entity)) {
-            $res = ZaiviaBusiness::deleteEntity($id, $entity);
+        if(ZaiviaBusiness::isOwner($userId, $itemId)) {
+            $res = ZaiviaBusiness::deleteEntity($itemId);
         }
-        echo json_encode([]);
+        echo json_encode($res);
         die;
     }
 
@@ -367,10 +404,9 @@
         $entity_id = (int)$_REQUEST['entity_id'];
         $date = $_REQUEST['date'];
 
-	    $date = ZaiviaBusiness::calculateEndDate($entity_id, $date, ['date_renewal']);
-
-        echo json_encode(ZaiviaBusiness::formatDate($date));
-        die;
+		$res = am_calculateBusinessDate($entity_id, $date, ['date_renewal']);
+	    echo json_encode($res);
+	    die;
     }
 
     add_action( 'wp_ajax_calculateCardDate', 'calculateCardDate' );
@@ -379,18 +415,67 @@
         $entity_id = (int)$_REQUEST['entity_id'];
         $date = $_REQUEST['date'];
 
-        $keys = [];
-        if(isset($_POST['card_sponsor']) && $_POST['card_sponsor'] ) $keys[] = "card_sponsor_date";
-	    if(isset($_POST['card_url_show']) && $_POST['card_url_show'] ) $keys[] = "card_url_show_date";
-	    if(isset($_POST['card_featured']) && $_POST['card_featured'] ) $keys[] = "card_featured_date";
+	    $res = am_calculateBusinessDate($entity_id, $date, ["card_sponsor_date", "card_url_show_date", "card_featured_date"]);
+	    echo json_encode($res);
+	    die;
+    }
 
-	    $res = ZaiviaBusiness::calculateEndDate($entity_id, $date, $keys);
+	function am_calculateBusinessDate($entity_id, $date, $keys){
+		$res = ZaiviaBusiness::calculateEndDate($entity_id, $date, $keys);
 
-	    foreach($res as $key => $date ) {
-		    $res[$key] = ZaiviaBusiness::formatDate($date);
+		foreach($res as $key => $date ) {
+		    if(!$date) $date = time();
+			$res[$key] = ZaiviaBusiness::formatDate($date);
+		}
+
+		return $res;
+	}
+
+    add_action( 'wp_ajax_applyPromo', 'applyPromo' );
+    add_action( 'wp_ajax_nopriv_applyPromo', 'applyPromo' );
+    function applyPromo() {
+	    $entity_id = isset($_POST['entity_id']) ? (int)$_POST['entity_id'] : "";
+	    $entity_type = isset($_POST['entity_type']) ? $_POST['entity_type'] : "";
+	    $coupon_code = isset($_POST['promo_code']) ? $_POST['promo_code'] : "";
+
+	    $userId = get_current_user_id();
+
+	    if(!$entity_id || !in_array($entity_type, ["business", "listing"])) {
+		    echo json_encode(["errors"=>__("Wrong entity")]); die;
+	    }
+	    if(!ZaiviaBusiness::isOwner($userId, $entity_id)){
+		    echo json_encode(['errors'=>__('This is not yours!')]); die;
         }
-        echo json_encode($res);
-        die;
+
+	    $couponId = listing_base::validateCoupon($coupon_code, $userId);
+	    if(!is_numeric($couponId)) {
+		    echo json_encode(['errors'=>$couponId]); die;
+        }
+
+        if(!ZaiviaBusiness::setCoupon($entity_id, $entity_type, $couponId)) {
+	        echo json_encode(['errors'=>__('Promo Code can\'t be set')]); die;
+        }
+        echo json_encode("[]"); die;
+    }
+
+    add_action( 'wp_ajax_removePromo', 'removePromo' );
+    add_action( 'wp_ajax_nopriv_removePromo', 'removePromo' );
+    function removePromo() {
+	    $entity_id = isset($_POST['entity_id']) ? (int)$_POST['entity_id'] : "";
+	    $entity_type = isset($_POST['entity_type']) ? $_POST['entity_type'] : "";
+
+	    $userId = get_current_user_id();
+
+	    if(!$entity_id || !in_array($entity_type, ["business", "listing"])) {
+		    echo json_encode(["errors"=>__("Wrong entity")]); die;
+	    }
+	    if(!ZaiviaBusiness::isOwner($userId, $entity_id)){
+		    echo json_encode(['errors'=>__('This is not yours!')]); die;
+	    }
+	    if(!ZaiviaBusiness::setCoupon($entity_id, $entity_type)) {
+		    echo json_encode(['errors'=>__('Promo Code can\'t be removed')]); die;
+	    }
+	    echo json_encode("[]"); die;
     }
 
     add_action( 'wp_ajax_activateBusiness', 'activateBusiness' );
@@ -400,17 +485,16 @@
 
         if($_POST['payment-data']){
 	        $entity_id = isset($_POST['entity_id']) ? (int)$_POST['entity_id'] : "";
-	        $type = isset($_POST['type']) ? $_POST['type'] : "";
 
 	        parse_str($_POST['payment-data'], $paymentData);
 
-            if ( !$entity_id || !$type || !$paymentData ) {
+            if ( !$entity_id || !$paymentData ) {
                 $res["payment_error"] = __("Entity not set");
             }
 
-            $payed = am_processPayment( $paymentData, ZaiviaBusiness::calculatePrice( $entity_id ) );
+            $payed = am_processPayment( $paymentData, ZaiviaBusiness::calculatePrice( $entity_id ));
             if ($payed === true ) {
-                if ( ! ZaiviaBusiness::activateBusiness( $entity_id, $type ) ) {
+                if ( ! ZaiviaBusiness::activateBusiness( $entity_id ) ) {
                     $res["payment_error"] = __("Activation Error");
                 }
             } else {
@@ -421,6 +505,19 @@
         die;
     }
 
+	add_action( 'wp_ajax_prepareCardPreview', 'prepareCardPreview' );
+	add_action( 'wp_ajax_nopriv_prepareCardPreview', 'prepareCardPreview' );
+	function prepareCardPreview(){
+		$entityId = (int)$_POST{'entity_id'};
+		$userId = get_current_user_id();
+
+		$entity = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $entityId, $userId);
+
+		if($entity) {
+			echo ZaiviaBusiness::renderCard($entity);
+		} else _e('This is not yours!');
+		die;
+	}
 
     function am_processPayment($data, $price) {
         if(!$price) return true;
@@ -829,7 +926,7 @@
 	function saveSearch() {
 		$request = $_REQUEST;
 		unset($request['action']);
-		echo json_encode(update_user_meta(get_current_user_id(),'saved_search', $request));
+		echo json_encode(ZaiviaListings::saveSearch($request));
 		die;
 	}
 
@@ -864,12 +961,7 @@
 	        unset($request['save_email']);
 	        unset($request['send_email']);
 
-            $user = get_user_by('save_email', $email);
-            if(!$user){
-                $user = wp_create_user($email, wp_generate_password(), $email);
-            }
-
-            update_user_meta($user->ID,'saved_search', $request);
+	        ZaiviaListings::saveSearch($request, $email);
             echo json_encode('ok');
         } else {
             var_dump($result);
@@ -944,117 +1036,51 @@
     }
 
 
+
+
     add_action( 'wp_ajax_getPaymentForm', 'getPaymentForm' );
     add_action( 'wp_ajax_nopriv_getPaymentForm', 'getPaymentForm' );
     function getPaymentForm() {
         $items = [];
-        $sum = 0;
-        $discounts = 0;
+	    $entityId = intval($_REQUEST['id']);
+	    $itemType = $_POST['type'];
+	    $duration = 0;
 
-        $userId = get_current_user_id();
+	    $item = listing_base::getUserItem($entityId, $itemType);
+	    if($item){
 
-        if($_POST['type'] === 'listing'){
-            $listing = ZaiviaListings::getListings(intval($_REQUEST['id']), $userId);
-
-            if($listing) {
-                $featured_price = (int) get_field( "featured_price", "option" );
-                $premium_price  = (int) get_field( "premium_price", "option" );
-                $url_price      = (int) get_field( "url_price", "option" );
-                $bump_price     = (int) get_field( "bump_price", "option" );
-
-                if ( $listing['featured'] ) {
-                    $items[] = [
-                        'label' => __( 'Featured Listing', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $featured_price, 2 )
-                    ];
-                    $sum     += $featured_price;
-                }
-                if ( $listing['premium'] ) {
-                    $items[] = [
-                        'label' => __( 'Premium Listing', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $premium_price, 2 )
-                    ];
-                    $sum     += $premium_price;
-                }
-                if ( $listing['url'] ) {
-                    $items[] = [
-                        'label' => __( 'Website URL', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $url_price, 2 )
-                    ];
-                    $sum     += $url_price;
-                }
-                if ( $listing['bump_up'] ) {
-                    $items[] = [
-                        'label' => __( 'Bump Up', 'am' ),
-                        'price' => ZaiviaListings::formatMoney( $bump_price, 2 )
-                    ];
-                    $sum     += $bump_price;
-                }
-            } else {
-                $items[] = [
-                    'label' => __( "That's not yours", 'am' ),
-                    'price' => ''
-                ];
-            }
-        }
-
-        if($_POST['type'] === ZaiviaBusiness::$posttype_banner){
-            $entityId = intval($_REQUEST['id']);
-
-	        $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $entityId, $userId);
-            if($item) {
-                $price = ZaiviaBusiness::calculatePrice($entityId);
-
-                $duration = get_post_meta( $entityId, "duration", true );
-
-                $items[] = [
-                    'label' => __( 'Banner Ad:', 'am' ) . ' ' . $duration . ' ' . __( 'month(s):', 'am' ),
-                    'price' => ZaiviaListings::formatMoney( $price, 2 )
-                ];
-                $sum += $price;
-            } else {
-                $items[] = [
-                    'label' => __( "That's not yours", 'am' ),
-                    'price' => ''
-                ];
-            }
-        }
-
-	    if($_POST['type'] === ZaiviaBusiness::$posttype_card){
-		    $entityId = intval($_REQUEST['id']);
-
-		    $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $entityId, $userId);
-		    if($item) {
-			    $prices = ZaiviaBusiness::calculatePrice($entityId);
-
-			    $duration = get_post_meta( $entityId, "duration", true );
-                $keys = [
-                    "sponsor" =>  __( 'Mortgage Broker Sponsorship:', 'am' ),
-			        "link" =>  __( 'Added Link to Your Website:', 'am' ),
-                    "featured" =>  __( 'Featured Community Partnership', 'am' ),
-                ];
-                foreach($keys as $key=>$label) {
-                    if(isset($prices[$key])){
-                        $items[] = [
-                            'label' => $label . ' ' . $duration . ' ' . __( 'month(s):', 'am' ),
-                            'price' => ZaiviaListings::formatMoney( $price, 2 )
-                        ];
-                        $sum += $prices[$key];
-                    }
-                }
+		    if($itemType === 'listing'){
+			    $keys = ZaiviaListings::getFeatureKeys();
+			    $prices = ZaiviaListings::calculatePrice($item);
 		    } else {
-			    $items[] = [
-				    'label' => __( "That's not yours", 'am' ),
-				    'price' => ''
-			    ];
+			    $duration = get_post_meta( $entityId, "duration", true );
+			    $keys = ZaiviaBusiness::getFeatureKeys(get_post_type($entityId));
+			    $prices = ZaiviaBusiness::calculatePrice($entityId);
 		    }
+
+            foreach($keys as $key=>$label) {
+		        if(isset($prices[$key])) {
+			        $items[] = [
+				        'label' => $label . ($duration ? (' ' . $duration . ' ' . __( 'month(s):', 'am' )) : ""),
+				        'price' => ZaiviaListings::formatMoney( $prices[$key], 2 )
+			        ];
+		        }
+            }
+
+	    } else {
+		    $prices = ["total"=>0, "subtotal"=>0, "discount"=>0];
+		    $items[] = [
+			    'label' => __( "That's not yours", 'am' ),
+			    'price' => ''
+		    ];
 	    }
 
         echo json_encode([
-                'total_num' => $sum - $discounts,
-                'total'=>ZaiviaListings::formatMoney( ($sum - $discounts), 2 ),
-                'subtotal'=>ZaiviaListings::formatMoney( $sum, 2 ),
-                'discounts'=>ZaiviaListings::formatMoney( $discounts, 2 ),
+                'total_num' => $prices['total'],
+                'total'=>ZaiviaListings::formatMoney($prices['total'], 2 ),
+                'subtotal'=>ZaiviaListings::formatMoney( $prices['subtotal'], 2 ),
+                'discount'=>ZaiviaListings::formatMoney( $prices['discount'], 2 ),
+                'coupon_name'=>isset($prices['coupon_name']) ? $prices['coupon_name'] : "",
                 'items'=>$items
         ]);
         die;
