@@ -448,7 +448,7 @@ class ZaiviaBusiness extends listing_base{
 			$industries[$option['label_singular']] = $option;
 		}
 
-		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], false);
+		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], false, false, false);
 		foreach($items as $item ) {
 			$industry = get_field("card_industry", $item['ID'] );
 			$industries[$industry]['cards'][] = $item;
@@ -469,7 +469,7 @@ class ZaiviaBusiness extends listing_base{
 
 	public static function getFeaturedPartnersForLocation($lat, $lng){
 		$geo = ($lat && $lng) ? [$lat, $lng] : [];
-		$items = self::getItemsByMeta(self::$posttype_card, $geo, ["card_featured_date"=>null], true, 3);
+		$items = self::getItemsByMeta(self::$posttype_card, $geo, ["card_featured_date"=>null], 3);
 		$res = [];
 		foreach($items as $item) {
 			$res[] = self::fillEntityMeta($item);
@@ -479,7 +479,7 @@ class ZaiviaBusiness extends listing_base{
 
 	public static function getPartnersForLocation($lat, $lng, $page, $sort, $exclude){
 		$geo = ($lat && $lng) ? [$lat, $lng] : [];
-		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], false, self::$partners_per_page, $page, $sort, $exclude);
+		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], self::$partners_per_page, $page, $sort, $exclude);
 		$res = [];
 		foreach($items as $item) {
 			$res[] = self::fillEntityMeta($item);
@@ -487,7 +487,7 @@ class ZaiviaBusiness extends listing_base{
 		return $res;
 	}
 
-	public static function buildPgintion($partners, $page) {
+	public static function buildPagination($partners, $page) {
 		$perPage = ZaiviaBusiness::$partners_per_page;
 	}
 
@@ -538,22 +538,27 @@ class ZaiviaBusiness extends listing_base{
 		return true;
 	}
 
-	private static function getItemsByMeta($itemType, $geo=[], $meta=[], $random=true, $limit=1, $page=1, $sort="", $exclude=[]){
+	private static function getItemsByMeta($itemType, $geo=[], $meta=[], $limit=1, $page=1, $sort="random", $exclude=[]){
 		global $wpdb;
 
 		$geo_tablename = $wpdb->prefix . self::$geo_tablename;
 		$posts_tablename = $wpdb->prefix . "posts";
 		$postmeta_tablename = $wpdb->prefix . "postmeta";
 
-		$meta_query = ["1=1"];
+		$meta_queries = [];
 		foreach($meta as $key=>$val) {
-			$meta_query[] = "meta_key = '{$key}'" . ($val ? " and meta_value = '{$val}'" : "");
+			$meta_queries[$key] = "{$key}.meta_key = '{$key}'" . ($val ? " and {$key}.meta_value = '{$val}'" : "");
 		}
 
 		$res = [];
 		$sql = "select {$geo_tablename}.post_id from {$geo_tablename} 
-			join {$posts_tablename} on {$geo_tablename}.post_id = ID and post_type = '{$itemType}' and post_status = 'publish'
-			join {$postmeta_tablename} on {$postmeta_tablename}.post_id = {$geo_tablename}.post_id AND " . implode(" AND ", $meta_query);
+			join {$posts_tablename} on {$geo_tablename}.post_id = ID and post_type = '{$itemType}' and post_status = 'publish'";
+
+		foreach($meta_queries as $key=>$meta_query) {
+			$sql .= " join {$postmeta_tablename} {$key} on {$key}.post_id = {$geo_tablename}.post_id AND " . $meta_query;
+		}
+
+
 		if($sort) {
 			list($sortField, $sortDir) = explode("__", $sort);
 			$sql .= " join {$postmeta_tablename} SORT_KEY on SORT_KEY.post_id = SORT_KEY.post_id";
@@ -562,8 +567,10 @@ class ZaiviaBusiness extends listing_base{
 		if($exclude && is_array($exclude)) {
 			$sql .= " AND ID not in (".implode(",", $exclude).")";
 		}
-		if($random) {
+		if($sort === "random") {
 			$sql .= " order by rand()";
+		} elseif ($sortField && $sortDir) {
+			$sql .= " order by {$sortField} {$sortDir}";
 		}
 		if($limit) {
 			$sql .= " limit ".(int)$limit;
@@ -571,10 +578,10 @@ class ZaiviaBusiness extends listing_base{
 				$sql .= " offset ".(int)$limit*((int)$page-1);
 			}
 		}
-
+echo $sort;
 		$posts = $wpdb->get_col($sql);
 		if($posts) {
-			if($random) $res = $posts[0];
+			if($limit === 1) $res = $posts[0];
 			else $res = $posts;
 		}
 

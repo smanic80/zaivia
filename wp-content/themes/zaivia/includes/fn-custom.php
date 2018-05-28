@@ -1057,7 +1057,7 @@
 
 		$featuredPartners = ZaiviaBusiness::getFeaturedPartnersForLocation($lat, $lng);
 		$partners = ZaiviaBusiness::getPartnersForLocation($lat, $lng, $page, $sort, $featuredPartners);
-		$pagination = ZaiviaBusiness::buildPgintion($partners, $page);
+		$pagination = ZaiviaBusiness::buildPagination($partners, $page);
 
 		$res = [
 			"partners" => $partners,
