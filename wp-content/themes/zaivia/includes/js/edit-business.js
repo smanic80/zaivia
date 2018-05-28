@@ -38,36 +38,7 @@
         function initBusinessPaymentForm(id){
             initPaymentForm("business", id, function () {
 
-                $("#apply-promo").click(function () {
-                    if(!$("#promo_code").val()) return false;
-
-                    var data = {
-                        'action':'applyPromo',
-                        'entity_id' : $("#entity_id").val(),
-                        'entity_type' : "business",
-                        'promo_code': $("#promo_code").val()
-                    };
-                    $.post(amData.ajaxurl, data, function(ret){
-                        if(ret.errors) {
-                            $("#promo_code_error ").show().find("div").text(ret.errors);
-                        } else {
-                            initBusinessPaymentForm(id);
-                        }
-                    }, 'json');
-                });
-
-                $("#remove-promo").click(function(e){
-                    e.preventDefault();
-
-                    var data = {
-                        'action':'removePromo',
-                        'entity_id' : $("#entity_id").val(),
-                        'entity_type' : "business"
-                    };
-                    $.post(amData.ajaxurl, data, function(ret){
-                        initBusinessPaymentForm(id);
-                    }, 'json');
-                });
+                setPromoHndlers(id, "business", initBusinessPaymentForm);
 
                 $("#business-pay").click(function () {
 

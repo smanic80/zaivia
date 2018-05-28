@@ -116,44 +116,62 @@ class listing_base {
 		return $geo;
 	}
 
-	public static function validateCoupon($couponCode, $userId) {
-		$coupon = get_page_by_title($couponCode, ARRAY_A, self::$posttype_discount);
-		if(!$coupon) {
-			return __("Promo Code not found");
+	public static function isOwner($userId, $entity_id, $entity_type="listing"){
+		$res = true;
+		if($entity_type === "business") {
+			if(!ZaiviaBusiness::isOwner($userId, $entity_id)) {
+				$res = false;
+			}
+		} else {
+			if(!ZaiviaListings::isOwner($userId, $entity_id)) {
+				$res = false;
+			}
 		}
-
-		$couponId = $coupon['ID'];
-
-		$valid_untill = get_field("coupon_valid_untill", $couponId);
-		if($valid_untill && strtotime($valid_untill) <= time()) {
-			return __("Promo Code expired");
-		}
-
-		$usage_total = (int)get_field("coupon_usage_total", $couponId);
-		if($usage_total && ($usage_total - (int)get_post_meta("used", $couponId, true)) <= 0) {
-			return __("Number of usage this Promo Code exeeded");
-		}
-
-		$usage_per_user = (int)get_field("coupon_usage_per_user", $couponId);
-		if($usage_per_user && ($usage_per_user - (int)get_post_meta("used_".$userId, $couponId, true)) <= 0) {
-			return __("Number of usage this Promo Code by you exeeded");
-		}
-
-		return $couponId;
+		return $res;
 	}
+
+
+
+
+    public static function validateCoupon($couponCode, $userId) {
+        $coupon = get_page_by_title($couponCode, ARRAY_A, self::$posttype_discount);
+        if(!$coupon) {
+            return __("Promo Code not found");
+        }
+
+        $couponId = $coupon['ID'];
+
+        $valid_untill = get_field("coupon_valid_untill", $couponId);
+        if($valid_untill && strtotime($valid_untill) <= time()) {
+            return __("Promo Code expired");
+        }
+
+        $usage_total = (int)get_field("coupon_usage_total", $couponId);
+        if($usage_total && ($usage_total - (int)get_post_meta("used", $couponId, true)) <= 0) {
+            return __("Number of usage this Promo Code exeeded");
+        }
+
+        $usage_per_user = (int)get_field("coupon_usage_per_user", $couponId);
+        if($usage_per_user && ($usage_per_user - (int)get_post_meta("used_".$userId, $couponId, true)) <= 0) {
+            return __("Number of usage this Promo Code by you exeeded");
+        }
+
+        return $couponId;
+    }
 
 	public static function setCoupon($entityId, $entityType, $couponId=null){
 		if($entityType === "business") {
-			delete_post_meta($entityId, "used_coupon");
+			delete_post_meta($entityId, "applied_coupon");
 			if($couponId) {
-				return add_post_meta($entityId, "used_coupon", $couponId);
+				return add_post_meta($entityId, "applied_coupon", $couponId);
 			}
 
 			return true;
 		} else {
 			global $wpdb;
 			$listing_tablename = $wpdb->prefix . self::$listing_tablename;
-			return $wpdb->update( $listing_tablename, ["used_coupon"=>$couponId], ["listing_id"=>$entityType], ["%d"], ["%d"]);
+			$res =  $wpdb->update( $listing_tablename, ["applied_coupon"=>$couponId], ["listing_id"=>$entityId], ["%d"], ["%d"]);
+			return $res;
 		}
 	}
 
@@ -165,8 +183,29 @@ class listing_base {
 			$coupon_amount = ($sum * $coupon_amount / 100);
 		}
 		$sum -= $coupon_amount;
+		if($sum < 0) $sum = 0;
 
-		return ["sum"=>$sum, "coupon_amount"=>$coupon_amount, "coupon_name"=>acf_get_post_title($couponId)];
+ 		return ["sum"=>$sum, "coupon_amount"=>$coupon_amount, "coupon_name"=>acf_get_post_title($couponId)];
+	}
+
+	public static function useCoupon($couponId, $userId) {
+        $usage_total = (int)get_field("coupon_usage_total", $couponId);
+        if($usage_total) {
+            $used = (int)get_post_meta("used", $couponId, true);
+            delete_post_meta($couponId, "used");
+            add_post_meta("used", ($used+1), true);
+        }
+
+        $usage_per_user = (int)get_field("coupon_usage_per_user", $couponId);
+        if($usage_per_user) {
+            $used = (int)get_post_meta("used_".$userId, $couponId, true);
+            delete_post_meta($couponId, "used_".$userId);
+            add_post_meta("used_".$userId, ($used+1), true);
+        }
+
+        $used_coupons = get_user_meta($userId, "used_coupons");
+        $used_coupons[] = $couponId;
+        update_user_meta($userId, "used_coupons", $used_coupons);
 	}
 
 	public static function getUserItem($entityId, $type){

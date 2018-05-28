@@ -93,7 +93,7 @@
 	    ];
 	    register_post_type( ZaiviaBusiness::$posttype_banner, $args );
 
-	    $tx_args = array(
+	    /*$tx_args = array(
 		    'hierarchical' => false,
 		    'labels' => [
 			    'name' => __('Industry', 'am'),
@@ -131,7 +131,7 @@
 		    'query_var' => true,
 		    'rewrite' => array('slug' => 'section-category'),
 	    );
-	    register_taxonomy('section-category', ['banner'], $tx_args);
+	    register_taxonomy('section-category', ['banner'], $tx_args);*/
 
 
 	    $args = [
@@ -431,9 +431,9 @@
 		return $res;
 	}
 
-    add_action( 'wp_ajax_applyPromo', 'applyPromo' );
-    add_action( 'wp_ajax_nopriv_applyPromo', 'applyPromo' );
-    function applyPromo() {
+    add_action( 'wp_ajax_updatePromo', 'updatePromo' );
+    add_action( 'wp_ajax_nopriv_updatePromo', 'updatePromo' );
+    function updatePromo() {
 	    $entity_id = isset($_POST['entity_id']) ? (int)$_POST['entity_id'] : "";
 	    $entity_type = isset($_POST['entity_type']) ? $_POST['entity_type'] : "";
 	    $coupon_code = isset($_POST['promo_code']) ? $_POST['promo_code'] : "";
@@ -443,17 +443,18 @@
 	    if(!$entity_id || !in_array($entity_type, ["business", "listing"])) {
 		    echo json_encode(["errors"=>__("Wrong entity")]); die;
 	    }
-	    if(!ZaiviaBusiness::isOwner($userId, $entity_id)){
-		    echo json_encode(['errors'=>__('This is not yours!')]); die;
-        }
-
-	    $couponId = listing_base::validateCoupon($coupon_code, $userId);
-	    if(!is_numeric($couponId)) {
-		    echo json_encode(['errors'=>$couponId]); die;
-        }
-
-        if(!ZaiviaBusiness::setCoupon($entity_id, $entity_type, $couponId)) {
-	        echo json_encode(['errors'=>__('Promo Code can\'t be set')]); die;
+		if(!listing_base::isOwner($userId, $entity_id, $entity_type)){
+			echo json_encode(["errors"=>__("This is not yours!")]); die;
+		}
+		if($coupon_code) {
+			$couponId = listing_base::validateCoupon($coupon_code, $userId);
+			if (!is_numeric($couponId)) {
+				echo json_encode(['errors' => $couponId]);
+				die;
+			}
+		}
+        if(!listing_base::setCoupon($entity_id, $entity_type, $couponId)) {
+	        echo json_encode(['errors'=>__('Promo Code can\'t be updated')]); die;
         }
         echo json_encode("[]"); die;
     }
@@ -466,13 +467,13 @@
 
 	    $userId = get_current_user_id();
 
-	    if(!$entity_id || !in_array($entity_type, ["business", "listing"])) {
-		    echo json_encode(["errors"=>__("Wrong entity")]); die;
-	    }
-	    if(!ZaiviaBusiness::isOwner($userId, $entity_id)){
-		    echo json_encode(['errors'=>__('This is not yours!')]); die;
-	    }
-	    if(!ZaiviaBusiness::setCoupon($entity_id, $entity_type)) {
+		if(!$entity_id || !in_array($entity_type, ["business", "listing"])) {
+			echo json_encode(["errors"=>__("Wrong entity")]); die;
+		}
+		if(!listing_base::isOwner($userId, $entity_id, $entity_type)){
+			echo json_encode(["errors"=>__("This is not yours!")]); die;
+		}
+	    if(!listing_base::setCoupon($entity_id, $entity_type)) {
 		    echo json_encode(['errors'=>__('Promo Code can\'t be removed')]); die;
 	    }
 	    echo json_encode("[]"); die;
@@ -491,8 +492,8 @@
             if ( !$entity_id || !$paymentData ) {
                 $res["payment_error"] = __("Entity not set");
             }
-
-            $payed = am_processPayment( $paymentData, ZaiviaBusiness::calculatePrice( $entity_id ));
+			$prices = ZaiviaBusiness::calculatePrice( $entity_id );
+            $payed = am_processPayment( $paymentData, $prices['total']);
             if ($payed === true ) {
                 if ( ! ZaiviaBusiness::activateBusiness( $entity_id ) ) {
                     $res["payment_error"] = __("Activation Error");
@@ -1036,7 +1037,36 @@
     }
 
 
+	add_action( 'wp_ajax_get_industries', 'getIndustries' );
+	add_action( 'wp_ajax_nopriv_get_industries', 'getIndustries' );
+	function getIndustries() {
+		$lat = (float)$_POST['lat'];
+		$lng = (float)$_POST['lng'];
+		$industries = ZaiviaBusiness::getIndustryOptionsForLocation($lat, $lng);
+		echo json_encode($industries);
+		die;
+	}
 
+	add_action( 'wp_ajax_get_partners', 'getPartners' );
+	add_action( 'wp_ajax_nopriv_get_partners', 'getPartners' );
+	function getPartnersgetIndustries() {
+		$lat = (float)$_POST['lat'];
+		$lng = (float)$_POST['lng'];
+		$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+		$sort = $_POST['sort'];
+
+		$featuredPartners = ZaiviaBusiness::getFeaturedPartnersForLocation($lat, $lng);
+		$partners = ZaiviaBusiness::getPartnersForLocation($lat, $lng, $page, $sort, $featuredPartners);
+		$pagination = ZaiviaBusiness::buildPgintion($partners, $page);
+
+		$res = [
+			"partners" => $partners,
+			"featuredPartners" => $featuredPartners,
+			"pagination" => $pagination
+		];
+		echo json_encode($res);
+		die;
+	}
 
     add_action( 'wp_ajax_getPaymentForm', 'getPaymentForm' );
     add_action( 'wp_ajax_nopriv_getPaymentForm', 'getPaymentForm' );

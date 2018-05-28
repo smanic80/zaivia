@@ -213,7 +213,7 @@ get_header(); ?>
                                             <select name="card_industry" id="card_industry">
                                                 <option value=""></option>
                                                 <?php foreach($card_industry_options as $card_industry_option) :?>
-                                                <option value="<?php echo $card_industry_option['label_singular']?>" <?php if($card_industry === $card_industry_option['label_singular']) echo 'selected'?>><?php echo $card_industry_option['label_singular']?></option>
+                                                <option value="<?php echo $card_industry_option['key']?>" <?php if($card_industry === $card_industry_option['key']) echo 'selected'?>><?php echo $card_industry_option['label_singular']?></option>
                                                 <?php endforeach;?>
                                             </select>
                                             <p><span class="wpcf7-form-control-wrap">

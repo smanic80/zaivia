@@ -3,6 +3,13 @@
     $(document).ready(function($) {
         $('.us-price').mask("000,000,000,000", {reverse: true});
 
+        if(navigator.geolocation){
+            navigator.geolocation.getCurrentPosition(function(){
+                console.log(location);
+            });
+
+        }
+
         function setSmallMap(pos, label) {
             if($('#map').length){
                 var small_map = new google.maps.Map(document.getElementById('map'), {
@@ -1139,6 +1146,45 @@
         );
 
     });
+
+    if (navigator.geolocation && $("body").hasClass("page-template-community-partners")) {
+        var key = "",
+            renderPartnesCallback = function(){};
+        if($(".page-head").length) {
+            key = "industries";
+        }
+        if($(".category-head").length) {
+            keys = "partners";
+            renderPartnesCallback = function(){};
+        }
+
+        navigator.geolocation.getCurrentPosition(function (position) {
+            renderPartnes(position.coords.latitude, position.coords.longitude, key, renderPartnesCallback);
+        }, function () {
+            renderPartnes(0, 0, key, renderPartnesCallback);
+        });
+    }
+
+    function renderPartnes(lat, lng, key, callback) {
+        if($("body").hasClass("page-template-community-partners")) {
+            jQuery.post({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: {action: "get_"+key, lat:lat, lng:lng},
+                success: function (data) {
+                    if(data) {
+                        var tpl_item = wp.template( key+"-item" );
+                        var list = $('#'+key+'-placeholder');
+                        list.empty();
+                        for(var i in data) if (data.hasOwnProperty(i)){
+                            list.append(tpl_item(data[i]));
+                        }
+                    }
+                }
+            });
+        }
+    }
+
 })(jQuery);
 
 
@@ -1275,4 +1321,33 @@ function showSavedConfirmation($section) {
         $section.find(".saved-confirmation").fadeOut(400);
     }, 1000);
     window.scrollTo(0,0);
+}
+
+function setPromoHndlers(id, entityType, callback){
+    jQuery("#apply-promo").click(function (e) {
+        e.preventDefault();
+        if(!jQuery("#promo_code").val()) return false;
+        updatePromo(id, entityType, callback, jQuery("#promo_code").val());
+    });
+
+    jQuery("#remove-promo").click(function(e){
+        e.preventDefault();
+        updatePromo(id, entityType, callback, "");
+    });
+
+    function updatePromo(id, entityType, callback, code) {
+        var data = {
+            'action':'updatePromo',
+            'entity_id' : id,
+            'entity_type' : entityType,
+            'promo_code': code
+        };
+        jQuery.post(amData.ajaxurl, data, function(ret){
+            if(ret.errors) {
+                jQuery("#promo_code_error ").show().find("div").text(ret.errors);
+            } else {
+                callback(id);
+            }
+        }, 'json');
+    }
 }

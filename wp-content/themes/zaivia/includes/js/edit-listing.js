@@ -1,95 +1,96 @@
 var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 
 (function($) {
-    var marker = null;
-    var listingData = {
-        'listing_id': $("#listing_id").val(),
-        'MLSNumber':'',
-        'sale_rent':'',
-        'sale_by':'',
-        'address':'',
-        'unit_number':'',
-        'city':'',
-        'province':'',
-        'zip':'',
-        'neighbourhood':'',
-        'lat':'',
-        'lng':'',
-        'price':'',
-        'property_type':'',
-        'house_type':'',
-        'square_footage':'',
-        'bedrooms':'',
-        'bathrooms':'',
-        'roof_type':'',
-        'exterior_type':'',
-        'parking':'',
-        'driveway':'',
-        'size_x':'',
-        'size_y':'',
-        'size_units':'',
-        'year_built':'',
-        'annual_taxes':'',
-        'condo_fees':'',
-        'partial_rent':[],
-        'features_1':[],
-        'features_1_custom':[],
-        'features_2':[],
-        'features_2_custom':[],
-        'features_3':[],
-        'features_3_custom':[],
-        'room_features':[],
-        'description':'',
-        'status':'',
-        'featured':'',
-        'premium':'',
-        'url':'',
-        'url_value': '',
-        'bump_up':'',
-        'rent_date':'',
-        'rent_deposit':'',
-        'rent_furnishings':'',
-        'rent_pets':'',
-        'rent_smoking':'',
-        'rent_laundry':'',
-        'rent_file':'',
-        'rent_electrified_parking':'',
-        'rent_secured_entry':'',
-        'rent_private_entry':'',
-        'rent_onsite':'',
-        'rent_utilities':[],
+    var marker = null,
+        entityType = "listing",
+        listingData = {
+            'listing_id': $("#listing_id").val(),
+            'MLSNumber':'',
+            'sale_rent':'',
+            'sale_by':'',
+            'address':'',
+            'unit_number':'',
+            'city':'',
+            'province':'',
+            'zip':'',
+            'neighbourhood':'',
+            'lat':'',
+            'lng':'',
+            'price':'',
+            'property_type':'',
+            'house_type':'',
+            'square_footage':'',
+            'bedrooms':'',
+            'bathrooms':'',
+            'roof_type':'',
+            'exterior_type':'',
+            'parking':'',
+            'driveway':'',
+            'size_x':'',
+            'size_y':'',
+            'size_units':'',
+            'year_built':'',
+            'annual_taxes':'',
+            'condo_fees':'',
+            'partial_rent':[],
+            'features_1':[],
+            'features_1_custom':[],
+            'features_2':[],
+            'features_2_custom':[],
+            'features_3':[],
+            'features_3_custom':[],
+            'room_features':[],
+            'description':'',
+            'status':'',
+            'featured':'',
+            'premium':'',
+            'url':'',
+            'url_value': '',
+            'bump_up':'',
+            'rent_date':'',
+            'rent_deposit':'',
+            'rent_furnishings':'',
+            'rent_pets':'',
+            'rent_smoking':'',
+            'rent_laundry':'',
+            'rent_file':'',
+            'rent_electrified_parking':'',
+            'rent_secured_entry':'',
+            'rent_private_entry':'',
+            'rent_onsite':'',
+            'rent_utilities':[],
 
-        'contact_title':'',
-        'contact_name':'',
-        'contact_name_show':'',
-        'contact_email':'',
-        'contact_phone1':'',
-        'contact_phone1_type':'',
-        'contact_phone1_show':'',
-        'contact_phone2':'',
-        'contact_phone2_type':'',
-        'contact_phone2_show':'',
-        'contact_company':'',
-        'contact_address':'',
-        'contact_city':'',
-        'contact_zip':'',
+            'contact_title':'',
+            'contact_name':'',
+            'contact_name_show':'',
+            'contact_email':'',
+            'contact_phone1':'',
+            'contact_phone1_type':'',
+            'contact_phone1_show':'',
+            'contact_phone2':'',
+            'contact_phone2_type':'',
+            'contact_phone2_show':'',
+            'contact_company':'',
+            'contact_address':'',
+            'contact_city':'',
+            'contact_zip':'',
 
-        'contact_profile':'',
-        'contact_logo':'',
+            'contact_profile':'',
+            'contact_logo':'',
 
-        'prop_img':[],
-        'prop_blue':[],
+            'prop_img':[],
+            'prop_blue':[],
 
-        'source':'',
-        'saved_card':'',
-        'cardholder_name':'',
-        'cc_number':'',
-        'cc_type':'',
-        'cc_date_m':'',
-        'cc_date_y':'',
-        'cvv':'',
-        'promo_code':''
-    };
+            'source':'',
+            'saved_card':'',
+            'cardholder_name':'',
+            'cc_number':'',
+            'cc_type':'',
+            'cc_date_m':'',
+            'cc_date_y':'',
+            'cvv':'',
+            'promo_code':''
+        };
 
     $(document).ready(function($) {
 
@@ -300,10 +301,12 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                 }
                 $(this).removeClass('error');
 
+                if(typeof google === "undefined") return false;
+
                 var geocoder = new google.maps.Geocoder;
 
                 geocoder.geocode({
-                    'address': zip, "componentRestrictions": {"country":"CA"}
+                    'address': zip, "componentRestrictions": {"country": "CA"}
                 }, function (results, status) {
 
                     if (status == google.maps.GeocoderStatus.OK) {
@@ -320,14 +323,14 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                             zoom: 17
                         });
 
-                        google.maps.event.addDomListener(window, 'resize', function() {
+                        google.maps.event.addDomListener(window, 'resize', function () {
                             var center = map.getCenter();
                             google.maps.event.trigger(map, "resize");
                             map.setCenter(center);
                         });
                         // google.maps.event.addListenerOnce(map, 'idle');
 
-                        google.maps.event.addListener(map, 'click', function(event) {
+                        google.maps.event.addListener(map, 'click', function (event) {
                             placeMarker(event.latLng);
                         });
 
@@ -336,6 +339,7 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
                         $("#post-listing-form #error-zip").show();
                     }
                 });
+
             });
 
             if($("#post-listing-form #zip").val()) {
@@ -358,6 +362,8 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             }
 
             function placeMarker(location) {
+                if(typeof google === "undefined") return false;
+
                 if(marker) marker.setMap(null);
 
                 marker = new google.maps.Marker({
@@ -573,8 +579,15 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
 
     function gotoStep(stepN, isDone){
         if(stepN === '6'){
-            initPaymentForm('listing', listingData.listing_id);
+            initListingPaymentForm();
         }
+
+        function initListingPaymentForm(){
+            initPaymentForm(entityType, listingData.listing_id, function(){
+                setPromoHndlers(listingData.listing_id, entityType, initListingPaymentForm);
+            });
+        }
+
         $("#post-listing-form  .listing-steps").hide();
         $("#step"+stepN).show();
 
@@ -588,7 +601,6 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
     if(window.location.hash === '#step5') {
         $(".steps-all li:not(#stepbc-5):not(#stepbc-6)").addClass("current");
         gotoStep(5,true);
-        window.location.hash = '';
     }
     if(window.location.hash === '#step6') {
         confirmListing();

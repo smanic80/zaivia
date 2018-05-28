@@ -171,6 +171,19 @@
                     </tfoot>
                 </table>
             </div>
+
+            <# if ( data.coupon_name ) { #>
+            <div class="acc-item mb-15">
+                <h3><?php _e('Promo Code', 'am') ?></h3>
+                <fieldset>
+                    <div class="row gutters-16">
+                        <div class="col-8">
+                            <div class="col-8">{{data.coupon_name}}&nbsp;<a href="#" id="remove-promo">[X]</a></div>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <# } #>
         </div>
     <# } #>
     </div>

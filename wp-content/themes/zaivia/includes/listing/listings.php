@@ -220,6 +220,7 @@ class ZaiviaListings extends listing_base {
 		$preparedData = [
 			'activated'=>1,
 			'date_published' => $curDate,
+			'applied_coupon' => null
 		];
 		if($listing['to_delete'] === '1') {
 			$preparedData['to_delete'] = 0;
@@ -233,8 +234,10 @@ class ZaiviaListings extends listing_base {
 		}
 
 		//if($listing['bump_up'] === '1') $preparedData['bump_up'] = $curDate;
+		self::useCoupon((int)$listing['applied_coupon'], $userId);
+		$res = (bool) $wpdb->update($listing_tablename, $preparedData, ['listing_id' => $listingId]);
 
-		return (bool) $wpdb->update($listing_tablename, $preparedData, ['listing_id' => $listingId]);
+		return $res;
 	}
 
 	public static function calculateTraitDate($trait, $listing) {
@@ -709,7 +712,7 @@ class ZaiviaListings extends listing_base {
 
 
 
-	public static function isOwner($userId, $id) {
+	public static function isOwner($userId, $id, $entity_type="listing") {
 		if(!$id) return true;
 		return (bool)count(self::getListings($id, $userId));
 	}
@@ -1217,7 +1220,7 @@ class ZaiviaListings extends listing_base {
 			}
 		}
 
-		$discounted = self::applyCoupon((int)$listing['used_coupon'], $price["total"]);
+		$discounted = self::applyCoupon((int)$listing['applied_coupon'], $price["total"]);
 
 		$price["subtotal"] = $price["total"];
 		$price["total"] = $discounted["sum"];
