@@ -1149,39 +1149,55 @@
 
     if (navigator.geolocation && $("body").hasClass("page-template-community-partners")) {
         var key = "",
-            renderPartnesCallback = function(){};
+            html_key = [];
+
         if($(".page-head").length) {
             key = "industries";
+            html_key = ["industries"];
         }
         if($(".category-head").length) {
-            keys = "partners";
-            renderPartnesCallback = function(){};
+            key = "partners";
+            html_key = ["common", "featured", "pagination"];
+
         }
 
         navigator.geolocation.getCurrentPosition(function (position) {
-            renderPartnes(position.coords.latitude, position.coords.longitude, key, renderPartnesCallback);
+            renderPartnes(position.coords.latitude, position.coords.longitude, key, html_key);
         }, function () {
-            renderPartnes(0, 0, key, renderPartnesCallback);
+            renderPartnes(0, 0, key, html_key);
         });
     }
 
-    function renderPartnes(lat, lng, key, callback) {
+    function renderPartnes(lat, lng, key, html_key) {
         if($("body").hasClass("page-template-community-partners")) {
-            jQuery.post({
+            $.post({
                 url: amData.ajaxurl,
                 dataType: "json",
                 data: {action: "get_"+key, lat:lat, lng:lng},
                 success: function (data) {
-                    if(data) {
-                        var tpl_item = wp.template( key+"-item" );
-                        var list = $('#'+key+'-placeholder');
-                        list.empty();
-                        for(var i in data) if (data.hasOwnProperty(i)){
-                            list.append(tpl_item(data[i]));
+                    for(var data_key in html_key) {
+                        if(data.hasOwnProperty(html_key[data_key])) {
+                            if($( '#tmpl-' + html_key[data_key] + "-item").length) {
+                                var tpl_item = wp.template(html_key[data_key] + "-item");
+                                var list = $('#' + html_key[data_key] + '-placeholder');
+                                list.empty();
+                                for (var i in data[html_key[data_key]]) if (data[html_key[data_key]].hasOwnProperty(i)) {
+                                    list.append(tpl_item(data[html_key[data_key]][i]));
+                                }
+                            } else {
+                                $('#' + html_key[data_key] + '-placeholder').html(data[html_key[data_key]]);
+                                if($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').hide();
+                            }
+                        } else {
+                            if($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').hide();
                         }
                     }
                 }
-            });
+            }).fail(function(){
+                for(var data_key in html_key) {
+                    if ($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').hide();
+                }
+            })
         }
     }
 

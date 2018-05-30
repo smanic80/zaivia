@@ -1043,26 +1043,36 @@
 		$lat = (float)$_POST['lat'];
 		$lng = (float)$_POST['lng'];
 		$industries = ZaiviaBusiness::getIndustryOptionsForLocation($lat, $lng);
-		echo json_encode($industries);
+		echo json_encode(["industries" => $industries]);
 		die;
 	}
 
 	add_action( 'wp_ajax_get_partners', 'getPartners' );
 	add_action( 'wp_ajax_nopriv_get_partners', 'getPartners' );
-	function getPartnersgetIndustries() {
+	function getPartners() {
 		$lat = (float)$_POST['lat'];
 		$lng = (float)$_POST['lng'];
 		$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 		$sort = $_POST['sort'];
 
 		$featuredPartners = ZaiviaBusiness::getFeaturedPartnersForLocation($lat, $lng);
+		$featuredPartnersHtml = "";
+		foreach($featuredPartners as $data){
+			$featuredPartnersHtml .= ZaiviaBusiness::renderCard($data);
+		}
+
 		$partners = ZaiviaBusiness::getPartnersForLocation($lat, $lng, $page, $sort, $featuredPartners);
-		$pagination = ZaiviaBusiness::buildPagination($partners, $page);
+		$partnersHtml = "";
+		foreach($partners as $data){
+			$partnersHtml .= ZaiviaBusiness::renderCard($data);
+		}
+
+		$paginationHtml = ZaiviaBusiness::buildPagination(count($partners), $page);
 
 		$res = [
-			"partners" => $partners,
-			"featuredPartners" => $featuredPartners,
-			"pagination" => $pagination
+			"partners" => $partnersHtml,
+			"featuredPartners" => $featuredPartnersHtml,
+			"pagination" => $paginationHtml
 		];
 		echo json_encode($res);
 		die;

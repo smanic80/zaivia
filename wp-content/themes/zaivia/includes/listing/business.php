@@ -445,12 +445,12 @@ class ZaiviaBusiness extends listing_base{
 		$industries = [];
 		foreach($card_industry_options as $option) {
 			$option['cards'] = [];
-			$industries[$option['label_singular']] = $option;
+			$industries[$option['key']] = $option;
 		}
 
 		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], false, false, false);
 		foreach($items as $item ) {
-			$industry = get_field("card_industry", $item['ID'] );
+			$industry = get_field("card_industry", $item );
 			$industries[$industry]['cards'][] = $item;
 		}
 
@@ -470,6 +470,7 @@ class ZaiviaBusiness extends listing_base{
 	public static function getFeaturedPartnersForLocation($lat, $lng){
 		$geo = ($lat && $lng) ? [$lat, $lng] : [];
 		$items = self::getItemsByMeta(self::$posttype_card, $geo, ["card_featured_date"=>null], 3);
+
 		$res = [];
 		foreach($items as $item) {
 			$res[] = self::fillEntityMeta($item);
@@ -487,8 +488,18 @@ class ZaiviaBusiness extends listing_base{
 		return $res;
 	}
 
-	public static function buildPagination($partners, $page) {
+	public static function buildPagination($partnersCount, $page) {
 		$perPage = ZaiviaBusiness::$partners_per_page;
+		$totalPages = ceil($partnersCount / $perPage);
+		$res = "";
+		if($page > 1) $res .= '<a class="prev page-numbers" href="#'.($page-1).'">'.__('Previous').'</a>';
+		for($i=1;$i<=$totalPages;$i++) {
+			if($page === $totalPages) $res .= '<span class="page-numbers current">'.$i.'</span>';
+			else $res .= '<a class="page-numbers" href="#'.$i.'">'.$i.'</a>';
+		}
+		if($page < $totalPages) $res .= '<a class="next page-numbers" href="#'.($page+1).'">'.__('Next').'</a>';
+
+		return $res;
 	}
 
 
@@ -558,18 +569,17 @@ class ZaiviaBusiness extends listing_base{
 			$sql .= " join {$postmeta_tablename} {$key} on {$key}.post_id = {$geo_tablename}.post_id AND " . $meta_query;
 		}
 
-
 		if($sort) {
 			list($sortField, $sortDir) = explode("__", $sort);
 			$sql .= " join {$postmeta_tablename} SORT_KEY on SORT_KEY.post_id = SORT_KEY.post_id";
 		}
-		$sql .= "where " . ($geo ? self::getGeoRadiusSql($geo['lat'], $geo['lng'], self::$item_radius) : "1=1");
+		$sql .= " where " . ($geo ? self::getGeoRadiusSql($geo['lat'], $geo['lng'], self::$item_radius) : "1=1");
 		if($exclude && is_array($exclude)) {
 			$sql .= " AND ID not in (".implode(",", $exclude).")";
 		}
 		if($sort === "random") {
 			$sql .= " order by rand()";
-		} elseif ($sortField && $sortDir) {
+		} elseif (isset($sortField) && isset($sortDir) && $sortField && $sortDir) {
 			$sql .= " order by {$sortField} {$sortDir}";
 		}
 		if($limit) {
@@ -578,7 +588,7 @@ class ZaiviaBusiness extends listing_base{
 				$sql .= " offset ".(int)$limit*((int)$page-1);
 			}
 		}
-echo $sort;
+		echo $sql."\n";
 		$posts = $wpdb->get_col($sql);
 		if($posts) {
 			if($limit === 1) $res = $posts[0];

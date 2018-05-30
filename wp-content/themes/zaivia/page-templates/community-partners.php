@@ -15,36 +15,36 @@ get_header(); ?>
                     <h1><?php $title = get_field('custom_title'); if(!empty($title)) : echo $title; else : the_title(); endif; ?></h1>
                     <p><?php the_field("industry_text")?></p>
                 </div>
-                <h2><?php echo $industry['plural_name']?></h2>
+                <h2><?php echo $industry['label_plural']?></h2>
             </div>
         </div>
 
-        <div class="featured-agents">
-            <div class="container sm">
-                <h3><?php echo _e("Featured Agents")?></h3>
+        <div class="featured-agents" id="featured-rel">
+            <div class="container sm" >
+                <h3><?php _e("Featured Agents")?></h3>
                 <section>
                     <div class="row" id="featured-placeholder"></div>
                 </section>
             </div>
+        </div>
 
-            <div class="partners-category-list">
-                <div class="container sm">
-                    <div class="filter-bar">
-                        <select class="custom-blue" id="agents-sort">
-                            <option value="card_first_name__asc"><?php echo _e("Sort By Name A-Z")?></option>
-                            <option value="card_first_name__desc"><?php echo _e("Sort By Name Z-A")?></option>
-                            <option value="card_company__asc"><?php echo _e("Sort By Company Name A-Z")?></option>
-                            <option value="card_company__desc"><?php echo _e("Sort By Company Name Z-A")?></option>
-                        </select>
-                    </div>
-                    <section>
-                        <div class="row" id="common-placeholder"></div>
-                    </section>
+        <div class="partners-category-list" id="common-rel">
+            <div class="container sm">
+                <div class="filter-bar">
+                    <select class="custom-blue" id="agents-sort">
+                        <option value="card_first_name__asc"><?php echo _e("Sort By Name A-Z")?></option>
+                        <option value="card_first_name__desc"><?php echo _e("Sort By Name Z-A")?></option>
+                        <option value="card_company__asc"><?php echo _e("Sort By Company Name A-Z")?></option>
+                        <option value="card_company__desc"><?php echo _e("Sort By Company Name Z-A")?></option>
+                    </select>
                 </div>
-                <div class="pagination-holder">
-                    <div class="container">
-                        <div class="pagination pagination-full" id="common-agets-pagination"></div>
-                    </div>
+                <section>
+                    <div class="row" id="common-placeholder"></div>
+                </section>
+            </div>
+            <div class="pagination-holder" id="pagination-rel">
+                <div class="container">
+                    <div class="pagination pagination-full" id="pagination-placeholder"></div>
                 </div>
             </div>
         </div>
