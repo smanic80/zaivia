@@ -570,18 +570,12 @@ if($listing): ?>
                 <div class="widget widget-listing">
                     <a href="#"><?php _e('View Other Listings','am') ?></a>
                 </div>
-                <div class="widget widget-report">
-                    <h3><a href="#report" class="open-modal"><i class="fa fa-flag-o" aria-hidden="true"></i><?php _e('Report Listing','am') ?></a></h3>
-                </div>
+
+                <?php get_template_part("templates/report", "block"); ?>
+
                 <div class="widget widget-social">
-                    <h3><?php _e('Share with Friends','am') ?></h3>
-                    <ul>
-                        <li><a href="#"><i class="fa fa-facebook-square" aria-hidden="true"></i></a></li>
-                        <li><a href="#"><i class="fa fa-twitter-square" aria-hidden="true"></i></a></li>
-                        <li><a href="#"><i class="fa fa-google-plus-square" aria-hidden="true"></i></a></li>
-                        <li><a href="#"><i class="fa fa-pinterest-square" aria-hidden="true"></i></a></li>
-                        <li><a href="#"><i class="fa fa-linkedin-square" aria-hidden="true"></i></a></li>
-                    </ul>
+                    <?php get_template_part("templates/share", "block"); ?>
+
                     <div class="save save-favs">
                         <a href="#" data-id="<?php echo $listing['listing_id'] ?>" >
                             <span <?php if( !$listing['faved'] ): ?>style="display:none;"<?php endif; ?>><i class="fa fa-heart fav_del" aria-hidden="true" ></i><?php _e('Remove from Favorites','am') ?></span>
@@ -603,35 +597,5 @@ if($listing): ?>
         </div>
     </div>
 </div>
-<div class="modal-overlay" id="report">
-    <div class="table">
-        <div class="center">
-            <div class="box">
-                <div class="close"><i class="fa fa-times" aria-hidden="true"></i></div>
-                <h3 class="report"><i class="fa fa-flag-o" aria-hidden="true"></i>Report Listing </h3>
-                <div class="styled-form">
-                    <form action="#" method="post" id="reportListing">
-                        <input type="text" placeholder="<?php _e('Full Name','am') ?>" id="report_full_name">
-                        <input type="email" size="40" class="wpcf7-form-control wpcf7-text wpcf7-email wpcf7-validates-as-required wpcf7-validates-as-email half" placeholder="<?php _e('Email','am') ?>" aria-required="true" aria-invalid="false" id="report_email">
-                        <input type="text" class="half-r" placeholder="<?php _e('Phone','am') ?>" id="report_phone">
-                        <select id="report_reason" title=""><option value="1"><?php _e('Reason For Reporting','am') ?></option></select>
-                        <textarea placeholder="Please Describe The Problem" id="report_text"></textarea>
-                        <p>
-                            <span class="wpcf7-form-control-wrap checkbox-399">
-                                <span class="wpcf7-form-control wpcf7-checkbox">
-                                    <span class="wpcf7-list-item first">
-                                        <label><input type="checkbox" value="1" id="report_send_copy">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Send me a copy of the email','am') ?></span></label>
-                                    </span>
-                                </span>
-                            </span>
-                        </p>
-                        <div class="g-recaptcha" data-sitekey="<?php the_field('recaptcha_key', "option"); ?>"></div>
-                        <input type="submit" value="Send Message" class="wpcf7-form-control wpcf7-submit">
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<script src='https://www.google.com/recaptcha/api.js'></script>
+
 <?php endif; get_footer(); ?>

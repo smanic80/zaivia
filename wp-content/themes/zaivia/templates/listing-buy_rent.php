@@ -34,10 +34,9 @@
                 <div class="widget widget-need">
 	                <?php echo ZaiviaBusiness::renderCard(ZaiviaBusiness::findRandomFeaturedCard(isset($_GET['city']) ? $_GET['city'] : ""));?>
                 </div>
-                <div class="widget widget-promo">
-                    <h3><?php _e('PROMOTE YOUR BUSINESS','am'); ?><br><span class="or"><?php _e('on','am'); ?></span><br><strong><?php _e('ZAIVIA FOR FREE!','am'); ?></strong></h3>
-                    <a href="<?php the_field("page_postcard", "option")?>" class="btn btn-secondary"><?php _e('List Your Business','am'); ?></a>
-                </div>
+
+	            <?php get_template_part("templates/promote", "block"); ?>
+
                 <div class="widget widget-tabs">
                     <ul class="nav">
                         <li class="current"><a href="#fav_tab1"><?php _e('My Faves','am'); ?></a></li>

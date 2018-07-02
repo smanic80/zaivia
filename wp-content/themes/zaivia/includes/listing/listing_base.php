@@ -7,7 +7,7 @@
  */
 
 class listing_base {
-	public static $posttype_card = "contact-card";
+	public static $posttype_card = "contact_card";
 	public static $posttype_banner = "banner";
 	public static $posttype_discount = "cart_discount";
 
@@ -86,6 +86,53 @@ class listing_base {
 		return $var;
 	}
 
+	public static function getProvinceByZip($zip){
+		$sates = [
+			"A" => ["NF", "Newfoundland"],
+			"B" => ["NS", "Nova Scotia"],
+			"С" => ["PE", "Prince Edward Island"],
+			"E" => ["NB", "New Brunswick"],
+			"G" => ["QC", "Quebec"],
+			"H" => ["QC", "Quebec"],
+			"J" => ["QC", "Quebec"],
+			"K" => ["ON", "Ontario"],
+			"L" => ["ON", "Ontario"],
+			"M" => ["ON", "Ontario"],
+			"N" => ["ON", "Ontario"],
+			"P" => ["ON", "Ontario"],
+			"R" => ["MB", "Manitoba"],
+			"S" => ["SK", "Saskatchewan"],
+			"T" => ["AB", "Alberta"],
+			"V" => ["BC", "British Columbia"],
+			"X" => ["NT", "Northwest Territories"],
+			"Y" => ["YT", "Yukon Territory"],
+			//"NU" => "Nunavut",
+		];
+
+		$letter = ucwords(substr($zip, 0, 1));
+
+		if($letter && isset($sates[$letter])) {
+			return $sates[$letter];
+		}
+		return false;
+	}
+
+	protected static function getCurrentLocation($lat, $lng) {
+		if(!$lat || !$lng) {
+			$ip = $_SERVER['REMOTE_ADDR'];
+			$ip = "94.112.34.142";
+			$details = json_decode(file_get_contents("http://freegeoip.net/json/{$ip}"));
+			$lat = ($details && $details->latitude) ? $details->latitude : "";
+			$lng = ($details && $details->longitude) ? $details->longitude : "";
+		}
+
+		$lat = $lng = 0;
+
+		$geo = ["lat" => $lat, "lng" => $lng];
+
+		return $geo;
+	}
+
 	protected static function getGeoRadiusSql($centerLat, $centerLng, $radius=0){
 		$sql = '( ( 6971 * acos( cos( radians(' . $centerLat . ') ) * cos( radians( lat ) ) * cos( radians( lng ) - radians(' . $centerLng . ') ) + sin( radians(' . $centerLat . ') ) * sin(radians(lat)) ) )';
 		if($radius)  $sql .= ' < ' . intval($radius);
@@ -115,6 +162,8 @@ class listing_base {
 
 		return $geo;
 	}
+
+
 
 	public static function isOwner($userId, $entity_id, $entity_type="listing"){
 		$res = true;

@@ -432,14 +432,7 @@ class ZaiviaBusiness extends listing_base{
 	}
 
     public static function getIndustryOptionsForLocation($lat, $lng) {
-		if(!$lat || !$lng) {
-			$ip = $_SERVER['REMOTE_ADDR'];
-			$ip = "94.112.34.142";
-			$details = json_decode(file_get_contents("http://freegeoip.net/json/{$ip}"));
-			$lat = ($details && $details->latitude) ? $details->latitude : "";
-			$lng = ($details && $details->longitude) ? $details->longitude : "";
-		}
-		$geo = ($lat && $lng) ? ["lat" => $lat, "lng" => $lng] : [];
+	    $geo = self::getCurrentLocation($lat, $lng);
 
 		$card_industry_options = get_field("card_industry_options", "option");
 		$industries = [];
@@ -468,22 +461,19 @@ class ZaiviaBusiness extends listing_base{
 	}
 
 	public static function getFeaturedPartnersForLocation($lat, $lng){
-		$geo = ($lat && $lng) ? [$lat, $lng] : [];
-		$items = self::getItemsByMeta(self::$posttype_card, $geo, ["card_featured_date"=>null], 3);
+		$geo = self::getCurrentLocation($lat, $lng);
 
-		$res = [];
-		foreach($items as $item) {
-			$res[] = self::fillEntityMeta($item);
-		}
-		return $res;
+		$items = self::getItemsByMeta(self::$posttype_card, $geo, ["card_featured_date"=>null], 3);
+		return $items;
 	}
 
 	public static function getPartnersForLocation($lat, $lng, $page, $sort, $exclude){
-		$geo = ($lat && $lng) ? [$lat, $lng] : [];
+		$geo = self::getCurrentLocation($lat, $lng);
+
 		$items = self::getItemsByMeta(self::$posttype_card, $geo, [], self::$partners_per_page, $page, $sort, $exclude);
 		$res = [];
 		foreach($items as $item) {
-			$res[] = self::fillEntityMeta($item);
+			$res[] = self::getEntities(self::$posttype_card, (int)$item);
 		}
 		return $res;
 	}
@@ -569,18 +559,30 @@ class ZaiviaBusiness extends listing_base{
 			$sql .= " join {$postmeta_tablename} {$key} on {$key}.post_id = {$geo_tablename}.post_id AND " . $meta_query;
 		}
 
-		if($sort) {
+		$sortField = $sortField = "";
+		if($sort && $sort !== "random") {
 			list($sortField, $sortDir) = explode("__", $sort);
-			$sql .= " join {$postmeta_tablename} SORT_KEY on SORT_KEY.post_id = SORT_KEY.post_id";
+			$sortDir = ($sortDir && in_array(strtolower($sortDir), ["asc", "desc"])) ? strtolower($sortDir) : "";
+			$sortField = $sortField ? sanitize_key($sortField) : "";
+
+			if ($sortField && $sortDir) {
+				$sql .= " join {$postmeta_tablename} SORT_KEY on SORT_KEY.post_id = {$posts_tablename}.ID and meta_key='{$sortField}'";
+			}
+
 		}
-		$sql .= " where " . ($geo ? self::getGeoRadiusSql($geo['lat'], $geo['lng'], self::$item_radius) : "1=1");
+		$sql .= " where 1=1";
+
+		if($geo && $geo['lat'] && $geo['lng']) {
+			$sql .= " AND ".self::getGeoRadiusSql($geo['lat'], $geo['lng'], self::$item_radius);
+		}
+
 		if($exclude && is_array($exclude)) {
 			$sql .= " AND ID not in (".implode(",", $exclude).")";
 		}
 		if($sort === "random") {
 			$sql .= " order by rand()";
 		} elseif (isset($sortField) && isset($sortDir) && $sortField && $sortDir) {
-			$sql .= " order by {$sortField} {$sortDir}";
+			$sql .= " order by SORT_KEY.meta_value {$sortDir}";
 		}
 		if($limit) {
 			$sql .= " limit ".(int)$limit;
@@ -588,7 +590,7 @@ class ZaiviaBusiness extends listing_base{
 				$sql .= " offset ".(int)$limit*((int)$page-1);
 			}
 		}
-		echo $sql."\n";
+
 		$posts = $wpdb->get_col($sql);
 		if($posts) {
 			if($limit === 1) $res = $posts[0];
@@ -598,7 +600,7 @@ class ZaiviaBusiness extends listing_base{
 		return $res;
 	}
 
-	private static function fillEntityMeta($item){
+	public static function fillEntityMeta($item){
 		$entityType = get_post_type($item->ID);
 
 		$res = [
@@ -626,6 +628,7 @@ class ZaiviaBusiness extends listing_base{
 		}
 
 		if($entityType === self::$posttype_card) {
+
 			$res['card_first_name'] = get_post_meta($item->ID,"card_first_name", true);
 			$res['card_last_name'] = get_post_meta($item->ID,"card_last_name", true);
 			$res['card_company'] = get_post_meta($item->ID,"card_company", true);
@@ -641,6 +644,10 @@ class ZaiviaBusiness extends listing_base{
 			$res['card_address'] = get_post_meta($item->ID,"card_address", true);
 			$res['card_city'] = get_post_meta($item->ID,"card_city", true);
 			$res['card_zip'] = get_post_meta($item->ID,"card_zip", true);
+
+			$sate = self::getProvinceByZip($res['card_zip']);
+			$res['card_state'] = $sate ? $sate[0] : "";
+
 			$res['card_link'] = get_post_meta($item->ID,"card_link", true);
 			$res['card_url'] = get_post_meta($item->ID,"card_url", true);
 			$res['card_comments'] = get_post_meta($item->ID, 'card_comments', true);
@@ -653,4 +660,6 @@ class ZaiviaBusiness extends listing_base{
 
 		return $res;
 	}
+
+
 }

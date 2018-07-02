@@ -7746,6 +7746,9 @@ select::-ms-expand {
 .ad-item .left {
   float: left;
 }
+.ad-item .right{
+  float: right;
+}
 
 .ad-item .listed {
   float: right;

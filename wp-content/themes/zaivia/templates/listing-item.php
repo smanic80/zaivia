@@ -1,5 +1,9 @@
 <script type="text/html" id="tmpl-listing-item">
     <article class="ad-item<# if ( !data.featured_one && data.premium > 0 ) { #> premium<# } #>">
+	    <?php if( is_administrator() ) :?>
+            <div ><a href="<?php the_field("page_postlisting", "option")?>?edit-listing={{data.listing_id}}" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a></div>
+	    <?php endif;?>
+
         <# if ( data.featured_one > 0 ) { #>
         <div class="featured"><?php _e('FEATURED LISTING','am'); ?></div>
         <# } else if ( data.premium > 0 ) { #>
@@ -28,12 +32,15 @@
                 <a href="#"><i class="fa <# if ( data.faved ) { #>fa-heart fav_del<# } else {#>fa-heart-o fav_add<# } #>" data-id="{{data.listing_id}}" aria-hidden="true"></i></a>
             </div>
         </div>
+
         <div class="text">
+
             <div class="left">
                 <h2><a href="<?php echo get_site_url(); ?>/listing/?id={{data.listing_id}}">{{data.unit_number}} {{data.address}}</a></h2>
                 <p>{{data.city}}, {{data.province}}</p>
             </div>
             <div class="price">{{data.price}}</div>
+
             <div class="modu">
                 <h6>{{data.property_type}}</h6>
                 <div class="cols">

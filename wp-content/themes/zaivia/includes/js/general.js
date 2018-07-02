@@ -3,6 +3,11 @@
     $(document).ready(function($) {
         $('.us-price').mask("000,000,000,000", {reverse: true});
 
+        $(".history-back").click(function(){
+            window.history.back()
+            return false;
+        });
+
         if(navigator.geolocation){
             navigator.geolocation.getCurrentPosition(function(){
                 console.log(location);
@@ -1113,7 +1118,7 @@
     $('#reportListing').submit(function (e) {
         e.preventDefault();
         processAjaxForm(
-            ['report_full_name','report_email','report_reason','report_text','g-recaptcha-response'],
+            ['report_url', 'report_full_name','report_email','report_reason','report_text','g-recaptcha-response'],
             $(this),
             function (data){
                 if(data['ok']){
@@ -1162,7 +1167,8 @@
         }
 
         navigator.geolocation.getCurrentPosition(function (position) {
-            renderPartnes(position.coords.latitude, position.coords.longitude, key, html_key);
+            //renderPartnes(position.coords.latitude, position.coords.longitude, key, html_key);
+            renderPartnes(0, 0, key, html_key);
         }, function () {
             renderPartnes(0, 0, key, html_key);
         });
@@ -1170,12 +1176,18 @@
 
     function renderPartnes(lat, lng, key, html_key) {
         if($("body").hasClass("page-template-community-partners")) {
+            var data = {action: "get_"+key, lat:lat, lng:lng};
+                if($("#agents-sort").length) {
+                    data["sort"] = $("#agents-sort").val();
+                }
+
             $.post({
                 url: amData.ajaxurl,
                 dataType: "json",
-                data: {action: "get_"+key, lat:lat, lng:lng},
+                data: data,
                 success: function (data) {
                     for(var data_key in html_key) {
+
                         if(data.hasOwnProperty(html_key[data_key])) {
                             if($( '#tmpl-' + html_key[data_key] + "-item").length) {
                                 var tpl_item = wp.template(html_key[data_key] + "-item");
@@ -1186,7 +1198,7 @@
                                 }
                             } else {
                                 $('#' + html_key[data_key] + '-placeholder').html(data[html_key[data_key]]);
-                                if($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').hide();
+                                if($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').show();
                             }
                         } else {
                             if($('#' + html_key[data_key] + '-rel').length) $('#' + html_key[data_key] + '-rel').hide();

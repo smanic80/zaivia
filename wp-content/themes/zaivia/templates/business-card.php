@@ -1,18 +1,31 @@
 <?php if(isset($data) && $data) :?>
-    <?php $profileUrl = (isset($data['ID']) && $data['ID']) ? get_permalink($data['ID']) : "#"; ?>
+    <?php $profileUrl = (isset($data['id']) && $data['id']) ? get_permalink($data['id']) : ""; ?>
 
     <?php if(isset($data['card_title']) && $data['card_title']) :?><h3><?php echo $data['card_title']?></h3><?php endif;?>
+
+	<?php if(isset($data['need-wrap'])):?><div class="col-12 col-md-6 col-lg-4 mb-22"><?php endif;?>
+
     <div class="agent-item">
         <?php if(isset($data['card_profile_image_url']) && $data['card_profile_image_url']) :?><div class="image">
-            <a href="<?php echo $profileUrl ?>"><img src="<?php echo $data['card_profile_image_url']?>" alt=""></a>
+            <?php if($profileUrl):?><a href="<?php echo $profileUrl ?>"><?php endif;?>
+                <img src="<?php echo $data['card_profile_image_url']?>" alt="">
+	        <?php if($profileUrl):?></a><?php endif;?>
         </div><?php endif;?>
         <div class="text">
             <div class="center">
-                <h4><a href="<?php echo $profileUrl ?>"><?php echo implode(" ", [$data['card_first_name'], $data['card_last_name']])?></a></h4>
+                <h4>
+	                <?php if($profileUrl):?><a href="<?php echo $profileUrl ?>"><a href="<?php echo $profileUrl ?>"><?php endif;?>
+                        <?php echo implode(" ", [$data['card_first_name'], $data['card_last_name']])?>
+                    <?php if($profileUrl):?><a href="<?php echo $profileUrl ?>"></a><?php endif;?>
+                </h4>
                 <?php if(isset($data['card_job_title']) && $data['card_job_title']) :?><div class="role"><?php echo $data['card_job_title']?></div><?php endif;?>
                 <?php if(isset($data['card_company']) && $data['card_company']) :?><div class="by">
                     <p><?php echo $data['card_company']?></p>
-                    <?php if(isset($data['card_business_image_url']) && $data['card_business_image_url']) :?><a href="<?php echo $profileUrl ?>"><img src="<?php echo $data['card_business_image_url']?>" alt=""></a><?php endif;?>
+                    <?php if(isset($data['card_business_image_url']) && $data['card_business_image_url']) :?>
+	                <?php if($profileUrl):?><a href="<?php echo $profileUrl ?>"><a href="<?php echo $profileUrl ?>"><?php endif;?>
+                        <img src="<?php echo $data['card_business_image_url']?>" alt="">
+                    <?php if($profileUrl):?><a href="<?php echo $profileUrl ?>"></a><?php endif;?>
+                    <?php endif;?>
                 </div><?php endif;?>
             </div>
         </div>
@@ -57,9 +70,11 @@
                     </a>
                 </li><?php endif;?>
             </ul>
-            <div class="profile">
+	        <?php if($profileUrl):?><div class="profile">
                 <a href="<?php echo $profileUrl ?>"><?php _e('View Profile','am'); ?></a>
-            </div>
+            </div><?php endif;?>
         </div>
     </div>
+
+	<?php if(isset($data['need-wrap'])):?></div><?php endif;?>
 <?php endif; ?>

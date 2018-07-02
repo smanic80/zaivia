@@ -991,7 +991,18 @@
         $response = file_get_contents('https://www.google.com/recaptcha/api/siteverify', false, $context);
         $result = json_decode($response);
         if ($result->success) {
-            $message = __('From:', 'am').' '. $_REQUEST["report_full_name"];
+            $to = get_field("report_email","option");
+	        $report_url = $_REQUEST["report_url"];
+
+	        if(strstr($report_url,"listing")) {
+		        $subj = __('Report Listing');
+            } else {
+		        $subj = __('Report Community Partner');
+            }
+
+	        $message = __('URL:', 'am').' '. $report_url;
+
+            $message .= __('From:', 'am').' '. $_REQUEST["report_full_name"];
             $message .= '<br>'. __('Email:', 'am') .' '. $_REQUEST["report_email"];
             if($_REQUEST["report_phone"]){
                 $message .= '<br>'. __('Phone:', 'am') .' '. $_REQUEST["report_phone"];
@@ -1000,11 +1011,12 @@
             $message .= '<br>'.__('Message:', 'am').' ' . $_REQUEST["report_text"];
 
             add_filter('wp_mail_content_type', 'am_html_email');
-            wp_mail('zaivia@mailinator.com', 'Report Listing', $message);
+
+            wp_mail($to, $subj, $message);
             if($_REQUEST["report_send_copy"]){
                 $user_info = get_userdata(get_current_user_id());
                 if($user_info) {
-                    wp_mail($user_info->user_email, 'Report Listing', $message);
+                    wp_mail($user_info->user_email, $subj, $message);
                 }
             }
             remove_filter('wp_mail_content_type', 'am_html_email');
@@ -1057,23 +1069,24 @@
 
 		$featuredPartners = ZaiviaBusiness::getFeaturedPartnersForLocation($lat, $lng);
 		$featuredPartnersHtml = "";
-		foreach($featuredPartners as $data){
-			$featuredPartnersHtml .= ZaiviaBusiness::renderCard($data);
+		foreach($featuredPartners as $itemId){
+			$data = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, (int)$itemId);
+            $featuredPartnersHtml .= ZaiviaBusiness::renderCard(array_merge($data, ["need-wrap"=>true]));
 		}
 
 		$partners = ZaiviaBusiness::getPartnersForLocation($lat, $lng, $page, $sort, $featuredPartners);
 		$partnersHtml = "";
 		foreach($partners as $data){
-			$partnersHtml .= ZaiviaBusiness::renderCard($data);
+			$partnersHtml .= ZaiviaBusiness::renderCard(array_merge($data, ["need-wrap"=>true]));
 		}
 
 		$paginationHtml = ZaiviaBusiness::buildPagination(count($partners), $page);
 
-		$res = [
-			"partners" => $partnersHtml,
-			"featuredPartners" => $featuredPartnersHtml,
-			"pagination" => $paginationHtml
-		];
+		$res = [];
+		if($partnersHtml) $res["common"] = $partnersHtml;
+		if($featuredPartnersHtml) $res["featured"] = $featuredPartnersHtml;
+		if($paginationHtml) $res["pagination"] = $paginationHtml;
+		
 		echo json_encode($res);
 		die;
 	}
@@ -1275,4 +1288,24 @@ function am_renderUploaderControl($item, $key, $uploaderKey="business_upload", $
     <label class="btn btn-secondary mb-15"><?php _e('Upload image', 'am') ?><input type="file" name="E" class="<?php echo $uploaderKey?>" id="<?php echo $key?>_upload_input"></label>
     <p id="<?php echo $key?>_upload_input_file-errors"></p>
 <?php
+}
+
+function am_url_origin( $s, $use_forwarded_host = false ) {
+	$ssl      = ( ! empty( $s['HTTPS'] ) && $s['HTTPS'] == 'on' );
+	$sp       = strtolower( $s['SERVER_PROTOCOL'] );
+	$protocol = substr( $sp, 0, strpos( $sp, '/' ) ) . ( ( $ssl ) ? 's' : '' );
+	$port     = $s['SERVER_PORT'];
+	$port     = ( ( ! $ssl && $port=='80' ) || ( $ssl && $port=='443' ) ) ? '' : ':'.$port;
+	$host     = ( $use_forwarded_host && isset( $s['HTTP_X_FORWARDED_HOST'] ) ) ? $s['HTTP_X_FORWARDED_HOST'] : ( isset( $s['HTTP_HOST'] ) ? $s['HTTP_HOST'] : null );
+	$host     = isset( $host ) ? $host : $s['SERVER_NAME'] . $port;
+	return $protocol . '://' . $host;
+}
+
+function am_full_url($use_forwarded_host = false ) {
+	$s = $_SERVER;
+	return am_url_origin( $s, $use_forwarded_host ) . $s['REQUEST_URI'];
+}
+
+function is_administrator() {
+	return current_user_can( "edit_posts" );
 }
