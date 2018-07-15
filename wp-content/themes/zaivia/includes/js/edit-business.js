@@ -7,10 +7,9 @@
             processAjaxForm(['banner_title', 'banner_url', 'banner_section', 'banner_community', 'add_banner_nonce', 'banner_image_upload_input_media'], $(this), function(id){
                 $("#entity_id").val(id);
 
-                if($(".banner-date-update:checked").length) {
+                if($(".banner-date-update:checked").length && $(".btn-primary.payment").length) {
                     $(".multistep-step").hide();
                     $(".payment-step").show();
-
                     initBusinessPaymentForm(id);
                 } else {
                     showSavedConfirmation($("#add_banner_form"));
@@ -25,7 +24,7 @@
             saveCard($(this), function(id){
                 $("#entity_id").val(id);
 
-                if($(".card-date-update:checked").length) {
+                if($(".card-date-update:checked").length && $(".btn-primary.payment").length) {
                     $(".form-step").hide();
                     $(".payment-step").show();
                     initBusinessPaymentForm(id);
@@ -77,7 +76,6 @@
                     entity_id : id
                 };
 
-                console.log(data);
                 $.ajax({
                     url: amData.ajaxurl,
                     type: 'POST',
@@ -116,12 +114,14 @@
                         entity_id : $("#entity_id").val(),
                         date : $date.length ? $date.val() : 0
                     };
-                if($date.length) {
-                    $(".btn-primary.payment").show();
-                    $(".btn-primary.save").hide();
-                } else {
-                    $(".btn-primary.payment").hide();
-                    $(".btn-primary.save").show();
+                if($(".btn-primary.payment").length) {
+                    if ($date.length) {
+                        $(".btn-primary.payment").show();
+                        $(".btn-primary.save").hide();
+                    } else {
+                        $(".btn-primary.payment").hide();
+                        $(".btn-primary.save").show();
+                    }
                 }
                 $.ajax({
                     url: amData.ajaxurl,
@@ -157,12 +157,14 @@
                         card_featured : $("#card_featured:checked").length
                     };
 
-                if($date.length) {
-                    $(".btn-primary.payment").show();
-                    $(".btn-primary.save").hide();
-                } else {
-                    $(".btn-primary.payment").hide();
-                    $(".btn-primary.save").show();
+                if($(".btn-primary.payment").length) {
+                    if ($date.length) {
+                        $(".btn-primary.payment").show();
+                        $(".btn-primary.save").hide();
+                    } else {
+                        $(".btn-primary.payment").hide();
+                        $(".btn-primary.save").show();
+                    }
                 }
 
                 $.ajax({
@@ -264,12 +266,74 @@
 
         $(".items-list").on("click", ".delete-business", function (e) {
             e.preventDefault();
+            delete_disableBusiness($(this).data("id"), 'delete_business', function(data){
+                if(typeof data['error'] === 'undefined') {
+                    $(".tabbed-content.current .delete-confirmation").show();
+                    setTimeout(function () {
+                        $(".tabbed-content.current .delete-confirmation").fadeOut(400);
+                    }, 1000);
+
+                    $(".tabbed-content.current .row-"+id).remove();
+                } else {
+                    $(".tabbed-content.current").find(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            });
+        });
+        $(".items-list").on("click", ".disable-business", function (e) {
+            var $this = $(this);
+
+            e.preventDefault();
+            if($(this).hasClass("disabled")) return false;
+
+            delete_disableBusiness($(this).data("id"), 'disable_business', function(data, $this){
+                if(typeof data['error'] === 'undefined') {
+                    $(".tabbed-content.current .disable-confirmation").show();
+                    setTimeout(function () {
+                        $(".tabbed-content.current .disable-confirmation").fadeOut(400);
+                    }, 1000);
+                    $this.parent().prev().text("");
+                } else {
+                    $(".tabbed-content.current").find(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            }, $this);
+        });
+        $(".business_form .btn-primary.delete").click(function(e){
+            e.preventDefault();
+            delete_disableBusiness($("#entity_id").val(), 'delete_business', function(data){
+                if(typeof data['error'] === 'undefined') {
+                    location.reload();
+                } else {
+                    $(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            });
+        });
+        $(".business_form .btn-primary.disable").click(function(e){
+            e.preventDefault();
+            delete_disableBusiness($("#entity_id").val(), 'disable_business', function(data){
+                if(typeof data['error'] === 'undefined') {
+                    location.reload();
+                } else {
+                    $(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            });
+        });
+        $(".business_form .btn-primary.enable").click(function(e){
+            e.preventDefault();
+            delete_disableBusiness($("#entity_id").val(), 'enable_business', function(data){
+                if(typeof data['error'] === 'undefined') {
+                    location.reload();
+                } else {
+                    $(".error_placeholder").text(data['error']).addClass('error').show();
+                }
+            });
+        });
+
+
+        function delete_disableBusiness(id, action, callback, $this){
             if(!confirm("Are you sure?")) return false;
 
-            var id = $(this).data("id"),
-                entity = $(this).data("entity"),
-                data = {
-                    action: 'delete_business',
+            var data = {
+                    action: action,
                     id: id
                 };
             $.post({
@@ -277,22 +341,13 @@
                 dataType: "json",
                 data: data,
                 success: function (data) {
-                    if(typeof data['error'] === 'undefined') {
-                        $("#edit_"+entity+" .delete-confirmation").show();
-                        setTimeout(function () {
-                            $("#edit_"+entity+" .delete-confirmation").fadeOut(400);
-                        }, 1000);
-
-                        $("#edit_"+entity+" .row-"+id).remove();
-                    } else {
-                        $("#edit_"+entity).find(".error_placeholder").text(data['error']).addClass('error').show();
-                    }
+                    callback(data, $this);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
-                    $("#cc-list").find(".error_placeholder").text('ERRORS: ' + textStatus).addClass('error').show();
+                    alert(textStatus);
                 }
             });
-        });
+        }
 
     });
 

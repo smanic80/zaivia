@@ -4,16 +4,15 @@
         $('.us-price').mask("000,000,000,000", {reverse: true});
 
         $(".history-back").click(function(){
-            window.history.back()
+            window.history.back();
             return false;
         });
 
-        if(navigator.geolocation){
+        /*if(navigator.geolocation){
             navigator.geolocation.getCurrentPosition(function(){
                 console.log(location);
             });
-
-        }
+        }*/
 
         function setSmallMap(pos, label) {
             if($('#map').length){
@@ -844,6 +843,7 @@
         });
 
         if(window.location.hash) {
+console.log($('.tab-control a[href$="'+window.location.hash+'"]'));
             activateTab($('.tab-control a[href$="'+window.location.hash+'"]'));
             openModal(location.hash);
         }

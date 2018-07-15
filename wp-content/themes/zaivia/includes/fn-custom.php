@@ -167,7 +167,16 @@
 	    register_post_type( ZaiviaBusiness::$posttype_discount, $args );
     });
 
+    add_action('template_redirect', function(){
+	    if (is_single()) {
+		    global $post;
 
+		    if (is_administrator() && $post->post_type === ZaiviaBusiness::$posttype_banner) {
+		        wp_redirect(get_field("page_postbanner", "option") . "?edit={$post->ID}");
+		        die;
+		    }
+	    }
+    });
 
     add_action( 'init', 'am_processCron' );
     function am_processCron(){
@@ -278,14 +287,20 @@
 				$listingData = ZaiviaListings::saveListing($data);
 			}
 		}
+        if(is_array($listingData)) {
+		    $res = [
+			    "errors"=>$errors,
+			    "listing_id"=>$listingData['listing_id'],
+			    "contact_profile"=>$listingData['contact_profile'],
+			    "contact_logo"=>$listingData['contact_logo']
+		    ];
+        } else {
+	        $res = [
+		        "errors"=>["common-error"=>$listingData]
+            ];
+        }
 
-		echo json_encode([
-		    "errors"=>$errors,
-		    "listing_id"=>$listingData['listing_id'],
-            "contact_profile"=>$listingData['contact_profile'],
-            "contact_logo"=>$listingData['contact_logo']
-        ]);
-
+		echo json_encode($res);
 		die;
 	}
 
@@ -296,7 +311,8 @@
 	    $trait = $_REQUEST['trait'];
         $ch = $_REQUEST['ch'];
 
-	    $listing = ZaiviaListings::getListings($listing_id, get_current_user_id());
+	    $userId = is_administrator() ? false : get_current_user_id();
+	    $listing = ZaiviaListings::getListings($listing_id, $userId);
 	    $listing[$trait] = $ch ? 1 : 0;
 	    $date = ZaiviaListings::calculateTraitDate($trait, $listing);
 
@@ -322,9 +338,12 @@
 	            $res["payment_error"] = $saveRes;
             } else {
                 $listing_id = intval( $data['listing_id'] );
-
-	            $proces = ZaiviaListings::calculatePrice( $listing_id );
-                $payed = am_processPayment( $data, $proces['total'] );
+                if(!is_administrator()) {
+	                $proces = ZaiviaListings::calculatePrice( $listing_id );
+	                $payed  = am_processPayment( $data, $proces['total'] );
+                } else {
+	                $payed = true;
+                }
 	            if ($payed === true ) {
 		            update_user_meta(get_current_user_id(), "listing_source", $data['source']);
 		            if ( ! ZaiviaListings::activateListing( $listing_id ) ) {
@@ -339,13 +358,28 @@
 		die;
 	}
 
+    add_action( 'wp_ajax_on_off_listing', 'on_off_listingProcess' );
+    add_action( 'wp_ajax_nopriv_on_off_listing', 'on_off_listingProcess' );
+    function on_off_listingProcess() {
+        $itemId = (int)$_POST['id'];
+	    $enable = (int)$_POST['enable'];
+
+        $res = [];
+        if(is_administrator()) {
+            $res = ZaiviaListings::on_offListing($itemId, $enable);
+        }
+        echo json_encode($res);
+        die;
+    }
 
 
     add_action( 'wp_ajax_uploadBusinessFile', 'uploadBusinessFile' );
     add_action( 'wp_ajax_nopriv_uploadBusinessFile', 'uploadBusinessFile' );
     function uploadBusinessFile() {
         $list = [];
-        $user_id = get_current_user_id();
+
+	    $user_id = (is_administrator() && isset($_POST['user_id'])) ? ((int)$_POST['user_id']) :  get_current_user_id();
+
         if($_FILES && $user_id) {
             $list = ZaiviaBusiness::addBusinessFile($user_id);
         }
@@ -364,6 +398,10 @@
         }
         $res = ZaiviaBusiness::addBanner($_POST);
 
+        if(is_administrator() && is_numeric($res)){
+	        ZaiviaBusiness::activateBusiness( $res );
+        }
+
         echo json_encode($res);
         die;
     }
@@ -379,13 +417,17 @@
 
         $res = ZaiviaBusiness::addCard($_POST);
 
+	    if(is_administrator() && is_numeric($res)){
+		    ZaiviaBusiness::activateBusiness( $res );
+	    }
+
         echo json_encode($res);
         die;
     }
 
 
     add_action( 'wp_ajax_delete_business', 'delete_businessProcess' );
-    add_action( 'wp_ajax_nopriv_delete_busines', 'delete_businessProcess' );
+    add_action( 'wp_ajax_nopriv_delete_business', 'delete_businessProcess' );
     function delete_businessProcess() {
 	    $itemId = (int)$_POST['id'];
         $userId = get_current_user_id();
@@ -393,6 +435,32 @@
         $res = [];
         if(ZaiviaBusiness::isOwner($userId, $itemId)) {
             $res = ZaiviaBusiness::deleteEntity($itemId);
+        }
+        echo json_encode($res);
+        die;
+    }
+
+    add_action( 'wp_ajax_disable_business', 'disable_businessProcess' );
+    add_action( 'wp_ajax_nopriv_disable_business', 'disable_businessProcess' );
+    function disable_businessProcess() {
+        $itemId = (int)$_POST['id'];
+
+        $res = [];
+        if(is_administrator()) {
+            $res = ZaiviaBusiness::disableEntity($itemId);
+        }
+        echo json_encode($res);
+        die;
+    }
+
+    add_action( 'wp_ajax_enable_business', 'enable_businessProcess' );
+    add_action( 'wp_ajax_nopriv_enable_business', 'enable_businessProcess' );
+    function enable_businessProcess() {
+        $itemId = (int)$_POST['id'];
+
+        $res = [];
+        if(is_administrator()) {
+            $res = ZaiviaBusiness::publishEntity($itemId);
         }
         echo json_encode($res);
         die;
@@ -510,7 +578,8 @@
 	add_action( 'wp_ajax_nopriv_prepareCardPreview', 'prepareCardPreview' );
 	function prepareCardPreview(){
 		$entityId = (int)$_POST{'entity_id'};
-		$userId = get_current_user_id();
+
+		$userId = is_administrator() ? false : get_current_user_id();
 
 		$entity = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $entityId, $userId);
 

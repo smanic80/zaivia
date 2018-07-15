@@ -4,10 +4,21 @@ Template Name: Post Banner
 Template Post Type: page
 */
 
+$item = $itemId = null;
+$userId = get_current_user_id();
+
+if($userId && isset($_GET['edit'])) {
+    $itemId = (int)$_GET['edit'];
+    $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $itemId, $userId);
+    if(!$item) {
+        wp_redirect(get_field("page_mybusiness", "option") . "#edit_" . ZaiviaBusiness::$posttype_banner);
+        die;
+    }
+}
 
 get_header(); ?>
 
-<?php if(!get_current_user_id()):?>
+<?php if(!$userId):?>
 	<div class="container sm mb-35">
 		<div class="row gutters-40">
 			<div class="col-md-85">
@@ -20,15 +31,9 @@ get_header(); ?>
 		</div>
 	</div>
 <?php else: ?>
-
-
-	<div class="sub-nav">
-		<div class="container xs">
-			<?php if ( has_nav_menu( 'accountmenu' ) ) : ?>
-				<?php wp_nav_menu( array( 'theme_location' => 'accountmenu', 'menu_class' => '', 'menu_id'=>'', 'container'=>'', 'depth'=>0) ); ?>
-			<?php endif; ?>
-		</div>
-	</div>
+	<div class="sub-nav"><div class="container xs">
+        <?php if ( has_nav_menu( 'accountmenu' ) ) : ?><?php wp_nav_menu( array( 'theme_location' => 'accountmenu', 'menu_class' => '', 'menu_id'=>'', 'container'=>'', 'depth'=>0) ); ?><?php endif; ?>
+    </div></div>
 
 	<div class="category-head">
 		<div class="container xs">
@@ -54,16 +59,11 @@ get_header(); ?>
 			<div class="col-md-9">
 				<div class="my-ad">
 					<div class="styled-form multistep-step form-step">
-						<?php
-						    $item = $itemId = null;
-                            if(isset($_GET['edit'])) {
-	                            $itemId = (int)$_GET['edit'];
-	                            $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_banner, $itemId, get_current_user_id());
-                            }
-						?>
-						<form action="#" id="add_banner_form" enctype="multipart/form-data">
+
+						<form action="#" id="add_banner_form" class="business_form" enctype="multipart/form-data">
 							<?php wp_nonce_field('zai_add_banner','add_banner_nonce', true, true ); ?>
                             <input type="hidden" name="entity_id" id="entity_id" value="<?php echo isset($item['id']) ? $item['id'] : '';?>">
+
 							<span class="saved-confirmation"><?php _e('Banner saved', 'am') ?></span>
 
 							<div class="entry">
@@ -141,6 +141,7 @@ get_header(); ?>
                                 <span class="business-valid-until" style="<?php if(!$item || !$item['date_renewal']):?>display:none;<?php endif; ?>">
                                     <?php _e('Valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($item['date_renewal']); ?></span><br>
                                 </span>
+								<?php if($item && !$item['date_renewal']) : ?><p class="error"><?php _e('Not published', 'am') ?></p><?php endif;?>
 
 								<p class="intro duration_checked_error"><?php _e('Post My Advertismant For', 'am') ?></p>
                                 <input type="hidden" name="duration_checked" id="duration_checked" value="<?php echo isset($item['duration']) ? $item['duration'] : '';?>" rel="duration_checked_error">
@@ -150,8 +151,8 @@ get_header(); ?>
 									<?php foreach($durations as $duration):?>
                                         <p><span class="wpcf7-form-control-wrap"><span class="wpcf7-form-control wpcf7-checkbox"><span class="wpcf7-list-item">
                                             <label>
-                                                <input type="checkbox" class="checked-one banner-date-update" rel="duration_checked" name="duration[]" id="duration-<?php echo $duration['months']?>" value="<?php echo $duration['months']?>" />
-                                                &nbsp;<span class="wpcf7-list-item-label"><?php echo $duration['label']?></span>
+                                                <input type="checkbox" class="checked-one banner-date-update" rel="duration_checked" name="duration[]" id="duration-<?php echo $duration['months']?>" value="<?php echo $duration['months']?>" />&nbsp;
+                                                <span class="wpcf7-list-item-label"><?php echo $duration['label']?></span>
                                             </label>
                                         </span></span></span></p>
 									<?php endforeach; ?>
@@ -161,8 +162,20 @@ get_header(); ?>
 
 							<div class="btn-s">
 								<div class="text-right">
-									<a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
-                                    <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+                                    <?php if(is_administrator()) :?>
+                                        <?php if(isset($item['id'])) : ?>
+                                            <a href="#" class="btn btn-primary btn-sm delete"><?php _e('Delete', 'am') ?></a>
+		                                    <?php if($item['date_renewal']) : ?>
+                                                <a href="#" class="btn btn-primary btn-sm disable"><?php _e('Unpublish', 'am') ?></a>
+                                            <?php else :?>
+                                                <a href="#" class="btn btn-primary btn-sm enable"><?php _e('Publish', 'am') ?></a>
+		                                    <?php endif; ?>
+                                        <?php endif; ?>
+                                        <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+                                    <?php else:?>
+                                        <a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
+                                        <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+                                    <?php endif; ?>
 								</div>
 							</div>
 						</form>

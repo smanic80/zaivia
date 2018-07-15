@@ -12,6 +12,7 @@ class listing_base {
 	public static $posttype_discount = "cart_discount";
 
 	public static $listing_tablename    = "listings";
+	public static $deleted_tablename    = "listing_deleted";
 	public static $features_tablename   = "listing_features";
 	public static $files_tablename      = "listing_file";   /* type 1-image, 2-blueprint, 3-rent, 4-profile    */
 	public static $openhouse_tablename  = "listing_openhouse";
@@ -258,7 +259,7 @@ class listing_base {
 	}
 
 	public static function getUserItem($entityId, $type){
-		$userId = get_current_user_id();
+		$userId = is_administrator() ? false :  get_current_user_id();
 
 		if($type === 'listing') {
 			$item = ZaiviaListings::getListings( $entityId, $userId );

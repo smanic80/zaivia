@@ -47,6 +47,10 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             'url':'',
             'url_value': '',
             'bump_up':'',
+            'premium_date':'',
+            'featured_date':'',
+            'url_date':'',
+            'bump_up_date':'',
             'rent_date':'',
             'rent_deposit':'',
             'rent_furnishings':'',
@@ -483,6 +487,38 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             });
         });
 
+        $("#post-listing-form .btn-primary.disable, #post-listing-form .btn-primary.enable").click(function(e){
+            e.preventDefault();
+            enablee_disableListing($(this).hasClass("enable"), 'on_off_listing', function(data){
+                if(typeof data['error'] === 'undefined') {
+                    $("#post-listing-form .btn-primary.enable").toggle();
+                    $("#post-listing-form .btn-primary.disable").toggle();
+                } else {
+                    $("#common-error").text(data['error']).addClass('error').show();
+                }
+            });
+        });
+
+        function enablee_disableListing(enable, action, callback, $this){
+            if(!confirm("Are you sure?")) return false;
+
+            var data = {
+                action: action,
+                enable: +enable,
+                id: listingData.listing_id
+            };
+            $.post({
+                url: amData.ajaxurl,
+                dataType: "json",
+                data: data,
+                success: function (data) {
+                    callback(data, $this);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+        }
 
         initdatepicker($(".datepicker"));
 
@@ -509,8 +545,12 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
             return false;
         });
 
-        function initdatepicker($obj) {
-            $obj.datepicker({ dateFormat: 'mm/dd/yy', currentText: "", minDate: new Date() });
+        function initdatepicker($objs) {
+            $objs.each(function() {
+                var param = { dateFormat: 'mm/dd/yy', currentText: ""};
+                if(!$(this).hasClass("admin")) param['minDate'] = new Date();
+                $(this).datepicker(param);
+            });
         }
 
         function updateListingObj() {
@@ -696,12 +736,18 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
 
         $.post(amData.ajaxurl, data, function(ret){
             var error = false;
+
             for(i in ret.errors){
+                if(i === 'common-error') {
+                    $("#"+i).text(ret.errors[i]).show();
+                    error = true
+                }
                 if($("#"+ret.errors[i]).length){
 
                     if(ret.errors[i] === 'status') {
                         $("#status_0, #status_1").addClass("error");
                     }
+
                     $("#"+ret.errors[i]).addClass("error");
 
                     error = true
@@ -719,7 +765,6 @@ var moneyFormat = new Intl.NumberFormat('en-US', { style: 'currency', currency: 
 
             $("#contact_logo").val(listingData.contact_logo ? listingData.contact_logo['file_id']: '');
             $("#contact_logo_file_name").text(listingData.contact_logo ? listingData.contact_logo['file_name']: '');
-
             if(!error && !$(".error:visible").length) {
                 callback()
             }

@@ -5,9 +5,22 @@ Template Post Type: page
 */
 
 
+$item = $ietmId = null;
+
+$userId = get_current_user_id();
+
+if($userId && isset($_GET['edit'])) {
+    $ietmId = (int)$_GET['edit'];
+    $item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $ietmId, $userId);
+	if(!$item) {
+		wp_redirect(get_field("page_mybusiness", "option") . "#edit_" . ZaiviaBusiness::$posttype_card);
+		die;
+	}
+}
+
 get_header(); ?>
 
-<?php if(!get_current_user_id()):?>
+<?php if(!$userId):?>
 	<div class="container sm mb-35">
 		<div class="row gutters-40">
 			<div class="col-md-85">
@@ -21,14 +34,9 @@ get_header(); ?>
 	</div>
 <?php else: ?>
 
-
-	<div class="sub-nav">
-		<div class="container xs">
-			<?php if ( has_nav_menu( 'accountmenu' ) ) : ?>
-				<?php wp_nav_menu( array( 'theme_location' => 'accountmenu', 'menu_class' => '', 'menu_id'=>'', 'container'=>'', 'depth'=>0) ); ?>
-			<?php endif; ?>
-		</div>
-	</div>
+	<div class="sub-nav"><div class="container xs">
+        <?php if ( has_nav_menu( 'accountmenu' ) ) : ?><?php wp_nav_menu( array( 'theme_location' => 'accountmenu', 'menu_class' => '', 'menu_id'=>'', 'container'=>'', 'depth'=>0) ); ?><?php endif; ?>
+    </div></div>
 
 	<div class="category-head">
 		<div class="container xs">
@@ -84,17 +92,12 @@ get_header(); ?>
 						</div>
 					</div>
 
-					<?php
-					$item = $ietmId = null;
-					if(isset($_GET['edit'])) {
-						$ietmId = (int)$_GET['edit'];
-						$item = ZaiviaBusiness::getEntities(ZaiviaBusiness::$posttype_card, $ietmId, get_current_user_id());
-					}
-					?>
 					<div class="styled-form multistep-step form-step">
-						<form action="#" id="add_card_form" enctype="multipart/form-data">
+						<form action="#" id="add_card_form" class="business_form" enctype="multipart/form-data">
 							<?php wp_nonce_field('zai_add_card','add_card_nonce', true, true ); ?>
 							<input type="hidden" name="entity_id" id="entity_id" value="<?php echo isset($item['id']) ? $item['id'] : '';?>">
+                            <input type="hidden" name="user_id" id="user_id" value="<?php echo $userId;?>">
+
 							<span class="saved-confirmation"><?php _e('Contact card saved', 'am') ?></span>
 
                             <div class="error_placeholder"></div>
@@ -356,8 +359,12 @@ get_header(); ?>
 
                             <div class="acc-item bb">
                                 <h3><?php _e('Duration', 'am') ?></h3>
+	                            <?php if($item && !$item['date_renewal']) : ?><p class="error"><?php _e('Not published', 'am') ?></p><?php endif;?>
                                 <p class="intro duration_checked_error"><?php _e('Make me a Community Partner for', 'am') ?></p>
                                 <input type="hidden" name="duration_checked" id="duration_checked" value="<?php echo isset($item['duration']) ? $item['duration'] : '';?>" rel="duration_checked_error">
+
+
+
 								<?php $durations = get_field("card_duration", "option")?>
 								<?php if($durations) :?>
                                     <fieldset class="checkbox checked-one_holder">
@@ -378,10 +385,22 @@ get_header(); ?>
 									<div class="col-6">
 										<a href="#preview" class="btn btn-secondary btn-sm open-modal" id="previw_card"><?php _e('Preview', 'am') ?></a>
 									</div>
-									<div class="col-6 text-right">
-										<a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
-										<a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
-									</div>
+                                    <div class="text-right">
+										<?php if(is_administrator()) :?>
+											<?php if(isset($item['id'])) : ?>
+                                                <a href="#" class="btn btn-primary btn-sm delete"><?php _e('Delete', 'am') ?></a>
+												<?php if($item['date_renewal']) : ?>
+                                                    <a href="#" class="btn btn-primary btn-sm disable"><?php _e('Unpublish', 'am') ?></a>
+												<?php else :?>
+                                                    <a href="#" class="btn btn-primary btn-sm enable"><?php _e('Publish', 'am') ?></a>
+												<?php endif; ?>
+											<?php endif; ?>
+                                            <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+										<?php else:?>
+                                            <a href="#" class="btn btn-primary btn-sm submit payment" style="display: none;"><?php _e('Payment', 'am') ?></a>
+                                            <a href="#" class="btn btn-primary btn-sm submit save"><?php _e('Save', 'am') ?></a>
+										<?php endif; ?>
+                                    </div>
 								</div>
 							</div>
 						</form>

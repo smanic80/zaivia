@@ -5998,10 +5998,16 @@ body {
   background-color: #30475f;
   color: #fff;
 }
-
+.btn.btn-primary.disabled {
+  background-color: #e2dfd4;
+}
 .btn.btn-secondary {
   background-color: #83754e;
   color: #fff;
+}
+
+.btn.btn-secondary.disabled {
+  background-color: #e2dfd4;
 }
 
 .btn.bl {
@@ -7272,6 +7278,8 @@ select::-ms-expand {
   border-radius: 4px 4px 0 0;
 }
 
+
+
 .styled-form .select-h {
   height: 44px;
   background-color: white;
@@ -7399,6 +7407,11 @@ select::-ms-expand {
   flex-wrap: wrap;
 }
 
+.ad-item .edit-link {
+    position: absolute;
+    z-index: 1;
+}
+
 .ad-item .feats {
   padding: 12px 0 15px;
   color: #30475f;
@@ -7418,6 +7431,12 @@ select::-ms-expand {
   -ms-flex-positive: 1;
   flex-grow: 1;
   min-width: 31%;
+}
+
+.single-contact_card .edit-link {
+  position: absolute;
+  z-index: 1;
+  right: 34%;
 }
 
 .post-market .ad-item + .ad-item {
@@ -8939,6 +8958,11 @@ div.entry form p label + br {
   cursor: pointer;
   opacity: 0;
 }
+.entry form .wpcf7-checkbox label input.visible, .comment-form .wpcf7-checkbox label input.visible, .post-password-form .wpcf7-checkbox label input.visible, .search-form .wpcf7-checkbox label input.visible, .styled-form .wpcf7-checkbox label input.visible {
+  opacity: 1 !important;
+  position: relative;
+  margin: 20px 0 0 0;
+}
 
 .entry form .wpcf7-checkbox label input:checked ~ span:before, .comment-form .wpcf7-checkbox label input:checked ~ span:before, .post-password-form .wpcf7-checkbox label input:checked ~ span:before, .search-form .wpcf7-checkbox label input:checked ~ span:before, .styled-form .wpcf7-checkbox label input:checked ~ span:before {
   font-size: inherit;
@@ -8959,7 +8983,11 @@ div.entry form p label + br {
   padding-left: 21px;
 }
 
-.entry form .wpcf7-checkbox label > span:before, .comment-form .wpcf7-checkbox label > span:before, .post-password-form .wpcf7-checkbox label > span:before, .search-form .wpcf7-checkbox label > span:before, .styled-form .wpcf7-checkbox label > span:before {
+.entry form .wpcf7-checkbox label > span:before,
+.comment-form .wpcf7-checkbox label > span:before,
+.post-password-form .wpcf7-checkbox label > span:before,
+.search-form .wpcf7-checkbox label > span:before,
+.styled-form .wpcf7-checkbox label > span:before {
   content: '';
   width: 15px;
   position: absolute;
@@ -8973,6 +9001,9 @@ div.entry form p label + br {
   padding-left: 1px;
   border: 1px solid #d8d4d4;
   border-radius: 4px;
+}
+.styled-form .wpcf7-checkbox.nocheckbox label > span:before {
+  display: none;
 }
 
 .entry form hr, .comment-form hr, .post-password-form hr, .search-form hr, .styled-form hr {
@@ -9480,7 +9511,7 @@ div.entry form p label + br {
   display: block;
 }
 
-.saved-confirmation, .delete-confirmation {
+.saved-confirmation, .delete-confirmation, .disable-confirmation{
   display: none;
   color: #08b400;
 }
@@ -11939,6 +11970,12 @@ div.entry form p label + br {
 
   .image-set .image {
     margin-right: 40px;
+  }
+
+  .single-contact_card .edit-link {
+    position: absolute;
+    z-index: 1;
+    right: initial;
   }
 
   .pagination .page-numbers {

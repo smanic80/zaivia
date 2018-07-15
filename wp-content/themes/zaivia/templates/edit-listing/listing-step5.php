@@ -12,17 +12,31 @@
                 <fieldset>
                     <p>
                   <span class="wpcf7-form-control-wrap checkbox-399">
-                    <span class="wpcf7-form-control wpcf7-checkbox">
+                    <span class="wpcf7-form-control wpcf7-checkbox <?php if(is_administrator()) :?>nocheckbox<?php endif; ?>">
                       <span class="wpcf7-list-item first">
                         <label class="big <?php echo $traitData['class'] ?>">
-                            <input type="checkbox" name="<?php echo $trait?>" id="<?php echo $trait?>" value="1" class="tosave trait-date-update"  />
-                            <span class="wpcf7-list-item-label"><span class="price"><?php echo ZaiviaListings::formatMoney(get_field($trait . "_price", "option"), 2)?></span>
-                                <strong><?php echo $traitData['label'] ?></strong><br>
-                                <span class="trait-valid-until" style="<?php if(!$listing || !$listing[$trait . '_date']):?>display:none;<?php endif; ?>">
-                                    <?php _e('Valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($listing[$trait . '_date']); ?></span><br>
+                            <?php if(is_administrator()) :?>
+                                <span class="wpcf7-list-item-label">
+                                    <strong><?php echo $traitData['label'] ?></strong><br>
+                                    <span class="trait-valid-until">
+                                        <?php $date = ((isset($listing[$trait . '_date']) && strtotime($listing[$trait . '_date'])) && $listing[$trait . '_date']!='0000-00-00') ? date('m/d/Y',strtotime($listing[$trait . '_date'])):''; ?>
+                                        <?php _e('Valid until: ', 'am') ?>
+                                        <input type="text" class="datepicker tosave visible admin" id="<?php echo $trait;?>_date" value="<?php echo $date; ?>">
+                                    </span>
+                                    <span class="trait-description"><?php the_field($trait . "_description")?></span>
                                 </span>
-                                <span class="trait-description"><?php the_field($trait . "_description")?></span>
-                            </span>
+                            <?php else: ?>
+                                <input type="checkbox" name="<?php echo $trait?>" id="<?php echo $trait?>" value="1" class="tosave trait-date-update"  />
+                                <span class="wpcf7-list-item-label">
+                                    <span class="price"><?php echo ZaiviaListings::formatMoney(get_field($trait . "_price", "option"), 2)?></span>
+                                    <strong><?php echo $traitData['label'] ?></strong><br>
+                                    <span class="trait-valid-until" style="<?php if(!$listing || !$listing[$trait . '_date']):?>display:none;<?php endif; ?>">
+                                        <?php _e('Valid until: ', 'am') ?><span><?php echo ZaiviaListings::formatDate($listing[$trait . '_date']); ?></span><br>
+                                    </span>
+                                    <span class="trait-description"><?php the_field($trait . "_description")?></span>
+                                </span>
+                            <?php endif; ?>
+
                         </label>
                       </span>
                     </span>
@@ -69,9 +83,14 @@
                 <a href="#" class="btn btn-secondary btn-sm save-draft"><?php _e('Save Draft', 'am') ?></a>
 			<?php endif; ?>
         </div>
+
         <div class="col-sm-6 text-right">
             <a href="#" class="btn btn-outline blue btn-sm listing-step" rel="4"><?php _e('Previous', 'am') ?></a>
-            <a href="#" class="btn btn-primary btn-sm listing-step" rel="6"><?php _e('Next Step', 'am') ?></a>
+            <?php if(is_administrator()) :?>
+                <a href="#" class="btn btn-primary btn-sm listing-step" rel="7"><?php _e('Activate Listing', 'am') ?></a>
+            <?php else: ?>
+                <a href="#" class="btn btn-primary btn-sm listing-step" rel="6"><?php _e('Next Step', 'am') ?></a>
+            <?php endif; ?>
         </div>
     </div>
 </div>

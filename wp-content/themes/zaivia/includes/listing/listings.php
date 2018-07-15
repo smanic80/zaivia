@@ -27,16 +27,18 @@ class ZaiviaListings extends listing_base {
 					IF(activated = 1, '".__('Yes')."', '".__('No')."') as `active-text`,
 					 concat(address, ', ', city, ' ', province) as `address-text`
 				from $listing_tablename 
-				where";
+				where ";
+		$where = ["deleted = 0"];
 		if($listingId) {
-			$sql .= " listing_id = ".(int)$listingId;
+			$where[] = "listing_id = ".(int)$listingId;
 		} else {
-			$sql .= " deleted = 0 and to_delete != 1";
+			$where[] = "to_delete != 1";
 		}
 		if($userId) {
-			$sql .= " and user_id = ".(int)$userId;
+			$where[] = "user_id = ".(int)$userId;
 		}
 
+		$sql .= implode(" and ", $where);
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 		foreach($results as $key=>$val) {
 
@@ -80,11 +82,10 @@ class ZaiviaListings extends listing_base {
 	}
 
 	public static function getRenewealDate($listing){
-
 		$dates = [];
-		if($listing['featured_date']) $dates[] = strtotime($listing['featured_date']);
-		if($listing['premium_date']) $dates[] = strtotime($listing['premium_date']);
-		if($listing['url_date']) $dates[] = strtotime($listing['url_date']);
+		if($listing['featured_date'] && strtotime($listing['featured_date'])) $dates[] = strtotime($listing['featured_date']);
+		if($listing['premium_date'] && strtotime($listing['premium_date'])) $dates[] = strtotime($listing['premium_date']);
+		if($listing['url_date'] && strtotime($listing['url_date'])) $dates[] = strtotime($listing['url_date']);
 
 		return $dates ? min(array_values($dates)) : "";
 	}
@@ -144,15 +145,24 @@ class ZaiviaListings extends listing_base {
 
 		if((int)$data['listing_id']) {
 			$listingId = (int)$data['listing_id'];
-
 			if(!self::isOwner($userId, $listingId)) {
 				return __('This is not yours!');
 			}
 
-			$listing = self::getListings($listingId, $userId);
+			$listing = self::getListings($listingId);
 			if($listing['to_delete'] === '1' && isset($data['to_delete'])) {
 				$preparedData['to_delete'] = 0;
 				$preparedData['date_created'] = date('Y-m-d H:i:s', time());
+			}
+
+			if(is_administrator()) {
+				$traits = [ "featured", "premium", "url" ];
+				foreach ( $traits as $trait ) {
+					$preparedData[ $trait . '_date' ] = date('Y-m-d',strtotime($data[ $trait . '_date']));
+				}
+
+				//if($listing['bump_up'] === '1') $preparedData['bump_up'] = $curDate;
+				self::useCoupon( (int) $listing['applied_coupon'], $userId );
 			}
 
 			$wpdb->update($listing_tablename, $preparedData, ['listing_id'=>$listingId]);
@@ -187,12 +197,13 @@ class ZaiviaListings extends listing_base {
 		if(isset($data['to_delete']) && $data['to_delete'] === 0 ) {
 			$wpdb->delete($listing_tablename, ["to_delete" => 1, "user_id" =>(int)$userId]  );
 		}
-
 		return $res;
 	}
 
 	public static function duplicateListing($listing_from, $listing_to) {
-		$listing = self::getListings($listing_from, get_current_user_id());
+		$userId = is_administrator() ? false :  get_current_user_id();
+
+		$listing = self::getListings($listing_from, $userId);
 
 		$listing = array_merge($listing, self::getListingRent($listing_from));
 		$listing = array_merge($listing, self::getListingContact($listing_from));
@@ -209,12 +220,14 @@ class ZaiviaListings extends listing_base {
 		global $wpdb;
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
 
-		$userId = get_current_user_id();
+		$userId = is_administrator() ? false :  get_current_user_id();
+
 		if(!self::isOwner($userId, $listingId)) {
 			return __('This is not yours!');
 		}
 
-		$listing = self::getListings($listingId, get_current_user_id());
+
+		$listing = self::getListings($listingId, $userId);
 		$curDate = date('Y-m-d H:i:s', time());
 
 		$preparedData = [
@@ -227,14 +240,31 @@ class ZaiviaListings extends listing_base {
 			$preparedData['date_created'] = $curDate;
 		}
 
-		$traits = ["featured", "premium", "url"];
-		foreach($traits as $trait) {
-			$preparedData[$trait . '_date'] = self::calculateTraitDate($trait, $listing);
-			$preparedData[$trait] = 0;
-		}
+		if(!is_administrator()) {
+			$traits = [ "featured", "premium", "url" ];
+			foreach ( $traits as $trait ) {
+				$preparedData[ $trait . '_date' ] = self::calculateTraitDate( $trait, $listing );
+				$preparedData[ $trait ]           = 0;
+			}
 
-		//if($listing['bump_up'] === '1') $preparedData['bump_up'] = $curDate;
-		self::useCoupon((int)$listing['applied_coupon'], $userId);
+			//if($listing['bump_up'] === '1') $preparedData['bump_up'] = $curDate;
+			self::useCoupon( (int) $listing['applied_coupon'], $userId );
+		}
+		$res = (bool) $wpdb->update($listing_tablename, $preparedData, ['listing_id' => $listingId]);
+
+		return $res;
+	}
+
+	public static function on_offListing($listingId, $enable) {
+		global $wpdb;
+		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
+
+		$curDate = date('Y-m-d H:i:s', time());
+		$preparedData = [
+			'activated'=>$enable,
+			'date_published' => $curDate,
+		];
+
 		$res = (bool) $wpdb->update($listing_tablename, $preparedData, ['listing_id' => $listingId]);
 
 		return $res;
@@ -324,7 +354,7 @@ class ZaiviaListings extends listing_base {
 		$results = $wpdb->get_results( $sql,ARRAY_A);
 		if(count($results)){
 			$results[0]['rent_utilities'] = $results[0]['rent_utilities'] ? explode(';', $results[0]['rent_utilities']) : [];
-			$results[0]['rent_date'] = ($results[0]['rent_date']!='0000-00-00')?date('m/d/Y',strtotime($results[0]['rent_date'])):'';
+			$results[0]['rent_date'] = ($results[0]['rent_date']!='0000-00-00') ? date('m/d/Y',strtotime($results[0]['rent_date'])) : '';
 			$results[0]['rent_file'] = ZaiviaListings::getListingFiles($listingId, ZaiviaListings::$file_rent);
 			return $results[0];
 		}
@@ -689,11 +719,31 @@ class ZaiviaListings extends listing_base {
 		return $res;
 	}
 
-	public static function deleteListing($listing_id, $reason = '') {
+	public static function deleteListing($listing_id, $reason) {
 		global $wpdb;
 		$listing_tablename = $wpdb->prefix . self::$listing_tablename;
+		$deleted_tablename = $wpdb->prefix . self::$deleted_tablename;
 
-		$wpdb->update($listing_tablename, ['deleted_reason' => $reason, 'deleted' => 1], ['listing_id' => $listing_id]);
+		if($reason) {
+			$data = ['listing_id' => $listing_id,
+			         'is_sold' => isset($reason['is_sold']) ? (int)$reason['is_sold'] : 0,
+			         'is_share_price' => isset($reason['is_share_price']) ? (int)$reason['is_share_price'] : 0,
+			         'is_satisfied' => isset($reason['is_satisfied']) ? (int)$reason['is_satisfied'] : 0,
+			         'price' => isset($reason['price']) ? (int)$reason['price'] : 0,
+			         'comments' => isset($reason['comments']) ? sanitize_text_field($reason['comments']) : "",
+			];
+		} else {
+			$data = ['listing_id' => $listing_id,
+			         'is_sold' => 0,
+			         'is_share_price' => 0,
+			         'is_satisfied' => 0,
+			         'price' => 0,
+			         'comments' => "Deleted by admin",
+			];
+		}
+
+		$wpdb->update($listing_tablename, ['deleted' => 1], ['listing_id' => $listing_id]);
+		$wpdb->insert($deleted_tablename, $data);
 	}
 
 	public static function deleteListingFile($fileData) {
@@ -714,6 +764,8 @@ class ZaiviaListings extends listing_base {
 
 	public static function isOwner($userId, $id, $entity_type="listing") {
 		if(!$id) return true;
+
+		$userId = is_administrator() ? false : $userId;
 		return (bool)count(self::getListings($id, $userId));
 	}
 

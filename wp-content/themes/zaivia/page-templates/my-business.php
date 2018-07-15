@@ -4,17 +4,6 @@ Template Name: My Business
 Template Post Type: page
 */
 
-if(get_current_user_id() && isset($_REQUEST['delete-card']) && $_REQUEST['delete-card']){
-	ZaiviaListings::deleteCard((int)$_REQUEST['delete-card']);
-	wp_redirect($_SERVER['HTTP_REFERER']);
-	die;
-}
-if(get_current_user_id() && isset($_REQUEST['delete-card']) && $_REQUEST['delete-banner']){
-	ZaiviaListings::deleteBanner((int)$_REQUEST['delete-banner']);
-	wp_redirect($_SERVER['HTTP_REFERER']);
-	die;
-}
-
 get_header();?>
 <?php if(!get_current_user_id()):?>
     <div class="container sm mb-35">
@@ -54,19 +43,20 @@ get_header();?>
             <div class="col-md-3">
                 <div class="my-ad widget widget_archive">
                     <ul>
-                        <li class="tab-control current"><a href="#edit_banner" ><?php _e('Banner Ads', 'am') ?></a></li>
-                        <li class="tab-control"><a href="#edit_contact-card" ><?php _e('Community Partners', 'am') ?></a></li>
+                        <li class="tab-control current"><a href="#edit_<?php echo ZaiviaBusiness::$posttype_banner?>" ><?php _e('Banner Ads', 'am') ?></a></li>
+                        <li class="tab-control"><a href="#edit_<?php echo ZaiviaBusiness::$posttype_card?>" ><?php _e('Community Partners', 'am') ?></a></li>
                     </ul>
                 </div>
             </div>
             <div class="col-md-9">
                 <div class="my-ad">
-                    <div class="styled-form tabbed-content current" id="edit_banner">
+                    <div class="styled-form tabbed-content current" id="edit_<?php echo ZaiviaBusiness::$posttype_banner?>">
                         <div class="entry text-center mb-30">
                             <h2><?php the_field("banner_button_title")?></h2>
                             <p><?php the_field("banner_button_subtitle")?></p>
                             <a href="<?php the_field("page_postbanner", "option")?>" class="btn btn-primary"><?php the_field("banner_button_text")?></a>
                             <span class="delete-confirmation"><?php _e('Advertisment deleted', 'am') ?></span>
+                            <span class="disable-confirmation"><?php _e('Advertisment disabled', 'am') ?></span>
                         </div>
                         <div class="acc-item bb">
                             <h3><?php the_field("banner_table_title");?></h3>
@@ -86,10 +76,10 @@ get_header();?>
                                     <tr class="row-<?php echo $item['id']?>">
                                         <td><?php echo $item['title']?></td>
                                         <td><?php echo ZaiviaBusiness::formatDate($item['date_created']); ?></td>
-                                        <td><?php echo $item['date_renewal'] ? ZaiviaBusiness::formatDate($item['date_renewal']) : ''; ?></td>
+                                        <td><?php echo $item['date_renewal'] ? ZaiviaBusiness::formatDate($item['date_renewal']) : __('Not published', 'am'); ?></td>
                                         <td class="text-right">
                                             <a href="<?php the_field("page_postbanner", "option")?>?edit=<?php echo $item['id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                            <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>" data-entity="<?php echo ZaiviaBusiness::$posttype_banner?>"><?php _e('Delete', 'am') ?></a>
+                                            <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>"><?php _e('Delete', 'am') ?></a>
                                         </td>
                                     </tr>
                                     <?php endforeach;?>
@@ -101,12 +91,13 @@ get_header();?>
                             <?php endif?>
                         </div>
                     </div>
-                    <div class="styled-form tabbed-content" id="edit_contact-card">
+                    <div class="styled-form tabbed-content" id="edit_<?php echo ZaiviaBusiness::$posttype_card?>">
                         <div class="entry text-center mb-30">
                             <h2><?php the_field("card_button_title"); ?></h2>
                             <p><?php the_field("card_button_subtitle")?></p>
                             <a href="<?php the_field("page_postcard", "option")?>" class="btn btn-primary"><?php the_field("card_button_text")?></a>
                             <span class="delete-confirmation"><?php _e('Contact Card deleted', 'am') ?></span>
+                            <span class="disable-confirmation"><?php _e('Contact Card disabled', 'am') ?></span>
                         </div>
                         <div class="acc-item bb">
                             <h3><?php the_field("card_table_title");?></h3>
@@ -125,10 +116,10 @@ get_header();?>
                                             <tr class="row-<?php echo $item['id']?>">
                                                 <td><?php echo $item['title']?></td>
                                                 <td><?php echo ZaiviaBusiness::formatDate($item['date_created']); ?></td>
-                                                <td><?php echo $item['date_renewal'] ? ZaiviaBusiness::formatDate($item['date_renewal']) : ''; ?></td>
+                                                <td><?php echo $item['date_renewal'] ? ZaiviaBusiness::formatDate($item['date_renewal']) :  __('Not published', 'am'); ?></td>
                                                 <td class="text-right">
                                                     <a href="<?php the_field("page_postcard", "option")?>?edit=<?php echo $item['id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
-                                                    <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>" data-entity="<?php echo ZaiviaBusiness::$posttype_card?>"><?php _e('Delete', 'am') ?></a>
+                                                    <a href="#delete" class="btn btn-secondary btn-sm delete-business" data-id="<?php echo $item['id']?>" ><?php _e('Delete', 'am') ?></a>
                                                 </td>
                                             </tr>
                                         <?php endforeach;?>

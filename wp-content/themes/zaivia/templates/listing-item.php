@@ -1,7 +1,7 @@
 <script type="text/html" id="tmpl-listing-item">
     <article class="ad-item<# if ( !data.featured_one && data.premium > 0 ) { #> premium<# } #>">
 	    <?php if( is_administrator() ) :?>
-            <div ><a href="<?php the_field("page_postlisting", "option")?>?edit-listing={{data.listing_id}}" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a></div>
+            <div class="edit-link"><a href="<?php the_field("page_postlisting", "option")?>?edit-listing={{data.listing_id}}" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a></div>
 	    <?php endif;?>
 
         <# if ( data.featured_one > 0 ) { #>

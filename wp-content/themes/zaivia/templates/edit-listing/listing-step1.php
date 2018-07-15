@@ -28,10 +28,10 @@
 						<label><?php _e('Property Is', 'am') ?>*</label>
 					</div>
 					<div class="col-sm-12 col-lg-8">
-						<select name="sale_rent" id="sale_rent" class="tosave required" title="">
-							<option value="0" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_rent)?'selected':''; ?>><?php _e('For Rent', 'am') ?></option>
-							<option value="1" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_sale)?'selected':''; ?>><?php _e('For Sale', 'am') ?></option>
-						</select>
+                        <select name="sale_rent" id="sale_rent" class="tosave required" title="" <?php if($listing):?>disabled="disabled"<?php endif; ?>>
+                            <option value="0" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_rent)?'selected':''; ?>><?php _e('For Rent', 'am') ?></option>
+                            <option value="1" <?php echo ($listing && (int)$listing['sale_rent'] === ZaiviaListings::$for_sale)?'selected':''; ?>><?php _e('For Sale', 'am') ?></option>
+                        </select>
 					</div>
 				</div>
 			</fieldset>

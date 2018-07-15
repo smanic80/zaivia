@@ -4,20 +4,27 @@ Template Name: My Listings
 Template Post Type: page
 */
 
-if(get_current_user_id() && isset($_REQUEST['delete']) && $_REQUEST['delete']){
+$userId = get_current_user_id();
+if($userId && isset($_REQUEST['delete']) && $_REQUEST['delete']){
 	$request = $_REQUEST;
-	$listing_id = $_REQUEST['listing_id'];
-	unset($request['listing_id']);
-	unset($request['delete']);
-	if(ZaiviaListings::isOwner($listing_id)) {
-		ZaiviaListings::deleteListing($listing_id, json_encode($request));
+    if(!is_administrator() || isset($_REQUEST['listing_id'])) {
+	    $listing_id = (int)$_REQUEST['listing_id'];
+	    unset($request['listing_id']);
+	    unset($request['delete']);
+    } else {
+	    $listing_id = (int)$_REQUEST['delete'];
+    }
+
+
+	if(ZaiviaListings::isOwner($userId, $listing_id)) {
+		ZaiviaListings::deleteListing($listing_id, $request);
     }
 	wp_redirect($_SERVER['HTTP_REFERER']);
 	die;
 }
 
 get_header(); ?>
-<?php if(!get_current_user_id()):?>
+<?php if(!$userId):?>
     <div class="container sm mb-35">
         <div class="row gutters-40">
             <div class="col-md-85">
@@ -59,7 +66,7 @@ get_header(); ?>
             </div>
             <div class="acc-item bb">
                 <h3><?php the_field("table_title")?></h3>
-                <?php $listings = ZaiviaListings::getListings(null, get_current_user_id());?>
+                <?php $listings = ZaiviaListings::getListings(null, $userId);?>
 
                 <?php if($listings) :?>
                 <div class="table mb-15 responsive full">
@@ -80,8 +87,10 @@ get_header(); ?>
                             <td><?php echo $listing['sale_rent-text']; ?></td>
                             <td><?php echo ZaiviaListings::formatDate($listing['date_created']); ?></td>
                             <td><?php echo $listing['renewal_date'] ? ZaiviaListings::formatDate($listing['renewal_date']) : ''; ?></td>
+
                             <td><?php echo $listing['status']; ?></td>
                             <td><?php echo $listing['active-text']; ?></td>
+
                             <td><a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>" class="btn btn-secondary btn-sm"><?php _e('Edit', 'am') ?></a>
                                 <a href="#delete<?php echo $listing['sale_rent'] == ZaiviaListings::$for_rent ? '2' : '' ?>" class="btn btn-secondary btn-sm open-modal" data-id="<?php echo $listing['listing_id']?>"><?php _e('Delete', 'am') ?></a>
                                 <a href="<?php the_field("page_postlisting", "option")?>?edit-listing=<?php echo $listing['listing_id']?>#step5" class="btn btn-secondary btn-sm"><?php _e('Promotes', 'am') ?></a>
@@ -115,7 +124,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="checkbox" name="reason[]" value="not_found_buyer">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a buyer','am') ?></span></label>
+                                                <label><input type="radio" name="is_sold" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a buyer','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -124,7 +133,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="checkbox" name="reason[]" value="home_sold">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I sold my home','am') ?></span></label>
+                                                <label><input type="radio" name="is_sold" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I sold my home','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -136,7 +145,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="share_price" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
+                                                <label><input type="radio" name="is_share_price" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -145,7 +154,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="share_price" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
+                                                <label><input type="radio" name="is_share_price" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -164,7 +173,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
+                                                <label><input type="radio" name="is_satisfied" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('Yes','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -173,7 +182,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
+                                                <label><input type="radio" name="is_satisfied" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('No','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -210,7 +219,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="found_renter" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a renter','am') ?></span></label>
+                                                <label><input type="radio" name="is_sold" value="0">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I did not find a renter','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>
@@ -219,7 +228,7 @@ get_header(); ?>
                                     <span class="wpcf7-form-control-wrap checkbox-399">
                                         <span class="wpcf7-form-control wpcf7-checkbox">
                                             <span class="wpcf7-list-item first">
-                                                <label><input type="radio" name="found_renter" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I found a renter','am') ?></span></label>
+                                                <label><input type="radio" name="is_sold" value="1">&nbsp;<span class="wpcf7-list-item-label"><?php _e('I found a renter','am') ?></span></label>
                                             </span>
                                         </span>
                                     </span>

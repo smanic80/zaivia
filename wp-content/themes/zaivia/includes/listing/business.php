@@ -38,11 +38,11 @@ class ZaiviaBusiness extends listing_base{
 			'ID' => $editPostId,
 			'post_type' => ZaiviaBusiness::$posttype_banner,
 			'post_title' => sanitize_text_field($request['banner_title']),
-			'post_author' => $user_id,
 		];
 		if($editPostId) {
 			$postId = wp_update_post($data, true);
 		} else {
+			$data['post_author'] = $user_id;
 			$postId = wp_insert_post($data, true);
 		}
 
@@ -96,11 +96,11 @@ class ZaiviaBusiness extends listing_base{
 			'ID' => $editPostId,
 			'post_type' => ZaiviaBusiness::$posttype_card,
 			'post_title' => implode(" ", [$card_first_name, $card_last_name]).', '.$card_job_title." at ".$card_company,
-			'post_author' => $user_id,
 		];
 		if($editPostId) {
 			$postId = wp_update_post($data, true);
 		} else {
+			$data['post_author'] = $user_id;
 			$postId = wp_insert_post($data, true);
 		}
 
@@ -188,6 +188,7 @@ class ZaiviaBusiness extends listing_base{
 		if($exclude){
 			$args['exclude'] = $exclude;
 		}
+
 		$items = get_posts($args);
 
 		$results = [];
@@ -203,24 +204,34 @@ class ZaiviaBusiness extends listing_base{
 		return $res;
 	}
 
-	public static function deleteEntity($id) {
+	public static function deleteEntity($entityId) {
 		global $wpdb;
 
 		$geo_tablename = $wpdb->prefix . self::$geo_tablename;
-		$wpdb->delete($geo_tablename, ["post_id"=>$id] );
+		$wpdb->delete($geo_tablename, ["post_id"=>$entityId] );
 
-		$post_attachments = get_children(['post_parent' => $id]);
+		$post_attachments = get_children(['post_parent' => $entityId]);
 		if($post_attachments) {
 			foreach ($post_attachments as $attachment) {
 				wp_delete_attachment($attachment->ID, true);
 			}
 		}
 
-		wp_delete_post($id, true);
+		wp_delete_post($entityId, true);
 
 		return true;
 	}
 
+	public static function disableEntity($entityId){
+		global $wpdb;
+		$wpdb->update( $wpdb->posts, array( 'post_status' => 'draft' ), array( 'ID' => (int)$entityId ) );
+		return true;
+	}
+
+	public static function publishEntity($entityId){
+		wp_publish_post($entityId);
+		return true;
+	}
 
 
 	public static function addBusinessFile($userId){
@@ -327,6 +338,9 @@ class ZaiviaBusiness extends listing_base{
 
 	public static function isOwner($userId, $entityId, $entity_type="business") {
 		if(!$entityId) return true;
+
+		$userId = is_administrator() ? false : $userId;
+
 		$entity = get_post_type($entityId);
 		return (bool)count(self::getEntities($entity, $entityId, $userId));
 	}
